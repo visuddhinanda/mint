@@ -18,7 +18,8 @@ RUN apt -y install zsh locales locales-all curl wget vim tzdata pwgen zip unzip 
     fonts-ipaexfont fonts-ipafont fonts-konatu fonts-ipafont-nonfree-jisx0208 fonts-ipafont-nonfree-uigothic \
     fonts-mikachan \
     fonts-tibetan-machine fonts-ddc-uchen fonts-monlam fonts-sambhota-tsugring fonts-sambhota-yigchung \
-    imagemagick ffmpeg graphviz pandoc texlive-full
+    imagemagick ffmpeg graphviz pandoc texlive-full \
+    libssl-dev
 RUN apt -y autoremove
 RUN apt -y clean
 
@@ -49,7 +50,7 @@ RUN git clone -b ${NVM_VERSION} https://github.com/nvm-sh/nvm.git $HOME/.nvm
 RUN echo 'export NVM_DIR="$HOME/.nvm"' >> $HOME/.zshrc \
     && echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $HOME/.zshrc \
     && echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> $HOME/.zshrc
-RUN zsh -c "source $HOME/.zshrc && nvm install --lts"
+RUN zsh -c "source $HOME/.zshrc && nvm install --lts && npm install -g yarn"
 
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
     && locale-gen \
@@ -102,13 +103,13 @@ ADD etc/nginx/sites-enabled/default.conf /etc/nginx/sites-enabled/default.conf
 ADD etc/supervisor /etc/supervisor
 
 # git rev-parse --short HEAD
-ENV MING_VERSION "9eac3aa97"
+ENV MING_VERSION "530977a93"
 RUN git clone --depth=1 --branch development https://github.com/iapt-platform/mint.git $HOME/workspace/mint
 RUN zsh -c "source $HOME/.zshrc \
     && cd $HOME/workspace/mint && git checkout ${MING_VERSION} \
     && cd $HOME/workspace/mint/api-v8 && composer install && npm install \
     && cd $HOME/workspace/mint/api-v8/public && composer install && npm install \
-    && cd $HOME/workspace/mint/dashboard-v4/dashboard && npm install"
+    && cd $HOME/workspace/mint/dashboard-v4/dashboard && yarn install"
 
 RUN echo "$(date -u +%4Y%m%d%H%M%S)" | tee /VERSION
 
