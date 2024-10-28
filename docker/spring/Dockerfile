@@ -115,5 +115,6 @@ RUN echo "$(date -u +%4Y%m%d%H%M%S)" | tee /VERSION
 
 VOLUME /workspace
 WORKDIR /workspace
+EXPOSE 5432/tcp 6379/tcp 6371/tcp 6372/tcp 6373/tcp 6374/tcp 6375/tcp 6376/tcp 5672/tcp 15672/tcp 9200/tcp 9000/tcp 9001/tcp 10001/tcp
 
 CMD ["/bin/zsh", "-l"]

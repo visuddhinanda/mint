@@ -7,11 +7,11 @@
 ## Development
 
 ```bash
-$ sudo apt install -y git crun podman buildah fuse-overlayfs
-$ git clone https://github.com/iapt-platform/mint.git ~/workspace/iapt-platform/mint
-$ cd ~/workspace/iapt-platform/mint/
+$ sudo apt install -y git screen crun podman buildah fuse-overlayfs 
 # Load the mint-spring image
 $ podman load -i tmp/mint-spring-TIMESTAMP.tar.xz
+$ git clone https://github.com/iapt-platform/mint.git ~/workspace/iapt-platform/mint
+$ cd ~/workspace/iapt-platform/mint/
 # Start postgresql/redis/rabbitmq... services
 $ ./docker/spring/start.sh services
 # Start a backend server
