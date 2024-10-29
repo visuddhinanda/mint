@@ -3,7 +3,7 @@
 set -e
 
 export VERSION=$(date "+%4Y%m%d%H%M%S")
-export CODE="mint-react"
+export CODE="mint-$(uname -m)"
 
 podman pull ubuntu:latest
 podman build -t $CODE .

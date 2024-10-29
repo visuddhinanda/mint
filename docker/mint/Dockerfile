@@ -34,6 +34,7 @@ RUN echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $HOME/.bashrc
 RUN echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> $HOME/.bashrc
 RUN bash -i -c "nvm install --lts"
 
+ADD launch.sh /mint.sh
 RUN echo "$(date -u +%4Y%m%d%H%M%S)" | tee /VERSION
 
 VOLUME /workspace
