@@ -1,11 +1,10 @@
 - name: Testing ssh connections
   hosts:
-    - postgresql
-    - rabbitmq
-    - redis
-    - logging
     - web
+    - db
+    - fpm
     - task
+    - logging
   roles:
     - os
     - ubuntu
