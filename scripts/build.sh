@@ -3,20 +3,21 @@
 set -e
 
 export WORKSPACE=$PWD
-export PACKAGE_NAME="palm-$VERSION_CODENAME-$GIT_VERSION"
-export TARGET_DIR=$WORKSPACE/tmp
+export PACKAGE_NAME="mint-$1"
 
 function build_dashboard_v4() {
-    local react_node_modules="node_modules-$2.tar.xz"
-    if [ ! -f $TARGET_DIR/$react_node_modules ]; then
+    local react_node_modules="dashboard-$1.tar.xz"
+    if [ ! -f $WORKSPACE/downloads/$react_node_modules ]; then
         echo "couldn't find $react_node_modules_tar"
         exit 1
     fi
 
-    cd $TARGET_DIR/mint-$1/dashboard-v4/dashboard/
-    echo "uncompress node_modules dashboard-v4"
-    tar xf $TARGET_DIR/$react_node_modules
-    npm run build
+    cd $WORKSPACE/$PACKAGE_NAME/dashboard-v4/dashboard/
+    echo "uncompress node_modules for dashboard-v4"
+    tar xf $WORKSPACE/downloads/$react_node_modules
+    yarn build
+
+    cp -r build $WORKSPACE/$PACKAGE_NAME-dist/dashboard
 }
 
 # -----------------------------------------------------------------------------
@@ -25,30 +26,48 @@ if [ "$#" -ne 2 ]; then
     exit 1
 fi
 
-if [ ! -f $TARGET_DIR/$1.zip ]; then
+if [ ! -f $WORKSPACE/downloads/$1.zip ]; then
     echo "download $1.zip from github"
-    wget -q -P $TARGET_DIR https://github.com/iapt-platform/mint/archive/$1.zip
+    mkdir -p $WORKSPACE/downloads
+    wget -q -P $WORKSPACE/downloads https://github.com/iapt-platform/mint/archive/$1.zip
 fi
 
-if [ ! -f $TARGET_DIR/$2.env ]; then
-    echo "couldn't find config file $TARGET_DIR/$2"
+if [ ! -f $WORKSPACE/$2.env ]; then
+    echo "couldn't find config file $2.env"
     exit 1
 fi
 
-# export $(grep -v '^#' $TARGET_DIR/$2.env | xargs -0)
-source $TARGET_DIR/$2.env
+source $WORKSPACE/$2.env
 
 # -----------------------------------------------------------------------------
 
-cd $TARGET_DIR/
-if [ -d mint-$1 ]; then
-    echo "remove mint-$1 folder"
-    rm -r mint-$1
+if [ -d $WORKSPACE/$PACKAGE_NAME ]; then
+    echo "remove $PACKAGE_NAME folder"
+    rm -r $WORKSPACE/$PACKAGE_NAME
 fi
 echo "uncompress $1.zip"
-unzip -q $1.zip
+unzip -d $WORKSPACE -q $WORKSPACE/downloads/$1.zip
 
-build_dashboard_v4 $1 "20241028144559"
+# -----------------------------------------------------------------------------
 
-echo "done."
+if [ -d $WORKSPACE/$PACKAGE_NAME-dist ]; then
+    rm -r $WORKSPACE/$PACKAGE_NAME-dist
+fi
+
+mkdir -p $WORKSPACE/$PACKAGE_NAME-dist
+
+build_dashboard_v4 "20241106153131"
+
+cd $WORKSPACE
+cp -r $PACKAGE_NAME/api-v8 $PACKAGE_NAME-dist/htdocs
+
+if [ -f $PACKAGE_NAME.tar.xz ]; then
+    rm $PACKAGE_NAME.tar.xz
+fi
+XZ_OPT=-e9 tar -C $PACKAGE_NAME-dist -jcf $PACKAGE_NAME.tar.xz dashboard htdocs
+md5sum $PACKAGE_NAME.tar.xz >$PACKAGE_NAME.md5
+
+# -----------------------------------------------------------------------------
+
+echo "done($PACKAGE_NAME.tar.xz)."
 exit 0

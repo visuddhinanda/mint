@@ -4,8 +4,8 @@ set -e
 
 export VERSION=$(date "+%4Y%m%d%H%M%S")
 
-XZ_OPT=-9 tar -cJf dashboard-$VERSION.tar.xz node_modules yarn.lock
+XZ_OPT=-e9 tar -cJf dashboard-$VERSION.tar.xz node_modules yarn.lock
 
-echo "Done($VERSION)."
+echo "done($VERSION)."
 
 exit 0
