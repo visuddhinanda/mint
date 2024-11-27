@@ -8,6 +8,9 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
+  {
+    "files.eol": "\n"
+  },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   // https://code.visualstudio.com/docs/setup/linux#_visual-studio-code-is-unable-to-watch-for-file-changes-in-this-large-workspace-error-enospc
   "files.watcherExclude": {
@@ -62,5 +65,6 @@
   "[phoenix-heex]": {
     "editor.defaultFormatter": "JakeBecker.elixir-ls"
   },
-  "java.configuration.updateBuildConfiguration": "automatic"
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "ansible.python.interpreterPath": "/bin/python"
 }
