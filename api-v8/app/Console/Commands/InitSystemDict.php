@@ -11,6 +11,7 @@ class InitSystemDict extends Command
      * The name and signature of the console command.
      *
      * @var string
+     * php artisan init:system.dict
      */
     protected $signature = 'init:system.dict';
 
@@ -50,6 +51,13 @@ class InitSystemDict extends Command
             "name"=>'community_extract',
             'shortname'=>'社区汇总',
             'description'=>'由用户贡献词条的社区字典汇总统计',
+            'src_lang'=>'pa',
+            'dest_lang'=>'cm',
+        ],
+        [
+            "name"=>'system_preference',
+            'shortname'=>'系统单词首选项',
+            'description'=>'通过系统筛选出的首选项，只包含语法信息',
             'src_lang'=>'pa',
             'dest_lang'=>'cm',
         ],
