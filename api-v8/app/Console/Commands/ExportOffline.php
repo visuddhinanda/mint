@@ -54,6 +54,9 @@ class ExportOffline extends Command
             }
         }
 
+        //清空redis
+        RedisClusters::put('/offline/index',[]);
+
         //删除全部的旧文件
         foreach (scandir($exportDir) as $key => $file) {
             if(is_file($exportDir.'/'.$file)){
@@ -103,14 +106,17 @@ class ExportOffline extends Command
 
         sleep(5);
         $this->call('export:zip',[
-            'db'=>'wikipali-offline-index',
+            'filename'=>'wikipali-offline-index'.'-'.date("Y-m-d").'.db3',
+            'title' => 'wikipali 离线包索引',
             'format'=>$this->argument('format'),
         ]);
         $this->call('export:zip',[
-            'db'=>'wikipali-offline',
+            'filename'=>'wikipali-offline'.'-'.date("Y-m-d").'.db3',
+            'title' => 'wikipali 离线包',
             'format'=>$this->argument('format'),
         ]);
 
+        $this->call('export:ai.training.data');
         unlink($exportStop);
         return 0;
     }
