@@ -5,7 +5,7 @@
 ```bash
 # create cluster
 mkdir -p clients/CLUSTER/.ssh
-cd clients/CLUSTER
+cd clients/CLUSTER/
 # append your cluster hosts
 touch hosts
 # generate ssh key

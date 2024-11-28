@@ -1,12 +1,3 @@
-- name: Create container data folder
-  become: true
-  ansible.builtin.file:
-    path: "/mnt/{{ ansible_user }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0700"
-
 - name: Create containers config folder
   ansible.builtin.file:
     path: "{{ ansible_env.HOME }}/.config/containers"
