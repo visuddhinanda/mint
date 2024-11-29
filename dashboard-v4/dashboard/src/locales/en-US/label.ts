@@ -52,6 +52,22 @@ const items = {
   "labels.error.404": "没有找到指定的资源",
   "labels.error.429": "请求过于频繁",
   "labels.error.500": "服务器内部错误",
+  "labels.task": "task",
+  "labels.task.hall": "task hall",
+  "labels.task.mine": "my task",
+  "labels.task.my.project": "my projects",
+  "labels.all": "all",
+  "labels.mention.me": "mention",
+  "labels.task.status.pending": "pending",
+  "labels.task.status.published": "published",
+  "labels.task.status.running": "running",
+  "labels.task.status.done": "done",
+  "labels.task.status.restarted": "restarted",
+  "labels.task.status.closed": "closed",
+  "labels.task.status.canceled": "canceled",
+  "labels.task.status.expired": "expired",
+  "labels.filter": "filter",
+  "labels.participants": "participants",
 };
 
 export default items;
