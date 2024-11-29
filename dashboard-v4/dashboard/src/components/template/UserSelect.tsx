@@ -1,4 +1,4 @@
-import { ProFormSelect } from "@ant-design/pro-components";
+import { ProFormSelect, RequestOptionsType } from "@ant-design/pro-components";
 import { useIntl } from "react-intl";
 
 import { get } from "../../request";
@@ -9,24 +9,38 @@ interface IWidget {
   width?: number | "md" | "sm" | "xl" | "xs" | "lg";
   multiple?: boolean;
   hidden?: boolean;
+  hiddenTitle?: boolean;
+  required?: boolean;
+  initialValue?: string | string[] | null;
+  options?: RequestOptionsType[];
 }
 const UserSelectWidget = ({
   name = "user",
   multiple = false,
   width = "md",
   hidden = false,
+  hiddenTitle = false,
+  required = true,
+  options = [],
+  initialValue,
 }: IWidget) => {
   const intl = useIntl();
+  console.log("UserSelect options", options);
   return (
     <ProFormSelect
       name={name}
-      label={intl.formatMessage({ id: "forms.fields.user.label" })}
+      label={
+        hiddenTitle
+          ? undefined
+          : intl.formatMessage({ id: "forms.fields.user.label" })
+      }
       hidden={hidden}
       width={width}
+      initialValue={initialValue}
       showSearch
       debounceTime={300}
       fieldProps={{
-        mode: multiple ? "multiple" : undefined,
+        mode: multiple ? "tags" : undefined,
       }}
       request={async ({ keyWords }) => {
         console.log("keyWord", keyWords);
@@ -35,21 +49,25 @@ const UserSelectWidget = ({
           const json = await get<IUserListResponse>(
             `/v2/user?view=key&key=${keyWords}`
           );
-          const userList = json.data.rows.map((item) => {
+          console.info("api response user select", json);
+          const userList: RequestOptionsType[] = json.data.rows.map((item) => {
             return {
               value: item.id,
-              label: `${item.userName}-${item.nickName}`,
+              label: `${item.nickName}`,
             };
           });
           console.log("json", userList);
           return userList;
         } else {
-          return [];
+          const defaultOptions: RequestOptionsType[] = options.map((item) => {
+            return { label: item.label, value: item.value?.toString() };
+          });
+          return defaultOptions;
         }
       }}
       rules={[
         {
-          required: true,
+          required: required,
         },
       ]}
     />
