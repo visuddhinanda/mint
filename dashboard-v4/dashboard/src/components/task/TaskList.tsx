@@ -244,6 +244,7 @@ const TaskList = ({
         all: { text: "全部任务" },
         done: { text: "已完成" },
         running_restarted: { text: "未完成" },
+        running_restarted_published: { text: "待办" },
         published: { text: "未开始" },
         pending: { text: "未发布" },
       },
