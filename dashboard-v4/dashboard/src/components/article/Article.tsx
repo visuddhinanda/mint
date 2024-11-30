@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { fullUrl } from "../../utils";
 import TypeSeries from "./TypeSeries";
 import DiscussionCount from "../discussion/DiscussionCount";
+import TypeTask from "./TypeTask";
 
 export type ArticleMode = "read" | "edit" | "wbw";
 export type ArticleType =
@@ -31,7 +32,8 @@ export type ArticleType =
   | "sent-commentary"
   | "sent-nissaya"
   | "sent-translation"
-  | "term";
+  | "term"
+  | "task";
 /**
  * 每种article type 对应的路由参数
  * article/id?anthology=id&channel=id1,id2&mode=ArticleMode
@@ -245,6 +247,8 @@ const ArticleWidget = ({
           mode={mode}
           onArticleChange={onArticleChange}
         />
+      ) : type === "task" ? (
+        <TypeTask articleId={articleId} />
       ) : (
         <></>
       )}
