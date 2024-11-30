@@ -1,5 +1,7 @@
-import { Avatar, Popover, Space } from "antd";
+import { Avatar, Popover, Space, Typography } from "antd";
+
 import { getAvatarColor } from "./Studio";
+const { Text } = Typography;
 
 export interface IUser {
   id: string;
@@ -38,7 +40,7 @@ const UserWidget = ({
               {nickName?.slice(0, 2)}
             </Avatar>
           </div>
-          <div>{`${nickName}@${userName}`}</div>
+          <Text>{`${nickName}@${userName}`}</Text>
         </div>
       }
     >
@@ -52,9 +54,9 @@ const UserWidget = ({
             {nickName?.slice(0, 2)}
           </Avatar>
         ) : undefined}
-        {showName ? nickName : undefined}
-        {showName && showUserName ? "@" : undefined}
-        {showUserName ? userName : undefined}
+        {showName ? <Text>{nickName}</Text> : undefined}
+        {showName && showUserName ? <Text>@</Text> : undefined}
+        {showUserName ? <Text>{userName}</Text> : undefined}
       </Space>
     </Popover>
   );
