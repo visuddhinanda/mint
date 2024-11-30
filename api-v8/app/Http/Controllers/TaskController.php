@@ -211,7 +211,6 @@ class TaskController extends Controller
                 ];
             }
             TaskAssignee::insert($assigneesData);
-            //$task->assignees_id = json_encode($request->get('assignees_id'),JSON_UNESCAPED_UNICODE);
         }
         if($request->has('roles')){
             $task->roles = json_encode($request->get('roles'),JSON_UNESCAPED_UNICODE);
@@ -226,10 +225,17 @@ class TaskController extends Controller
             $task->project_id = $request->get('project_id');
         }
         if($request->has('pre_task_id')){
-            $task->pre_task_id = $request->get('pre_task_id');
+            TaskRelation::setRelationTasks($task->id,
+                explode(',',$request->get('pre_task_id')),
+                $user['user_uid'],
+                'pre');
         }
         if($request->has('next_task_id')){
             $task->next_task_id = $request->get('next_task_id');
+            TaskRelation::setRelationTasks($task->id,
+                explode(',',$request->get('next_task_id')),
+                $user['user_uid'],
+                'next');
         }
         if($request->has('is_milestone')){
             $task->is_milestone = $request->get('is_milestone');
