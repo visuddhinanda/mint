@@ -1,21 +1,23 @@
 import {
   Badge,
+  Button,
   Card,
   Dropdown,
   MenuProps,
   Popover,
+  Skeleton,
   Space,
   Typography,
 } from "antd";
 import { DownOutlined } from "@ant-design/icons";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useIntl } from "react-intl";
 import { get } from "../../request";
 import { IApiResponseDictList } from "../api/Dict";
 import { IUser } from "../auth/User";
 import GrammarPop from "./GrammarPop";
-import Marked from "../general/Marked";
 import MdView from "../template/MdView";
+import MyCreate from "./MyCreate";
 
 const { Title, Link, Text } = Typography;
 
@@ -38,14 +40,16 @@ interface IWidget {
 const CommunityWidget = ({ word }: IWidget) => {
   const intl = useIntl();
   const [loaded, setLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [wordData, setWordData] = useState<IWord>();
+  const [showCreate, setShowCreate] = useState(false);
+  const [myRefresh, setMyRefresh] = useState(false);
+
   const minScore = 100; //分数阈值。低于这个分数只显示在弹出菜单中
 
-  useEffect(() => {
-    if (typeof word === "undefined") {
-      return;
-    }
-    const url = `/v2/userdict?view=community&word=${word}`;
+  const dictLoad = useCallback(async (input: string) => {
+    setLoading(true);
+    const url = `/v2/userdict?view=community&word=${input}`;
     console.info("dict community url", url);
     get<IApiResponseDictList>(url)
       .then((json) => {
@@ -141,12 +145,22 @@ const CommunityWidget = ({ word }: IWidget) => {
         setWordData(_data);
         if (_data.editor.length > 0) {
           setLoaded(true);
+        } else {
+          setLoaded(false);
         }
       })
+      .finally(() => setLoading(false))
       .catch((error) => {
         console.error(error);
       });
-  }, [word, setWordData]);
+  }, []);
+
+  useEffect(() => {
+    if (typeof word === "undefined") {
+      return;
+    }
+    dictLoad(word);
+  }, [word, setWordData, dictLoad]);
 
   const isShow = (score: number, index: number) => {
     const Ms = 500,
@@ -199,118 +213,145 @@ const CommunityWidget = ({ word }: IWidget) => {
     ) : undefined
   ) : undefined;
 
-  return loaded ? (
+  return (
     <Card>
       <Title level={5} id={`community`}>
         {"社区字典"}
       </Title>
-      <div key="meaning">
-        <Space style={{ flexWrap: "wrap" }}>
-          <Text strong>{"意思："}</Text>
-          {wordData?.meaning
-            .filter((value, index: number) => isShow(value.score, index))
-            .map((item, id) => {
-              return (
-                <Space key={id}>
-                  {item.value}
-                  <Badge color="geekblue" size="small" count={item.score} />
-                </Space>
-              );
-            })}
-          {meaningLow && meaningLow.length > 0 ? (
-            <Popover content={<Space>{meaningExtra}</Space>} placement="bottom">
-              <Link>
-                <Space>
-                  {intl.formatMessage({
-                    id: `buttons.more`,
-                  })}
-                  <DownOutlined />
-                </Space>
-              </Link>
-            </Popover>
-          ) : undefined}
-        </Space>
-      </div>
-      <div key="grammar">
-        <Space style={{ flexWrap: "wrap" }}>
-          <Text strong>{"语法："}</Text>
-          {wordData?.grammar
-            .filter((value) => value.score >= minScore)
-            .map((item, id) => {
-              const grammar = item.value.split("$");
-              const grammarGuide = grammar.map((item, id) => {
-                const strCase = item.replaceAll(".", "");
-
-                return strCase.length > 0 ? (
-                  <GrammarPop
-                    key={id}
-                    gid={strCase}
-                    text={intl.formatMessage({
-                      id: `dict.fields.type.${strCase}.label`,
-                      defaultMessage: strCase,
-                    })}
-                  />
-                ) : undefined;
-              });
-              return (
-                <Space key={id}>
-                  <Space
-                    style={{
-                      backgroundColor: "rgba(0.5,0.5,0.5,0.2)",
-                      borderRadius: 5,
-                      paddingLeft: 5,
-                      paddingRight: 5,
-                    }}
-                  >
-                    {grammarGuide}
-                  </Space>
-                  <Badge color="geekblue" size="small" count={item.score} />
-                </Space>
-              );
-            })}
-        </Space>
-      </div>
-      <div key="base">
-        <Space style={{ flexWrap: "wrap" }}>
-          <Text strong>{"词干："}</Text>
-          {wordData?.parent
-            .filter((value) => value.score >= minScore)
-            .map((item, id) => {
-              return (
-                <Space key={id}>
-                  {item.value}
-                  <Badge color="geekblue" size="small" count={item.score} />
-                </Space>
-              );
-            })}
-        </Space>
-      </div>
-      <div key="collaborator">
-        <Space style={{ flexWrap: "wrap" }}>
-          <Text strong>{"贡献者："}</Text>
-          {wordData?.editor
-            .filter((value, index) => index < mainCollaboratorNum)
-            .map((item, id) => {
-              return collaboratorRender(item.value.nickName, id, item.score);
-            })}
-          {more}
-        </Space>
-      </div>
-
-      <div key="note">
-        <Text strong>{"注释："}</Text>
+      {loading ? (
+        <Skeleton />
+      ) : loaded ? (
         <div>
-          {wordData?.note
-            .filter((value) => value.score >= minScore)
-            .slice(0, 1)
-            .map((item, id) => {
-              return <MdView html={item.value} key={id} />;
-            })}
+          <div key="meaning">
+            <Space style={{ flexWrap: "wrap" }}>
+              <Text strong>{"意思："}</Text>
+              {wordData?.meaning
+                .filter((value, index: number) => isShow(value.score, index))
+                .map((item, id) => {
+                  return (
+                    <Space key={id}>
+                      {item.value}
+                      <Badge color="geekblue" size="small" count={item.score} />
+                    </Space>
+                  );
+                })}
+              {meaningLow && meaningLow.length > 0 ? (
+                <Popover
+                  content={<Space>{meaningExtra}</Space>}
+                  placement="bottom"
+                >
+                  <Link>
+                    <Space>
+                      {intl.formatMessage({
+                        id: `buttons.more`,
+                      })}
+                      <DownOutlined />
+                    </Space>
+                  </Link>
+                </Popover>
+              ) : undefined}
+            </Space>
+          </div>
+          <div key="grammar">
+            <Space style={{ flexWrap: "wrap" }}>
+              <Text strong>{"语法："}</Text>
+              {wordData?.grammar
+                .filter((value) => value.score >= minScore)
+                .map((item, id) => {
+                  const grammar = item.value.split("$");
+                  const grammarGuide = grammar.map((item, id) => {
+                    const strCase = item.replaceAll(".", "");
+
+                    return strCase.length > 0 ? (
+                      <GrammarPop
+                        key={id}
+                        gid={strCase}
+                        text={intl.formatMessage({
+                          id: `dict.fields.type.${strCase}.label`,
+                          defaultMessage: strCase,
+                        })}
+                      />
+                    ) : undefined;
+                  });
+                  return (
+                    <Space key={id}>
+                      <Space
+                        style={{
+                          backgroundColor: "rgba(0.5,0.5,0.5,0.2)",
+                          borderRadius: 5,
+                          paddingLeft: 5,
+                          paddingRight: 5,
+                        }}
+                      >
+                        {grammarGuide}
+                      </Space>
+                      <Badge color="geekblue" size="small" count={item.score} />
+                    </Space>
+                  );
+                })}
+            </Space>
+          </div>
+          <div key="base">
+            <Space style={{ flexWrap: "wrap" }}>
+              <Text strong>{"词干："}</Text>
+              {wordData?.parent
+                .filter((value) => value.score >= minScore)
+                .map((item, id) => {
+                  return (
+                    <Space key={id}>
+                      {item.value}
+                      <Badge color="geekblue" size="small" count={item.score} />
+                    </Space>
+                  );
+                })}
+            </Space>
+          </div>
+          <div key="collaborator">
+            <Space style={{ flexWrap: "wrap" }}>
+              <Text strong>{"贡献者："}</Text>
+              {wordData?.editor
+                .filter((value, index) => index < mainCollaboratorNum)
+                .map((item, id) => {
+                  return collaboratorRender(
+                    item.value.nickName,
+                    id,
+                    item.score
+                  );
+                })}
+              {more}
+            </Space>
+          </div>
+
+          <div key="note">
+            <Text strong>{"注释："}</Text>
+            <div>
+              {wordData?.note
+                .filter((value) => value.score >= minScore)
+                .slice(0, 1)
+                .map((item, id) => {
+                  return <MdView html={item.value} key={id} />;
+                })}
+            </div>
+          </div>
         </div>
-      </div>
+      ) : showCreate ? (
+        <MyCreate
+          word={word}
+          onSave={() => {
+            setMyRefresh(true);
+            if (word) {
+              dictLoad(word);
+            }
+          }}
+        />
+      ) : (
+        <>
+          <Button type="link" onClick={() => setShowCreate(true)}>
+            新建
+          </Button>
+        </>
+      )}
     </Card>
-  ) : (
-    <></>
   );
 };
 
