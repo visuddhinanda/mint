@@ -1,7 +1,7 @@
 import { Timeline } from "antd";
 import { useEffect, useState } from "react";
 import { useIntl } from "react-intl";
-import { StartUpIcon, TermIcon2, TermOutlinedIcon } from "../../assets/icon";
+import { StartUpIcon, TermIcon2 } from "../../assets/icon";
 import { get } from "../../request";
 import TimeShow from "../general/TimeShow";
 
@@ -9,7 +9,7 @@ interface IMilestone {
   date: string;
   event: string;
 }
-interface IMilestoneResponse {
+interface IUserMilestoneResponse {
   ok: boolean;
   message: string;
   data: IMilestone[];
@@ -26,19 +26,21 @@ const TimeLineWidget = ({ studioName }: IWidget) => {
     if (typeof studioName === "undefined") {
       return;
     }
-    get<IMilestoneResponse>(`/v2/milestone/${studioName}`).then((json) => {
-      if (json.ok) {
-        setMilestone(
-          json.data.sort((a, b) => {
-            if (a.date > b.date) {
-              return -1;
-            } else {
-              return 1;
-            }
-          })
-        );
+    get<IUserMilestoneResponse>(`/v2/user-milestone/${studioName}`).then(
+      (json) => {
+        if (json.ok) {
+          setMilestone(
+            json.data.sort((a, b) => {
+              if (a.date > b.date) {
+                return -1;
+              } else {
+                return 1;
+              }
+            })
+          );
+        }
       }
-    });
+    );
   }, [studioName]);
 
   return (
