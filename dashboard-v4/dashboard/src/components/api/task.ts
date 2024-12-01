@@ -46,9 +46,9 @@ export interface ITaskData {
   executor_id?: string | null;
   executor_relation_task?: ITaskData | null;
   executor_relation_task_id?: string | null;
-  pre_task?: ITaskData | null;
+  pre_task?: ITaskData[] | null;
   pre_task_id?: string | null;
-  next_task?: ITaskData | null;
+  next_task?: ITaskData[] | null;
   next_task_id?: string | null;
   is_milestone: boolean;
   project?: IProject | null;
