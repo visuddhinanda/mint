@@ -2,8 +2,7 @@ import { Button, List, Popover, Tag, Typography } from "antd";
 import { ITaskData, ITaskListResponse } from "../api/task";
 import { get } from "../../request";
 import { useEffect, useState } from "react";
-import { ArrowLeftOutlined, ArrowRightOutlined } from "@ant-design/icons";
-import { type } from "os";
+import  { ArrowLeftOutlined, ArrowRightOutlined,CheckOutlined } from "@ant-design/icons";
 import { TRelation } from "./TaskEditButton";
 
 const { Text } = Typography;
@@ -43,15 +42,23 @@ const ProTaskList = ({ task, type, onClick, onClose }: IProTaskListProps) => {
       }
       footer={false}
       dataSource={res}
-      renderItem={(item) => (
+      renderItem={(item) => {
+        let checked = false
+        if(type === "pre"){
+          checked = task?.pre_task?.find((value)=>value.id===item.id)!==undefined
+        }else{
+          checked = task?.next_task?.find((value)=>value.id===item.id)!==undefined
+        }
+        return (
         <List.Item
+        actions={[checked?<CheckOutlined />:<></>]}
           onClick={() => {
             onClick && onClick(item);
           }}
         >
           {item.title}
         </List.Item>
-      )}
+      )}}
     />
   );
 };
@@ -70,13 +77,13 @@ const PreTask = ({ task, type, open = false, onClick, onClose }: IWidget) => {
   if (preTaskShow && type === "pre") {
     tag = (
       <Tag color="warning" icon={<ArrowLeftOutlined />}>
-        {task?.pre_task?.title}
+        {task?.pre_task? `${task?.pre_task?.length} 个前置任务`:''}
       </Tag>
     );
   } else if (nextTaskShow && type === "next") {
     tag = (
       <Tag color="warning" icon={<ArrowRightOutlined />}>
-        {task?.next_task?.title}
+        {task?.next_task?`阻塞 ${task?.next_task?.length} 个任务`:''}
       </Tag>
     );
   }
@@ -85,7 +92,7 @@ const PreTask = ({ task, type, open = false, onClick, onClose }: IWidget) => {
       trigger="click"
       open={open}
       content={
-        <div style={{ width: 500 }}>
+        <div style={{ width: 400 }}>
           <ProTaskList
             type={type}
             task={task}
