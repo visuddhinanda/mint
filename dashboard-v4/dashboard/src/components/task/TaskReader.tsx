@@ -64,9 +64,21 @@ const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
       studio_name: "",
     };
     if (type === "pre") {
-      setting.pre_task_id = data.id;
+      const hasPre = task?.pre_task?.find((value)=>value.id===data.id)
+      if(hasPre){
+        setting.pre_task_id = task?.pre_task?.filter((value)=>value.id!==data.id).map((item)=>item.id).join()
+      }else{
+        const newRelation = task?.pre_task? [...task.pre_task.map((item)=>item.id),data.id]:[data.id];
+        setting.pre_task_id = newRelation.join();
+      }
     } else if (type === "next") {
-      setting.next_task_id = data.id;
+      const hasPre = task?.next_task?.find((value)=>value.id===data.id)
+      if(hasPre){
+        setting.next_task_id = task?.next_task?.filter((value)=>value.id!==data.id).map((item)=>item.id).join()
+      }else{
+        const newRelation = task?.next_task? [...task.next_task.map((item)=>item.id),data.id]:[data.id];
+        setting.next_task_id = newRelation.join();
+      }
     }
 
     const url = `/v2/task/${setting.id}`;

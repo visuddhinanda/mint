@@ -30,6 +30,7 @@ const TaskRelation = ({ tasks }: IWidget) => {
     mermaidText += `classDef ${value.status} fill:${value.fill},stroke:#333,stroke-width:2px;\n`;
   });
 
+  let relationLine = new Map<string,number>();
   tasks?.forEach((task: ITaskData, index: number, array: ITaskData[]) => {
     //输出节点
     mermaidText += `${task.id}[${task.title}]:::${task.status};\n`;
@@ -47,13 +48,14 @@ const TaskRelation = ({ tasks }: IWidget) => {
     }
 
     //关系线
-    if (task.pre_task) {
-      mermaidText += `${task.pre_task.id} --> ${task.id};\n`;
-    }
-    if (task.next_task) {
-      mermaidText += `${task.id} --> ${task.next_task.id};\n`;
-    }
+    task.pre_task?.map((item)=>relationLine.set(`${item.id} --> ${task.id};\n`,0))
+    task.next_task?.map((item)=>relationLine.set(`${task.id} --> ${item.id};\n`,0))
+
   });
+
+  Array.from(relationLine.keys()).forEach((value)=>{
+    mermaidText += value;
+  })
 
   console.debug(mermaidText);
 

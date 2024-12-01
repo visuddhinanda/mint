@@ -17,6 +17,7 @@ interface IWidget {
 }
 const TaskTable = ({ tasks }: IWidget) => {
   const [tasksTitle, setTasksTitle] = useState<ITaskHeading[][]>();
+  const [dataHeading, setDataHeading] = useState<string[]>();
   const [projects, setProjects] = useState<IProject[]>();
 
   useEffect(() => {
@@ -35,10 +36,20 @@ const TaskTable = ({ tasks }: IWidget) => {
 
     setProjects(Array.from(projectMap.values()));
 
+    const getNodeChildren = (task:ITaskData):number=>{
+      const children = tasks?.filter((value) => value.parent_id === task.id)
+      if(children && children.length>0){
+          return children.reduce((acc, cur) => {
+            return acc + getNodeChildren(cur)
+          }, children.length);
+      }else{
+        return 0
+      }
+    }
     //列表头
     let titles1: ITaskHeading[] = [];
     let titles2: ITaskHeading[] = [];
-    let titles3: ITaskHeading[] = [];
+    let titles3: string[] = [];
     tasks
       ?.filter((value: ITaskData) => !value.parent_id)
       .forEach((task) => {
@@ -53,24 +64,23 @@ const TaskTable = ({ tasks }: IWidget) => {
             return child;
           });
         titles2 = [...titles2, ...children];
+
         titles1.push({
           title: task.title ?? "",
           id: task.id,
-          children: children.length,
+          children: getNodeChildren(task),
         });
+
         if (children.length === 0) {
-          titles3.push({
-            title: task.title ?? "",
-            id: task.id,
-            children: 0,
-          });
+          titles3.push(task.title);
         } else {
-          titles3 = [...titles3, ...children];
+          titles3 = [...titles3, ...children.map((item) => item.title)];
         }
       });
-    const heading = [titles1, titles2, titles3];
+    const heading = [titles1, titles2];
     console.log("heading", heading);
     setTasksTitle(heading);
+    setDataHeading(titles3);
   }, [tasks]);
 
   return (
@@ -78,7 +88,7 @@ const TaskTable = ({ tasks }: IWidget) => {
       <table>
         <thead>
           {tasksTitle?.map((row, level) => {
-            return level < 2 ? (
+            return (
               <tr>
                 {level === 0 ? <th rowSpan={2}>project</th> : undefined}
                 {row.map((task, index) => {
@@ -92,44 +102,38 @@ const TaskTable = ({ tasks }: IWidget) => {
                     </th>
                   );
                 })}
-              </tr>
-            ) : (
-              <></>
-            );
+              </tr>)
+            
           })}
         </thead>
         <tbody>
           {projects?.map((row, index) => (
             <tr key={index}>
               <td>{row.title}</td>
-              {tasksTitle && tasksTitle.length >= 3 ? (
-                tasksTitle[2].map((task, id) => {
-                  const taskData = tasks?.find(
-                    (value: ITaskData) =>
-                      value.title === task.title && value.project_id === row.id
-                  );
-                  return (
-                    <td key={id}>
+              {dataHeading?.map((task, id) => {
+                const taskData = tasks?.find(
+                  (value: ITaskData) =>
+                    value.title === task && value.project_id === row.id
+                );
+                return (
+                  <td key={id}>
+                    <div>
                       <div>
-                        <div>
-                          {taskData?.executor ? (
-                            <User {...taskData.executor} />
-                          ) : taskData?.assignees ? (
-                            <Assignees data={taskData} />
-                          ) : (
-                            <></>
-                          )}
-                        </div>
-                        <div>
-                          <Status task={taskData} />
-                        </div>
+                        {taskData?.executor ? (
+                          <User {...taskData.executor} />
+                        ) : taskData?.assignees ? (
+                          <Assignees data={taskData} />
+                        ) : (
+                          <></>
+                        )}
                       </div>
-                    </td>
-                  );
-                })
-              ) : (
-                <></>
-              )}
+                      <div>
+                        <Status task={taskData} />
+                      </div>
+                    </div>
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
