@@ -81,7 +81,7 @@ const WbwFactorsWidget = ({ data, answer, display, onChange }: IWidget) => {
         factors.push(key);
       });
 
-      const menu = factors.map((item) => {
+      const menu = [...factors, data.real.value].map((item) => {
         return { key: item, label: item };
       });
       setItems(menu);

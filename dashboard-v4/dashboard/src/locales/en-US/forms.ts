@@ -90,6 +90,12 @@ const items = {
   "forms.status.cancel.label": "canceled",
   "forms.fields.sign-up-message.label": "sign up message",
   "forms.fields.color.label": "color",
+  "forms.fields.executors.label": "executors",
+  "forms.fields.executor.label": "executor",
+  "forms.fields.milestone.label": "milestones",
+  "forms.fields.started-at.label": "started at",
+  "forms.fields.finished-at.label": "finished at",
+  "forms.fields.assignees.label": "assignees",
 };
 
 export default items;

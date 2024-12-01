@@ -27,6 +27,7 @@ import AdminNissayaEnding from "./pages/admin/nissaya-ending";
 import AdminNissayaEndingList from "./pages/admin/nissaya-ending/list";
 import AdminDictionary from "./pages/admin/dictionary";
 import AdminDictionaryList from "./pages/admin/dictionary/list";
+import AdminDictionaryPreference from "./pages/admin/dictionary/preference";
 import AdminApi from "./pages/admin/api";
 import AdminApiDashboard from "./pages/admin/api/dashboard";
 
@@ -144,6 +145,12 @@ import StudioTagList from "./pages/studio/tags/list";
 import StudioTagShow from "./pages/studio/tags/show";
 import StudioTagEdit from "./pages/studio/tags/edit";
 
+import StudioTask from "./pages/studio/task";
+import StudioTaskHall from "./pages/studio/task/hall";
+import StudioTaskList from "./pages/studio/task/tasks";
+import StudioTaskProjects from "./pages/studio/task/projects";
+import StudioTaskProject from "./pages/studio/task/project";
+
 import { ConfigProvider } from "antd";
 import { useAppSelector } from "./hooks";
 import { currTheme } from "./reducers/theme";
@@ -166,6 +173,7 @@ const Widget = () => {
           </Route>
           <Route path="dictionary" element={<AdminDictionary />}>
             <Route path="list" element={<AdminDictionaryList />} />
+            <Route path="preference" element={<AdminDictionaryPreference />} />
           </Route>
           <Route path="users" element={<AdminUsers />}>
             <Route path="list" element={<AdminUsersList />} />
@@ -326,6 +334,13 @@ const Widget = () => {
           <Route path="course" element={<StudioCourse />}>
             <Route path="list" element={<StudioCourseList />} />
             <Route path=":courseId/edit" element={<StudioCourseEdit />} />
+          </Route>
+
+          <Route path="task" element={<StudioTask />}>
+            <Route path="hall" element={<StudioTaskHall />} />
+            <Route path="list" element={<StudioTaskList />} />
+            <Route path="projects" element={<StudioTaskProjects />} />
+            <Route path="project/:projectId" element={<StudioTaskProject />} />
           </Route>
 
           <Route path="dict" element={<StudioDict />}>

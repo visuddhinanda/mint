@@ -20,7 +20,7 @@ class OfflineIndexController extends Controller
     public function index(Request $request)
     {
         //
-        $key = '/offline/index/wikipali-offline';
+        $key = '/offline/index';
         if($request->has('file')){
             $key .= '-'.$request->get('file');
         }
