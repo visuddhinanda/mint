@@ -8,11 +8,13 @@ use Illuminate\Support\Facades\Log;
 
 use App\Models\Task;
 use App\Models\TaskAssignee;
+use App\Models\TaskRelation;
 use App\Models\Project;
 use App\Http\Resources\TaskResource;
 
 use App\Http\Api\AuthApi;
 use App\Http\Api\StudioApi;
+use App\Http\Api\TaskApi;
 
 
 class TaskController extends Controller
@@ -225,14 +227,14 @@ class TaskController extends Controller
             $task->project_id = $request->get('project_id');
         }
         if($request->has('pre_task_id')){
-            TaskRelation::setRelationTasks($task->id,
+            TaskApi::setRelationTasks($task->id,
                 explode(',',$request->get('pre_task_id')),
                 $user['user_uid'],
                 'pre');
         }
         if($request->has('next_task_id')){
             $task->next_task_id = $request->get('next_task_id');
-            TaskRelation::setRelationTasks($task->id,
+            TaskApi::setRelationTasks($task->id,
                 explode(',',$request->get('next_task_id')),
                 $user['user_uid'],
                 'next');
