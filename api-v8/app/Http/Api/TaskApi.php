@@ -6,6 +6,7 @@ use App\Models\TaskRelation;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\App;
 use App\Tools\RedisClusters;
+use Illuminate\Support\Str;
 
 class TaskApi{
     public static function getById($id){
@@ -59,10 +60,11 @@ class TaskApi{
                         ->delete();
         foreach ($relationTasksId as $key => $id) {
             $data[] = [
-                'id' => Str::uuid(),
                 $task1 => $id,
                 $task2 => $taskId,
                 'editor_id' => $editor_id,
+                'created_at' => now(),
+                'updated_at' => now(),
             ];
         }
         if(isset($data)){
@@ -72,7 +74,7 @@ class TaskApi{
     }
     public static function getRelationTasks($taskId,$relation='pre'){
         $key = TaskApi::taskRelationRedisKey($taskId,$relation);
-        RedisClusters::remember($key,3*24*3600,function() use($taskId,$relation){
+        return RedisClusters::remember($key,3*24*3600,function() use($taskId,$relation){
             if($relation==='pre'){
                 $where = 'next_task_id';
                 $select = 'task_id';
