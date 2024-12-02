@@ -42,6 +42,7 @@ const TaskEditDrawer = ({
         onClose={onCloseDrawer}
         open={open}
         destroyOnClose={true}
+        footer={<div>关注</div>}
         extra={
           <Button
             type="link"

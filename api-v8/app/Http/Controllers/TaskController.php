@@ -233,7 +233,6 @@ class TaskController extends Controller
                 'pre');
         }
         if($request->has('next_task_id')){
-            $task->next_task_id = $request->get('next_task_id');
             TaskApi::setRelationTasks($task->id,
                 explode(',',$request->get('next_task_id')),
                 $user['user_uid'],

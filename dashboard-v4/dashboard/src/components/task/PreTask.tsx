@@ -68,21 +68,22 @@ interface IWidget {
   open?: boolean;
   type: TRelation;
   onClick?: (data?: ITaskData | null) => void;
+  onTagClick?:()=>void;
   onClose?: () => void;
 }
-const PreTask = ({ task, type, open = false, onClick, onClose }: IWidget) => {
+const PreTask = ({ task, type, open = false, onClick, onClose,onTagClick }: IWidget) => {
   const preTaskShow = open || task?.pre_task;
   const nextTaskShow = open || task?.next_task;
   let tag = <></>;
   if (preTaskShow && type === "pre") {
     tag = (
-      <Tag color="warning" icon={<ArrowLeftOutlined />}>
+      <Tag color="warning" icon={<ArrowLeftOutlined  />} onClick={onTagClick}>
         {task?.pre_task? `${task?.pre_task?.length} 个前置任务`:''}
       </Tag>
     );
   } else if (nextTaskShow && type === "next") {
     tag = (
-      <Tag color="warning" icon={<ArrowRightOutlined />}>
+      <Tag color="warning" icon={<ArrowRightOutlined />} onClick={onTagClick}>
         {task?.next_task?`阻塞 ${task?.next_task?.length} 个任务`:''}
       </Tag>
     );

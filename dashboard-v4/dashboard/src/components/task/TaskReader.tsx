@@ -107,6 +107,7 @@ const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
               updatePreTask("pre", data);
               setOpenPreTask(false);
             }}
+            onTagClick={()=>setOpenPreTask(true)}
             onClose={() => setOpenPreTask(false)}
           />
           <PreTask
@@ -118,6 +119,7 @@ const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
               setOpenNextTask(false);
             }}
             onClose={() => setOpenNextTask(false)}
+            onTagClick={()=>setOpenNextTask(true)}
           />
         </Space>
         <div>

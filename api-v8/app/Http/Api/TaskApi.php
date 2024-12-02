@@ -74,7 +74,7 @@ class TaskApi{
     }
     public static function getRelationTasks($taskId,$relation='pre'){
         $key = TaskApi::taskRelationRedisKey($taskId,$relation);
-        return RedisClusters::remember($key,3*24*3600,function() use($taskId,$relation){
+        $data =RedisClusters::remember($key,3*24*3600,function() use($taskId,$relation){
             if($relation==='pre'){
                 $where = 'next_task_id';
                 $select = 'task_id';
@@ -90,6 +90,7 @@ class TaskApi{
             }
             return TaskApi::getListByIds($tasksId);
 		});
+        return $data;
     }
 
     public static function getNextTasks($taskId){
@@ -99,8 +100,21 @@ class TaskApi{
         return TaskApi::getRelationTasks($taskId,'pre');
     }
     public static function removeTaskRelationRedisKey($taskId,$relation='pre'){
-        $key = TaskApi::taskRelationRedisKey($taskId,$relation);
-        RedisClusters::forget($key);
+                //查询相关task
+        $relations = TaskRelation::where('task_id',$taskId)
+                ->orWhere('next_task_id',$taskId)
+                ->select('task_id','next_task_id')->get();
+        $relationsId = [];
+        foreach ($relations as $key => $value) {
+            $relationsId[$value->task_id] = 1;
+            $relationsId[$value->next_task_id] = 1;
+        }
+        foreach ($relationsId as $taskId => $value) {
+            $key = TaskApi::taskRelationRedisKey($taskId,'pre');
+            RedisClusters::forget($key);
+            $key = TaskApi::taskRelationRedisKey($taskId,'next');
+            RedisClusters::forget($key);
+        }
     }
     public static function taskRelationRedisKey($taskId,$relation='pre'){
         return "task/relation/{$relation}/{$taskId}";
