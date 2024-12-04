@@ -1,15 +1,7 @@
 import { ActionType, ProTable } from "@ant-design/pro-components";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
-import {
-  Alert,
-  Badge,
-  Button,
-  message,
-  Modal,
-  Popover,
-  Typography,
-} from "antd";
+import { Alert, Badge, Button, message, Modal, Popover } from "antd";
 import { Dropdown } from "antd";
 import {
   ExclamationCircleOutlined,
@@ -22,14 +14,11 @@ import { TChannelType } from "../api/Channel";
 import { PublicityValueEnum } from "../studio/table";
 import { IDeleteResponse } from "../api/Article";
 import { useEffect, useRef, useState } from "react";
-import StudioName, { IStudio } from "../auth/Studio";
 
 import { getSorterUrl } from "../../utils";
 import { TransferOutLinedIcon } from "../../assets/icon";
 import { IProjectData, IProjectListResponse } from "../api/task";
 import ProjectCreate from "./ProjectCreate";
-
-const { Text } = Typography;
 
 export const channelTypeFilter = {
   all: {
@@ -93,11 +82,9 @@ const ProjectListWidget = ({
   onSelect,
 }: IWidget) => {
   const intl = useIntl();
-
   const [activeKey, setActiveKey] = useState<React.Key | undefined>("all");
-  const [myNumber, setMyNumber] = useState<number>(0);
-  const [collaborationNumber, setCollaborationNumber] = useState<number>(0);
   const [openCreate, setOpenCreate] = useState(false);
+
   useEffect(() => {
     ref.current?.reload();
   }, [disableChannels]);
@@ -319,21 +306,11 @@ const ProjectListWidget = ({
             items: [
               {
                 key: "all",
-                label: (
-                  <span>
-                    {intl.formatMessage({ id: "labels.all" })}
-                    {renderBadge(myNumber, activeKey === "all")}
-                  </span>
-                ),
+                label: intl.formatMessage({ id: "labels.all" }),
               },
               {
                 key: "workflow",
-                label: (
-                  <span>
-                    {intl.formatMessage({ id: "labels.workflow" })}
-                    {renderBadge(collaborationNumber, activeKey === "workflow")}
-                  </span>
-                ),
+                label: intl.formatMessage({ id: "labels.workflow" }),
               },
             ],
             onChange(key) {
