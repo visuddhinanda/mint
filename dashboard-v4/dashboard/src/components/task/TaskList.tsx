@@ -108,7 +108,6 @@ const TaskList = ({
 }: IWidget) => {
   const intl = useIntl();
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState<React.ReactNode>();
 
   const actionRef = useRef<ActionType>();
   const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([]);
@@ -374,7 +373,6 @@ const TaskList = ({
           search: true,
         }}
         actionRef={actionRef}
-        headerTitle={title}
         // 关闭默认的新建按钮
         recordCreatorProps={
           editable
@@ -428,7 +426,6 @@ const TaskList = ({
         }}
         value={dataSource}
         onChange={(value: readonly ITaskData[]) => {
-          const root = value.find((item) => item.id === projectId);
           setDataSource(value);
         }}
         editable={{
