@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-import { get } from "../../request";
-import {  ITaskData, ITaskListResponse } from "../api/task";
+import { ITaskData } from "../api/task";
 
 import "../article/article.css";
 
@@ -8,10 +6,9 @@ import Mermaid from "../general/Mermaid";
 
 interface IWidget {
   projectId?: string;
-  tasks?:ITaskData[];
+  tasks?: ITaskData[];
 }
 const TaskRelation = ({ tasks }: IWidget) => {
-
   let mermaidText = "flowchart LR\n";
 
   //节点样式
@@ -30,7 +27,7 @@ const TaskRelation = ({ tasks }: IWidget) => {
     mermaidText += `classDef ${value.status} fill:${value.fill},stroke:#333,stroke-width:2px;\n`;
   });
 
-  let relationLine = new Map<string,number>();
+  let relationLine = new Map<string, number>();
   tasks?.forEach((task: ITaskData, index: number, array: ITaskData[]) => {
     //输出节点
     mermaidText += `${task.id}[${task.title}]:::${task.status};\n`;
@@ -48,14 +45,17 @@ const TaskRelation = ({ tasks }: IWidget) => {
     }
 
     //关系线
-    task.pre_task?.map((item)=>relationLine.set(`${item.id} --> ${task.id};\n`,0))
-    task.next_task?.map((item)=>relationLine.set(`${task.id} --> ${item.id};\n`,0))
-
+    task.pre_task?.map((item) =>
+      relationLine.set(`${item.id} --> ${task.id};\n`, 0)
+    );
+    task.next_task?.map((item) =>
+      relationLine.set(`${task.id} --> ${item.id};\n`, 0)
+    );
   });
 
-  Array.from(relationLine.keys()).forEach((value)=>{
+  Array.from(relationLine.keys()).forEach((value) => {
     mermaidText += value;
-  })
+  });
 
   console.debug(mermaidText);
 
