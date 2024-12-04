@@ -1,11 +1,13 @@
-import { Button, Drawer, Space, Tag } from "antd";
+import { Button, Drawer, Space, Typography } from "antd";
 import { useEffect, useState } from "react";
 
 import { ITaskData } from "../api/task";
-import TaskEditButton from "./TaskEditButton";
 import Task from "./Task";
 import { useIntl } from "react-intl";
 import { fullUrl } from "../../utils";
+import LikeAvatar from "../like/LikeAvatar";
+
+const { Text } = Typography;
 
 interface IWidget {
   taskId?: string;
@@ -42,7 +44,12 @@ const TaskEditDrawer = ({
         onClose={onCloseDrawer}
         open={open}
         destroyOnClose={true}
-        footer={<div>关注</div>}
+        footer={
+          <Space>
+            <Text>关注</Text>
+            <LikeAvatar resId={taskId} resType="task" type="watch" />
+          </Space>
+        }
         extra={
           <Button
             type="link"
