@@ -10,8 +10,9 @@ import User from "../auth/User";
 import TimeShow from "../general/TimeShow";
 import TaskEditButton, { TRelation } from "./TaskEditButton";
 import PreTask from "./PreTask";
+import Like from "../like/Like";
 
-const { Text, Title } = Typography;
+const { Title } = Typography;
 
 export const Milestone = ({ task }: { task?: ITaskData }) => {
   return task?.is_milestone ? (
@@ -64,19 +65,29 @@ const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
       studio_name: "",
     };
     if (type === "pre") {
-      const hasPre = task?.pre_task?.find((value)=>value.id===data.id)
-      if(hasPre){
-        setting.pre_task_id = task?.pre_task?.filter((value)=>value.id!==data.id).map((item)=>item.id).join()
-      }else{
-        const newRelation = task?.pre_task? [...task.pre_task.map((item)=>item.id),data.id]:[data.id];
+      const hasPre = task?.pre_task?.find((value) => value.id === data.id);
+      if (hasPre) {
+        setting.pre_task_id = task?.pre_task
+          ?.filter((value) => value.id !== data.id)
+          .map((item) => item.id)
+          .join();
+      } else {
+        const newRelation = task?.pre_task
+          ? [...task.pre_task.map((item) => item.id), data.id]
+          : [data.id];
         setting.pre_task_id = newRelation.join();
       }
     } else if (type === "next") {
-      const hasPre = task?.next_task?.find((value)=>value.id===data.id)
-      if(hasPre){
-        setting.next_task_id = task?.next_task?.filter((value)=>value.id!==data.id).map((item)=>item.id).join()
-      }else{
-        const newRelation = task?.next_task? [...task.next_task.map((item)=>item.id),data.id]:[data.id];
+      const hasPre = task?.next_task?.find((value) => value.id === data.id);
+      if (hasPre) {
+        setting.next_task_id = task?.next_task
+          ?.filter((value) => value.id !== data.id)
+          .map((item) => item.id)
+          .join();
+      } else {
+        const newRelation = task?.next_task
+          ? [...task.next_task.map((item) => item.id), data.id]
+          : [data.id];
         setting.next_task_id = newRelation.join();
       }
     }
@@ -107,7 +118,7 @@ const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
               updatePreTask("pre", data);
               setOpenPreTask(false);
             }}
-            onTagClick={()=>setOpenPreTask(true)}
+            onTagClick={() => setOpenPreTask(true)}
             onClose={() => setOpenPreTask(false)}
           />
           <PreTask
@@ -119,7 +130,7 @@ const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
               setOpenNextTask(false);
             }}
             onClose={() => setOpenNextTask(false)}
-            onTagClick={()=>setOpenNextTask(true)}
+            onTagClick={() => setOpenNextTask(true)}
           />
         </Space>
         <div>
@@ -144,6 +155,7 @@ const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
         <Space>
           <User {...task?.editor} />
           <TimeShow updatedAt={task?.updated_at} />
+          <Like resId={task?.id} resType="task" />
         </Space>
       </div>
       <Divider />
