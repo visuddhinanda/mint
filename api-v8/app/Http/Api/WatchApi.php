@@ -1,25 +1,37 @@
 <?php
+
 namespace App\Http\Api;
 
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use App\Models\Like;
+use App\Models\Notification;
 
-class WatchApi{
-    public static function change($resId,$from,$message){
+class WatchApi
+{
+    public static function change($resId, $from, $message, $url)
+    {
         //发送站内信
-        $watches = Like::where('type','watch')
-                    ->where('target_id',$resId)
-                    ->get();
+        $watches = Like::where('type', 'watch')
+            ->where('target_id', $resId)
+            ->get();
         $notifications = [];
-        foreach ($watches as $key => $watch) {
+        foreach ($watches as  $watch) {
             $notifications[] = [
+                'id' => Str::uuid(),
                 'from' => $from,
                 'to' => $watch->user_id,
-                'url' => $row['url'],
+                'url' => $url,
                 'content' => $message,
-                'res_type' => $watch->res_type,
-                'res_id' => $watch['res_id'],
+                'res_type' => $watch->target_type,
+                'res_id' => $watch->target_id,
+                'channel' => Str::uuid(),
+                'created_at' => now(),
+                'updated_at' => now(),
             ];
-
         }
+        Log::debug('notification insert', ['data' => $notifications]);
+        $new = Notification::insert($notifications);
+        return $new;
     }
 }
