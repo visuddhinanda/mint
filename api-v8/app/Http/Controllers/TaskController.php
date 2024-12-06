@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Log;
 
 use App\Models\Task;
 use App\Models\TaskAssignee;
-use App\Models\TaskRelation;
 use App\Models\Project;
 use App\Http\Resources\TaskResource;
 
 use App\Http\Api\AuthApi;
 use App\Http\Api\StudioApi;
 use App\Http\Api\TaskApi;
+use App\Http\Api\WatchApi;
 
 
 class TaskController extends Controller
@@ -290,11 +290,16 @@ class TaskController extends Controller
                     Task::whereIn('id', $relatedId)
                         ->update(['status' => 'published']);
                     break;
-                default:
-                    # code...
-                    break;
             }
             $task->status = $request->get('status');
+            //发送站内信
+            $messages = WatchApi::change(
+                resId: $task->id,
+                from: $user['user_uid'],
+                message: "任务状态变为" . $request->get('status'),
+                url: "/my/article/task/{$task->id}"
+            );
+            Log::debug('watch message', ['count' => $messages]);
         }
         $task->editor_id = $user['user_uid'];
         $task->save();
