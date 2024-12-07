@@ -119,7 +119,7 @@ class TaskController extends Controller
         $result = $table->get();
 
         return $this->ok(
-            result: [
+            [
                 "rows" => TaskResource::collection(resource: $result),
                 "count" => $count,
             ]
@@ -141,7 +141,7 @@ class TaskController extends Controller
         }
         $studioId = StudioApi::getIdByName($request->get('studio_name'));
 
-        if (!$this->canEdit($user['user_uid'], $studioId)) {
+        if (!self::canEdit($user['user_uid'], $studioId)) {
             return $this->error(__('auth.failed'), 403, 403);
         }
         $new = Task::firstOrNew(
@@ -205,7 +205,7 @@ class TaskController extends Controller
         if (!$user) {
             return $this->error(__('auth.failed'), 401, 401);
         }
-        if (!$this->canEdit($user['user_uid'], $task->owner_id)) {
+        if (!self::canEdit($user['user_uid'], $task->owner_id)) {
             return $this->error(__('auth.failed'), 403, 403);
         }
         if ($request->has('title')) {
@@ -261,46 +261,7 @@ class TaskController extends Controller
         if ($request->has('order')) {
             $task->order = $request->get('order');
         }
-        $relatedId = [];
-        if ($request->has('status')) {
-            switch ($request->get('status')) {
-                case 'publish':
-                    # code...
-                    break;
-                case 'running':
-                    $task->started_at = now();
-                    $task->executor_id = $user['user_uid'];
-                    break;
-                case 'done':
-                    $task->finished_at = now();
-                    //开启相关任务
-                    $preTasks = Task::where('pre_task_id', $task->id)
-                        ->where('status', 'pending')->select('id')->get();
-                    foreach ($preTasks as $key => $value) {
-                        $relatedId[] = $value->id;
-                    }
-                    if ($task->next_task_id && Str::isUuid($task->next_task_id)) {
-                        $nextTasks = Task::where('id', $task->next_task_id)
-                            ->where('status', 'pending')
-                            ->select('id')->get();
-                        foreach ($nextTasks as $key => $value) {
-                            $relatedId[] = $value->id;
-                        }
-                    }
-                    Task::whereIn('id', $relatedId)
-                        ->update(['status' => 'published']);
-                    break;
-            }
-            $task->status = $request->get('status');
-            //发送站内信
-            $messages = WatchApi::change(
-                resId: $task->id,
-                from: $user['user_uid'],
-                message: "任务状态变为" . $request->get('status'),
-                url: "/my/article/task/{$task->id}"
-            );
-            Log::debug('watch message', ['count' => $messages]);
-        }
+
         $task->editor_id = $user['user_uid'];
         $task->save();
 
@@ -320,7 +281,7 @@ class TaskController extends Controller
         if (!$user) {
             return $this->error(__('auth.failed'), 401, 401);
         }
-        if (!$this->canEdit($user['user_uid'], $task->owner)) {
+        if (!self::canEdit($user['user_uid'], $task->owner)) {
             return $this->error(__('auth.failed'), 403, 403);
         }
         $task->delete();
@@ -331,7 +292,7 @@ class TaskController extends Controller
         }
     }
 
-    private function canEdit($user_uid, $owner_uid)
+    public static function canEdit($user_uid, $owner_uid)
     {
         return $user_uid === $owner_uid;
     }
