@@ -93,7 +93,7 @@ interface IWidget {
   sortBy?: "order" | "created_at" | "updated_at" | "started_at" | "finished_at";
   groupBy?: "executor_id" | "owner_id" | "status" | "project_id";
   onLoad?: (data: ITaskData[]) => void;
-  onChange?: (data: ITaskData) => void;
+  onChange?: (data: ITaskData[]) => void;
 }
 const TaskList = ({
   studioName,
@@ -443,7 +443,7 @@ const TaskList = ({
               url,
               data
             );
-            onChange && onChange(res.data);
+            onChange && onChange([res.data]);
             console.info("task save api response", res);
           },
 
@@ -579,13 +579,14 @@ const TaskList = ({
         taskId={selectedTask}
         openDrawer={open}
         onClose={() => setOpen(false)}
-        onChange={(data: ITaskData) => {
+        onChange={(data: ITaskData[]) => {
           console.debug("task change", data);
           setDataSource((origin) => {
             const update = (item: ITaskData): ITaskData => {
               item.children = item.children?.map(update);
-              if (item.id === data.id) {
-                return { ...data, children: item.children };
+              const found = data.find((t) => t.id === item.id);
+              if (found) {
+                return { ...found, children: item.children };
               }
               return item;
             };

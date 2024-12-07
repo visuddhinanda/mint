@@ -13,7 +13,7 @@ interface IWidget {
   taskId?: string;
   openDrawer?: boolean;
   onClose?: () => void;
-  onChange?: (data: ITaskData) => void;
+  onChange?: (data: ITaskData[]) => void;
 }
 const TaskEditDrawer = ({
   taskId,

@@ -8,21 +8,22 @@ import {
   EditOutlined,
   ArrowRightOutlined,
 } from "@ant-design/icons";
+import { useIntl } from "react-intl";
 
 import {
   ITaskData,
+  ITaskListResponse,
   ITaskResponse,
   ITaskUpdateRequest,
   TTaskStatus,
 } from "../api/task";
 import { patch } from "../../request";
-import { useIntl } from "react-intl";
 
 export type TRelation = "pre" | "next";
 interface IWidget {
   task?: ITaskData;
   studioName?: string;
-  onChange?: (task: ITaskData) => void;
+  onChange?: (task: ITaskData[]) => void;
   onEdit?: () => void;
   onPreTask?: (type: TRelation) => void;
 }
@@ -35,7 +36,20 @@ const TaskEditButton = ({ task, onChange, onEdit, onPreTask }: IWidget) => {
     patch<ITaskUpdateRequest, ITaskResponse>(url, setting).then((json) => {
       if (json.ok) {
         message.success("Success");
-        onChange && onChange(json.data);
+        onChange && onChange([json.data]);
+      } else {
+        message.error(json.message);
+      }
+    });
+  };
+
+  const setStatus = (setting: ITaskUpdateRequest) => {
+    const url = `/v2/task-status/${setting.id}`;
+
+    patch<ITaskUpdateRequest, ITaskListResponse>(url, setting).then((json) => {
+      if (json.ok) {
+        message.success("Success");
+        onChange && onChange(json.data.rows);
       } else {
         message.error(json.message);
       }
@@ -148,7 +162,7 @@ const TaskEditButton = ({ task, onChange, onEdit, onPreTask }: IWidget) => {
           icon={<CheckOutlined />}
           onClick={() => {
             if (task?.id) {
-              setValue({
+              setStatus({
                 id: task.id,
                 status: newStatus,
                 studio_name: "",

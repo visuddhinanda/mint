@@ -35,29 +35,35 @@ const Widget = () => {
                 studioName={studioname}
                 projectId={projectId}
                 onLoad={(data) => setTasks(data)}
-                onChange={(data) =>
+                onChange={(data: ITaskData[]) =>
                   setTasks((origin) => {
-                    const old = origin?.find((value) => value.id === data.id);
-                    let newData: ITaskData[] = [];
-                    if (old) {
-                      origin?.forEach(
-                        (
-                          value: ITaskData,
-                          index: number,
-                          array: ITaskData[]
-                        ) => {
-                          if (value.id === data.id) {
-                            array[index] = data;
-                          }
-                        }
+                    data.forEach((input) => {
+                      const old = origin?.find(
+                        (value) => value.id === input.id
                       );
-                    } else {
-                      if (origin) {
-                        newData = [...origin, data];
+                      if (old) {
+                        //找到了更新旧的
+                        origin?.forEach(
+                          (
+                            value: ITaskData,
+                            index: number,
+                            array: ITaskData[]
+                          ) => {
+                            if (value.id === input.id) {
+                              array[index] = input;
+                            }
+                          }
+                        );
                       } else {
-                        newData = [data];
+                        //没有找到就添加
+                        if (origin) {
+                          origin = [...origin, input];
+                        } else {
+                          origin = [input];
+                        }
                       }
-                    }
+                    });
+
                     return origin;
                   })
                 }

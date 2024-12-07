@@ -40,7 +40,7 @@ interface IWidget {
   taskId?: string;
   task?: ITaskData;
   onLoad?: (data: ITaskData) => void;
-  onChange?: (data: ITaskData) => void;
+  onChange?: (data: ITaskData[]) => void;
   onEdit?: () => void;
 }
 const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
@@ -98,7 +98,7 @@ const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
       console.info("api response", json);
       if (json.ok) {
         message.success("Success");
-        onChange && onChange(json.data);
+        onChange && onChange([json.data]);
       } else {
         message.error(json.message);
       }
@@ -136,7 +136,7 @@ const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
         <div>
           <TaskEditButton
             task={task}
-            onChange={(task: ITaskData) => {
+            onChange={(task: ITaskData[]) => {
               onChange && onChange(task);
             }}
             onEdit={onEdit}
