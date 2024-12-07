@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Api;
 
 use Illuminate\Support\Facades\Log;
@@ -9,11 +11,11 @@ use App\Models\Notification;
 
 class WatchApi
 {
-    public static function change($resId, $from, $message, $url)
+    public static function change(array $resId, string $from, string $message)
     {
         //发送站内信
         $watches = Like::where('type', 'watch')
-            ->where('target_id', $resId)
+            ->whereIn('target_id', $resId)
             ->get();
         $notifications = [];
         foreach ($watches as  $watch) {
@@ -21,7 +23,7 @@ class WatchApi
                 'id' => Str::uuid(),
                 'from' => $from,
                 'to' => $watch->user_id,
-                'url' => $url,
+                'url' => '',
                 'content' => $message,
                 'res_type' => $watch->target_type,
                 'res_id' => $watch->target_id,
