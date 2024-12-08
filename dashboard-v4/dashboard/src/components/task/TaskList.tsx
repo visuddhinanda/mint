@@ -573,6 +573,7 @@ const TaskList = ({
               actionRef.current?.reload();
             }}
           />,
+          <Button type="primary">从模版创建任务</Button>,
         ]}
       />
       <TaskEditDrawer
