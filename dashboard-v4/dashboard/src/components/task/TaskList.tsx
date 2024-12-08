@@ -19,6 +19,7 @@ import { GroupIcon } from "../../assets/icon";
 import Options, { IMenu } from "./Options";
 import Filter from "./Filter";
 import { Milestone, Status } from "./TaskReader";
+import { WorkflowModal } from "./Workflow";
 
 const { Text } = Typography;
 function generateUUID() {
@@ -573,7 +574,10 @@ const TaskList = ({
               actionRef.current?.reload();
             }}
           />,
-          <Button type="primary">从模版创建任务</Button>,
+          <WorkflowModal
+            tiger={<Button type="primary">从模版创建任务</Button>}
+            studioName={studioName}
+          />,
         ]}
       />
       <TaskEditDrawer
