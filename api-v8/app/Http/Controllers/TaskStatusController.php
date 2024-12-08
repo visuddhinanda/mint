@@ -73,7 +73,19 @@ class TaskStatusController extends Controller
         $publishTask = [];
         switch ($request->get('status')) {
             case 'publish':
-                # code...
+                $publishTask[] = $id;
+                # 开启子任务
+                $children = Task::whereIn('parent_id', $id)
+                    ->where('status', 'pending')
+                    ->select('id')->get();
+                foreach ($children as $key => $child) {
+                    $publishTask[] = $child->id;
+                }
+                Task::whereIn('id', $publishTask)->update([
+                    'status' => 'published',
+                    'editor_id' => $user['user_uid'],
+                    'updated_at' => now()
+                ]);
                 break;
             case 'running':
                 $task->started_at = now();
