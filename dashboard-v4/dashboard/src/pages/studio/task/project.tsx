@@ -7,7 +7,6 @@ import TaskTable from "../../../components/task/TaskTable";
 import TaskRelation from "../../../components/task/TaskRelation";
 import { useState } from "react";
 import { ITaskData } from "../../../components/api/task";
-import TaskLoader from "../../../components/task/TaskLoader";
 
 const Widget = () => {
   const { studioname } = useParams();
