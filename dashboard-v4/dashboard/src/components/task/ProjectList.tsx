@@ -1,7 +1,8 @@
-import { ActionType, ProList, ProTable } from "@ant-design/pro-components";
+import { useRef, useState } from "react";
+import { ActionType, ProList } from "@ant-design/pro-components";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
-import { Alert, Badge, Button, message, Modal, Popover } from "antd";
+import { Button, message, Modal, Popover } from "antd";
 import { Dropdown } from "antd";
 import {
   ExclamationCircleOutlined,
@@ -10,14 +11,11 @@ import {
 } from "@ant-design/icons";
 
 import { delete_, get } from "../../request";
-import { TChannelType } from "../api/Channel";
 import { PublicityValueEnum } from "../studio/table";
 import { IDeleteResponse } from "../api/Article";
-import { useEffect, useRef, useState } from "react";
-
 import { getSorterUrl } from "../../utils";
 import { TransferOutLinedIcon } from "../../assets/icon";
-import { IProjectData, IProjectListResponse } from "../api/task";
+import { IProjectData, IProjectListResponse, TProjectType } from "../api/task";
 import ProjectCreate from "./ProjectCreate";
 
 export const channelTypeFilter = {
@@ -54,7 +52,7 @@ export interface IResNumberResponse {
 
 interface IWidget {
   studioName?: string;
-  type?: "workflow" | "normal";
+  type?: TProjectType;
   readonly?: boolean;
   onSelect?: (data: IProjectData) => void;
 }
