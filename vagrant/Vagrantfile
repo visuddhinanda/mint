@@ -13,8 +13,14 @@ Vagrant.configure("2") do |config|
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
   config.vm.box = "archlinux/archlinux"
-  config.vm.box_version = "20241001.267073"
-
+  config.vm.box_version = "20241001.267073"  
+  config.vm.hostname = "spring-v20241213"
+  
+  config.vm.define "spring" do |h|
+    h.vm.provider :virtualbox
+    h.vm.disk :disk, size: "200GB", primary: true
+  end
+  
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
@@ -60,19 +66,20 @@ Vagrant.configure("2") do |config|
   # Example for VirtualBox:
   #
   config.vm.provider "virtualbox" do |vb|
-    vb.name = "spring"
+    vb.name = "mint"
   #   # Display the VirtualBox GUI when booting the machine
   #   vb.gui = true
   #
     # Customize the amount of memory on the VM:
     vb.memory = "4096"
+    vb.cpus = "8"
   end
   #
   # View the documentation for the provider you are using for more
   # information on available options.
 
-  config.ssh.insert_key = false
-  config.ssh.password = "123456"
+  # config.ssh.insert_key = false
+  # config.ssh.password = "vagrant"
 
   # Enable provisioning with a shell script. Additional provisioners such as
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
@@ -92,24 +99,62 @@ Vagrant.configure("2") do |config|
       postgresql rabbitmq redis
     pacman -Scc --noconfirm
     
-    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
+    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen locale-gen
     systemctl enable postgresql
-    systemctl eanble redis
+    systemctl enable redis
     systemctl enable rabbitmq
 
-    su -c vagrant -l mkdir -p ~/downloads ~/build ~/local ~/tmp
-    su -c vagrant -l git clone https://github.com/ohmyzsh/ohmyzsh.git ~/.oh-my-zsh
-    su -c vagrant -l cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
-    su -c vagrant -l echo 'export LANG=en_US.UTF-8' >> ~/.zshrc
-    su -c vagrant -l echo 'export LC_ALL=en_US.UTF-8' >> ~/.zshrc
-    su -c vagrant -l echo 'export EDITOR=vim' >> ~/.zshrc
+    sed -i 's/memory_limit =.*/memory_limit = 1G/' /etc/php/php.ini
+    sed -i 's/;extension=bcmath/extension=bcmath/' /etc/php/php.ini
+    sed -i 's/;extension=bz2/extension=bz2/' /etc/php/php.ini
+    sed -i 's/;extension=calendar/extension=calendar/' /etc/php/php.ini
+    sed -i 's/;extension=enchant/extension=enchant/' /etc/php/php.ini
+    sed -i 's/;extension=exif/extension=exif/' /etc/php/php.ini
+    sed -i 's/;extension=ftp/extension=ftp/' /etc/php/php.ini
+    sed -i 's/;extension=gd/extension=gd/' /etc/php/php.ini
+    sed -i 's/;extension=gettext/extension=gettext/' /etc/php/php.ini
+    sed -i 's/;extension=gmp/extension=gmp/' /etc/php/php.ini
+    sed -i 's/;extension=iconv/extension=iconv/' /etc/php/php.ini
+    sed -i 's/;extension=intl/extension=intl/' /etc/php/php.ini
+    sed -i 's/;extension=mysqli/extension=mysqli/' /etc/php/php.ini
+    sed -i 's/;extension=odbc/extension=odbc/' /etc/php/php.ini
+    sed -i 's/;extension=pdo_mysql/extension=pdo_mysql/' /etc/php/php.ini
+    sed -i 's/;extension=pdo_odbc/extension=pdo_odbc/' /etc/php/php.ini
+    sed -i 's/;extension=pdo_pgsql/extension=pdo_pgsql/' /etc/php/php.ini
+    sed -i 's/;extension=pdo_sqlite/extension=pdo_sqlite/' /etc/php/php.ini
+    sed -i 's/;extension=pgsql/extension=pgsql/' /etc/php/php.ini
+    sed -i 's/;extension=pspell/extension=pspell/' /etc/php/php.ini
+    sed -i 's/;extension=snmp/extension=snmp/' /etc/php/php.ini
+    sed -i 's/;extension=soap/extension=soap/' /etc/php/php.ini
+    sed -i 's/;extension=sockets/extension=sockets/' /etc/php/php.ini
+    sed -i 's/;extension=sodium/extension=sodium/' /etc/php/php.ini
+    sed -i 's/;extension=sqlite3/extension=sqlite3/' /etc/php/php.ini
+    sed -i 's/;extension=tidy/extension=tidy/' /etc/php/php.ini
+    sed -i 's/;extension=xsl/extension=xsl/' /etc/php/php.ini
+    sed -i 's/;extension=redis/extension=redis/' /etc/php/conf.d/redis.ini
+    sed -i 's/;extension=igbinary/extension=igbinary/' /etc/php/conf.d/igbinary.ini
+    sed -i 's/; extension = imagick/extension=imagick/' /etc/php/conf.d/imagick.ini
+    sed -i 's/;zend_extension=opcache/zend_extension=opcache/' /etc/php/php.ini
+    sed -i 's/;zend_extension=xdebug/zend_extension=xdebug/' /etc/php/conf.d/xdebug.ini
+    sed -i 's/;xdebug.mode=debug/xdebug.mode=develop,profile,coverage,debug/' /etc/php/conf.d/xdebug.ini
+    echo 'xdebug.start_with_request=yes' | tee -a /etc/php/conf.d/xdebug.ini
+    echo 'xdebug.client_host=0.0.0.0' | tee -a /etc/php/conf.d/xdebug.ini
+    echo 'xdebug.client_port=9003' | tee -a /etc/php/conf.d/xdebug.ini
+    echo 'xdebug.cli_color = 2' | tee -a /etc/php/conf.d/xdebug.ini
 
-    su -c vagrant -l git config --global core.quotepath false
-    su -c vagrant -l git config --global http.version HTTP/1.1
-    su -c vagrant -l git config --global pull.rebase false
+    su -l -c 'mkdir -p ~/downloads ~/build ~/local ~/tmp' vagrant
+    su -l -c 'git clone https://github.com/ohmyzsh/ohmyzsh.git ~/.oh-my-zsh' vagrant
+    su -l -c 'cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc' vagrant
+    su -l -c "echo 'export LANG=en_US.UTF-8' >> ~/.zshrc" vagrant
+    su -l -c "echo 'export LC_ALL=en_US.UTF-8' >> ~/.zshrc" vagrant
+    su -l -c "echo 'export EDITOR=vim' >> ~/.zshrc" vagrant
 
-    su -c vagrant -l echo 'set-option -g history-limit 102400' > ~/.tmux.conf
-    su -c vagrant -l echo 'set-option -g default-shell "/bin/zsh"' >> ~/.tmux.conf
+    su -l -c 'git config --global core.quotepath false' vagrant
+    su -l -c 'git config --global http.version HTTP/1.1' vagrant
+    su -l -c 'git config --global pull.rebase false' vagrant
+
+    su -l -c "echo 'set-option -g history-limit 102400' > ~/.tmux.conf" vagrant
+    su -l -c "echo 'set-option -g default-shell "/bin/zsh"' >> ~/.tmux.conf" vagrant
     
     chsh -s /bin/zsh vagrant
   SHELL
