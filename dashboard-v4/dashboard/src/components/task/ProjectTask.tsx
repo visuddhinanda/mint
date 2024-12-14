@@ -1,4 +1,3 @@
-
 import { Tabs } from "antd";
 
 import TaskList from "../../components/task/TaskList";
@@ -10,9 +9,9 @@ import { ITaskData } from "../../components/api/task";
 interface IWidget {
   studioName?: string;
   projectId?: string;
+  onData?: (data: ITaskData[]) => void;
 }
-const ProjectTask = ({studioName, projectId}:IWidget) => {
-
+const ProjectTask = ({ studioName, projectId, onData }: IWidget) => {
   const [tasks, setTasks] = useState<ITaskData[]>();
   return (
     <>
@@ -27,39 +26,39 @@ const ProjectTask = ({studioName, projectId}:IWidget) => {
                 editable
                 studioName={studioName}
                 projectId={projectId}
-                onLoad={(data) => setTasks(data)}
-                onChange={(data: ITaskData[]) =>
-                  setTasks((origin) => {
-                    data.forEach((input) => {
-                      const old = origin?.find(
-                        (value) => value.id === input.id
-                      );
-                      if (old) {
-                        //找到了更新旧的
-                        origin?.forEach(
-                          (
-                            value: ITaskData,
-                            index: number,
-                            array: ITaskData[]
-                          ) => {
-                            if (value.id === input.id) {
-                              array[index] = input;
-                            }
+                onLoad={(data) => {
+                  setTasks(data);
+                  onData && onData(data);
+                }}
+                onChange={(data: ITaskData[]) => {
+                  let origin: ITaskData[] = JSON.parse(JSON.stringify(data));
+                  data.forEach((input) => {
+                    const old = origin?.find((value) => value.id === input.id);
+                    if (old) {
+                      //找到了更新旧的
+                      origin?.forEach(
+                        (
+                          value: ITaskData,
+                          index: number,
+                          array: ITaskData[]
+                        ) => {
+                          if (value.id === input.id) {
+                            array[index] = input;
                           }
-                        );
-                      } else {
-                        //没有找到就添加
-                        if (origin) {
-                          origin = [...origin, input];
-                        } else {
-                          origin = [input];
                         }
+                      );
+                    } else {
+                      //没有找到就添加
+                      if (origin) {
+                        origin = [...origin, input];
+                      } else {
+                        origin = [input];
                       }
-                    });
-
-                    return origin;
-                  })
-                }
+                    }
+                  });
+                  setTasks(origin);
+                  onData && onData(data);
+                }}
               />
             ),
           },
