@@ -5,14 +5,19 @@
     "vscjava.vscode-java-pack",
     "golang.go",
     "ms-python.python",
+    "bmewburn.vscode-intelephense-client",
+    "xdebug.php-pack",
     "jakebecker.elixir-ls",
     "phoenixframework.phoenix",
     "ms-python.autopep8",
     "redhat.ansible",
     "redhat.vscode-xml",
     "redhat.vscode-yaml",
+    "lkrms.inifmt",
     "foxundermoon.shell-format",
     "mtxr.sqltools",
+    "mtxr.sqltools-driver-mysql",
+    "mtxr.sqltools-driver-pg",
     "mrorz.language-gettext",
     "tamasfe.even-better-toml",
     "yzhang.markdown-all-in-one",
@@ -28,6 +33,7 @@
     "editorconfig.editorconfig",
     "gruntfuggly.todo-tree",
     "donjayamanne.githistory",
+    "oracle.sql-developer",
     "streetsidesoftware.code-spell-checker"
   ]
 }
