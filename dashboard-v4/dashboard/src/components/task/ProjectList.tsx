@@ -111,7 +111,9 @@ const ProjectListWidget = ({
         metas={{
           title: {
             render: (text, row, index, action) => {
-              return (
+              return readonly ? (
+                <>{row.title}</>
+              ) : (
                 <Link to={`/studio/${studioName}/task/project/${row.id}`}>
                   {row.title}
                 </Link>
