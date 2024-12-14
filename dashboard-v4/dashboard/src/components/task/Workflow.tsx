@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { IProjectData } from "../api/task";
+import { IProjectData, ITaskData } from "../api/task";
 import ProjectList from "./ProjectList";
 import ProjectTask from "./ProjectTask";
 import { Modal } from "antd";
@@ -8,15 +8,22 @@ interface IModal {
   tiger?: React.ReactNode;
   studioName?: string;
   onSelect?: (data: IProjectData) => void;
+  onData?: (data: ITaskData[]) => void;
 }
-export const WorkflowModal = ({ tiger, studioName, onSelect }: IModal) => {
+export const WorkflowModal = ({
+  tiger,
+  studioName,
+  onSelect,
+  onData,
+}: IModal) => {
   const [open, setOpen] = useState(false);
-
+  const [data, setData] = useState<ITaskData[]>();
   const showModal = () => {
     setOpen(true);
   };
 
   const handleOk = () => {
+    onData && data && onData(data);
     setOpen(false);
   };
 
@@ -28,13 +35,14 @@ export const WorkflowModal = ({ tiger, studioName, onSelect }: IModal) => {
       <div onClick={() => showModal()}>{tiger}</div>
       <Modal
         destroyOnClose={true}
-        width={700}
+        width={1200}
+        style={{ top: 10 }}
         title={""}
         open={open}
         onOk={handleOk}
         onCancel={handleCancel}
       >
-        <Workflow />
+        <Workflow onData={(data) => setData(data)} />
       </Modal>
     </>
   );
@@ -43,9 +51,10 @@ export const WorkflowModal = ({ tiger, studioName, onSelect }: IModal) => {
 interface IWidget {
   studioName?: string;
   onSelect?: (data: IProjectData) => void;
+  onData?: (data: ITaskData[]) => void;
 }
 
-const Workflow = ({ studioName, onSelect }: IWidget) => {
+const Workflow = ({ studioName, onSelect, onData }: IWidget) => {
   const [projectId, setProjectId] = useState<string>();
   return (
     <div style={{ display: "flex" }}>
@@ -53,11 +62,16 @@ const Workflow = ({ studioName, onSelect }: IWidget) => {
         <ProjectList
           studioName={studioName}
           type="workflow"
+          readonly
           onSelect={(data) => setProjectId(data.id)}
         />
       </div>
       <div style={{ flex: 3 }}>
-        <ProjectTask studioName={studioName} projectId={projectId} />
+        <ProjectTask
+          studioName={studioName}
+          projectId={projectId}
+          onData={onData}
+        />
       </div>
     </div>
   );
