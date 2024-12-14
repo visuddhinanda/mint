@@ -103,6 +103,7 @@ use App\Http\Controllers\CommandController;
 use App\Http\Controllers\UserMilestoneController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskStatusController;
+use App\Http\Controllers\TaskGroupController;
 
 
 
@@ -264,6 +265,7 @@ Route::group(['prefix' => 'v2'], function () {
     Route::apiResource('user-milestone', UserMilestoneController::class);
     Route::apiResource('project', ProjectController::class);
     Route::apiResource('task-status', TaskStatusController::class);
+    Route::apiResource('task-group', TaskGroupController::class);
 
     Route::get('download/{type1}/{type2}/{uuid}/{filename}', function ($type1, $type2, $uuid, $filename) {
         header("Content-Type: {$type1}/{$type1}");
@@ -289,7 +291,7 @@ Route::group(['prefix' => 'v2'], function () {
     });
 
     Route::get('siteinfo/{locale}', function ($locale) {
-        if (! in_array($locale, ['en', 'zh-Hans', 'zh-Hant'])) {
+        if (!in_array($locale, ['en', 'zh-Hans', 'zh-Hant'])) {
             App::setLocale('en');
         } else {
             App::setLocale($locale);
