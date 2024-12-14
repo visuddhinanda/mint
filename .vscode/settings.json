@@ -63,7 +63,7 @@
     "editor.defaultFormatter": "JakeBecker.elixir-ls"
   },
   "[php]": {
-    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
+    "editor.defaultFormatter": "DEVSENSE.phptools-vscode"
   },
   "java.configuration.updateBuildConfiguration": "automatic",
   "ansible.python.interpreterPath": "/bin/python"
