@@ -70,6 +70,7 @@ const Workflow = ({ studioName, onSelect, onData }: IWidget) => {
         <ProjectTask
           studioName={studioName}
           projectId={projectId}
+          readonly
           onData={onData}
         />
       </div>
