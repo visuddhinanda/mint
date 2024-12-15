@@ -42,7 +42,7 @@ export const WorkflowModal = ({
         onOk={handleOk}
         onCancel={handleCancel}
       >
-        <Workflow onData={(data) => setData(data)} />
+        <Workflow studioName={studioName} onData={(data) => setData(data)} />
       </Modal>
     </>
   );
