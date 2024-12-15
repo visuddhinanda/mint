@@ -25,7 +25,7 @@ export const TaskBuilderModal = ({
     <>
       <Modal
         destroyOnClose={true}
-        width={1200}
+        width={1400}
         style={{ top: 10 }}
         title={""}
         open={open}
@@ -78,11 +78,14 @@ const TaskBuilder = ({ studioName, book, para }: IWidget) => {
       <Steps current={current} items={items} />
       <div className="steps-content">{steps[current].content}</div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        {current > 0 && (
-          <Button style={{ margin: "0 8px" }} onClick={() => prev()}>
-            Previous
-          </Button>
-        )}
+        <Button
+          style={{ margin: "0 8px" }}
+          disabled={current === 0}
+          onClick={() => prev()}
+        >
+          Previous
+        </Button>
+
         {current < steps.length - 1 && (
           <Button type="primary" onClick={() => next()}>
             Next
