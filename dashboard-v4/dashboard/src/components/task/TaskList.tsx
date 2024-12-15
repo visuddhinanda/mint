@@ -576,31 +576,33 @@ const TaskList = ({
               actionRef.current?.reload();
             }}
           />,
-          <WorkflowModal
-            tiger={<Button type="primary">从模版创建任务</Button>}
-            studioName={studioName}
-            onData={(data) => {
-              if (!projectId) {
-                return;
-              }
-              const url = "/v2/task-group";
-              const values: ITaskGroupInsertRequest = {
-                project_id: projectId,
-                data: data,
-              };
-              console.info("api request", url, values);
-              post<ITaskGroupInsertRequest, ITaskGroupResponse>(
-                url,
-                values
-              ).then((json) => {
-                console.info("api response", json);
-                if (json.ok) {
-                  message.success("ok");
-                  actionRef.current?.reload();
+          editable && (
+            <WorkflowModal
+              tiger={<Button type="primary">从模版创建任务</Button>}
+              studioName={studioName}
+              onData={(data) => {
+                if (!projectId) {
+                  return;
                 }
-              });
-            }}
-          />,
+                const url = "/v2/task-group";
+                const values: ITaskGroupInsertRequest = {
+                  project_id: projectId,
+                  data: data,
+                };
+                console.info("api request", url, values);
+                post<ITaskGroupInsertRequest, ITaskGroupResponse>(
+                  url,
+                  values
+                ).then((json) => {
+                  console.info("api response", json);
+                  if (json.ok) {
+                    message.success("ok");
+                    actionRef.current?.reload();
+                  }
+                });
+              }}
+            />
+          ),
         ]}
       />
       <TaskEditDrawer
