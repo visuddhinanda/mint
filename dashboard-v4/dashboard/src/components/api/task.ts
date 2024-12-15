@@ -183,3 +183,14 @@ export interface ITaskStatusInProject {
   count: number;
   percent: number;
 }
+
+export interface ITaskGroupInsertRequest {
+  project_id: string;
+  data: ITaskData[];
+}
+
+export interface ITaskGroupResponse {
+  ok: boolean;
+  message: string;
+  data: string;
+}
