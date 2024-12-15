@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Divider, message, Space, Tag } from "antd";
-
+import { Button, Divider, message, Space, Tag } from "antd";
+import { Dropdown } from "antd";
+import { MoreOutlined } from "@ant-design/icons";
 import { get, post } from "../../request";
 import {
   IArticleDataResponse,
@@ -20,6 +21,9 @@ import store from "../../store";
 import { refresh } from "../../reducers/focus";
 import Navigate from "./Navigate";
 import { ISearchParams } from "../../pages/library/article/show";
+import { TaskBuilderModal } from "../task/TaskBuilder";
+import { useAppSelector } from "../../hooks";
+import { currentUser } from "../../reducers/current-user";
 
 interface IWidget {
   type?: ArticleType;
@@ -61,9 +65,9 @@ const TypePaliWidget = ({
   const [toc, setToc] = useState<IChapterToc[]>();
   const [loading, setLoading] = useState(false);
   const [errorCode, setErrorCode] = useState<number>();
-
   const [remains, setRemains] = useState(false);
-
+  const [taskBuilderModalOpen, setTaskBuilderModalOpen] = useState(false);
+  const user = useAppSelector(currentUser);
   const channels = channelId?.split("_");
 
   const srcDataMode = mode === "edit" || mode === "wbw" ? "edit" : "read";
@@ -237,6 +241,39 @@ const TypePaliWidget = ({
         <ErrorResult code={errorCode} />
       ) : (
         <>
+          <TaskBuilderModal
+            studioName={user?.realName}
+            book={parseInt(book ?? "0")}
+            para={parseInt(para ?? "0")}
+            open={taskBuilderModalOpen}
+            onClose={() => setTaskBuilderModalOpen(false)}
+          />
+          <div>
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: "task",
+                    label: "生成任务",
+                  },
+                ],
+                onClick: ({ key }) => {
+                  switch (key) {
+                    case "task":
+                      setTaskBuilderModalOpen(true);
+                      break;
+                  }
+                },
+              }}
+              placement="bottomRight"
+            >
+              <Button
+                shape="circle"
+                size="small"
+                icon={<MoreOutlined />}
+              ></Button>
+            </Dropdown>
+          </div>
           <ArticleView
             id={articleData?.uid}
             title={title}
