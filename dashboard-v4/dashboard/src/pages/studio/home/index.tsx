@@ -13,7 +13,7 @@ const { Content } = Layout;
 
 const Widget = () => {
   const { studioname } = useParams(); //url 参数
-  const [responsive, setResponsive] = useState(false);
+  const [responsive] = useState(false);
   return (
     <Layout>
       <LeftSider selectedKeys="invite" />

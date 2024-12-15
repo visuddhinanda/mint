@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Space, Button } from "antd";
 import lodash from "lodash";
-import { marked } from "marked";
 
 import FooterBar from "../../components/library/FooterBar";
 
