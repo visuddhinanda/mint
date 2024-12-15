@@ -9,9 +9,15 @@ import { ITaskData } from "../../components/api/task";
 interface IWidget {
   studioName?: string;
   projectId?: string;
+  readonly?: boolean;
   onData?: (data: ITaskData[]) => void;
 }
-const ProjectTask = ({ studioName, projectId, onData }: IWidget) => {
+const ProjectTask = ({
+  studioName,
+  projectId,
+  readonly = false,
+  onData,
+}: IWidget) => {
   const [tasks, setTasks] = useState<ITaskData[]>();
   return (
     <>
@@ -23,7 +29,7 @@ const ProjectTask = ({ studioName, projectId, onData }: IWidget) => {
             key: "list",
             children: (
               <TaskList
-                editable
+                editable={!readonly}
                 studioName={studioName}
                 projectId={projectId}
                 onLoad={(data) => {
