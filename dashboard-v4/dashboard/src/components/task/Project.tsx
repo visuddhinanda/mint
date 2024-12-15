@@ -140,7 +140,9 @@ const Project = ({ studioName, projectId, onRowClick, onSelect }: IWidget) => {
       valueType: "option",
       width: 250,
       render: (text, record, _, action) => [
-        <a
+        <Button
+          size="small"
+          type="link"
           key="editable"
           onClick={() => {
             setEditId(record.id);
@@ -148,7 +150,7 @@ const Project = ({ studioName, projectId, onRowClick, onSelect }: IWidget) => {
           }}
         >
           编辑
-        </a>,
+        </Button>,
         <EditableProTable.RecordCreator
           key="copy"
           parentKey={record.id}
