@@ -248,7 +248,7 @@ const Project = ({ studioName, projectId, onRowClick, onSelect }: IWidget) => {
               studio_name: studioName ?? "",
             };
             const url = `/v2/project`;
-            console.info("save api request", url, values);
+            console.info("save api request", url, data);
             const res = await post<IProjectUpdateRequest, IProjectResponse>(
               url,
               data
