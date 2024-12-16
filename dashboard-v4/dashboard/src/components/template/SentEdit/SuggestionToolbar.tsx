@@ -1,18 +1,9 @@
 import { Divider, Popconfirm, Space, Tooltip, Typography } from "antd";
 import { LikeOutlined, DeleteOutlined } from "@ant-design/icons";
+import { useIntl } from "react-intl";
 
 import { ISentence } from "../SentEdit";
-import { useEffect, useState } from "react";
 import PrAcceptButton from "./PrAcceptButton";
-import { HandOutlinedIcon } from "../../../assets/icon";
-import store from "../../../store";
-import { count, show } from "../../../reducers/discussion";
-import { useAppSelector } from "../../../hooks";
-import { openPanel } from "../../../reducers/right-panel";
-import { useIntl } from "react-intl";
-import SuggestionPopover from "./SuggestionPopover";
-import DiscussionButton from "../../discussion/DiscussionButton";
-import SuggestionButton from "./SuggestionButton";
 import InteractiveButton from "./InteractiveButton";
 
 const { Paragraph } = Typography;
