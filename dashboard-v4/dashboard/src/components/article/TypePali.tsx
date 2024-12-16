@@ -218,14 +218,15 @@ const TypePaliWidget = ({
       title = id ? (id.length > 1 ? id[1] : "unknown") : "unknown";
     }
   }
-
+  let mBook = "",
+    mPara = "";
   let fullPath: ITocPathNode[] = [];
   if (articleData && articleData.path && articleData.path.length > 0) {
     if (typeof articleId === "string") {
-      const [book, para] = articleId.split("-");
+      [mBook, mPara] = articleId.split("-");
       const currNode: ITocPathNode = {
-        book: parseInt(book),
-        paragraph: parseInt(para),
+        book: parseInt(mBook),
+        paragraph: parseInt(mPara),
         title: title ?? "",
         level: articleData.path[articleData.path.length - 1].level + 1,
       };
@@ -243,8 +244,8 @@ const TypePaliWidget = ({
         <>
           <TaskBuilderModal
             studioName={user?.realName}
-            book={parseInt(book ?? "0")}
-            para={parseInt(para ?? "0")}
+            book={parseInt(mBook ?? "0")}
+            para={parseInt(mPara ?? "0")}
             open={taskBuilderModalOpen}
             onClose={() => setTaskBuilderModalOpen(false)}
           />
