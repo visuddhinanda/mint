@@ -1,9 +1,10 @@
 import { Button, Modal, Steps } from "antd";
 
 import { useState } from "react";
-import PaliTextToc from "../article/PaliTextToc";
 import Workflow from "./Workflow";
 import { ITaskData } from "../api/task";
+import ChapterToc from "../article/ChapterToc";
+import { IChapterToc } from "../api/Corpus";
 
 interface IModal {
   tiger?: React.ReactNode;
@@ -45,17 +46,27 @@ interface IWidget {
 }
 const TaskBuilder = ({ studioName, book, para }: IWidget) => {
   const [current, setCurrent] = useState(0);
-  const [data, setData] = useState<ITaskData[]>();
+  const [workflow, setWorkflow] = useState<ITaskData[]>();
+  const [chapter, setChapter] = useState<IChapterToc[]>();
 
   const steps = [
     {
       title: "章节选择",
-      content: <PaliTextToc book={book} para={para} />,
+      content: (
+        <ChapterToc
+          book={book}
+          para={para}
+          onData={(data) => setChapter(data)}
+        />
+      ),
     },
     {
       title: "工作流",
       content: (
-        <Workflow studioName={studioName} onData={(data) => setData(data)} />
+        <Workflow
+          studioName={studioName}
+          onData={(data) => setWorkflow(data)}
+        />
       ),
     },
     {
@@ -92,7 +103,13 @@ const TaskBuilder = ({ studioName, book, para }: IWidget) => {
           </Button>
         )}
         {current === steps.length - 1 && (
-          <Button type="primary" onClick={() => {}}>
+          <Button
+            type="primary"
+            onClick={() => {
+              //生成projects
+              //生成tasks
+            }}
+          >
             Done
           </Button>
         )}
