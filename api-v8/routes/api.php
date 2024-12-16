@@ -104,6 +104,7 @@ use App\Http\Controllers\UserMilestoneController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\TaskGroupController;
+use App\Http\Controllers\ChapterController;
 
 
 
@@ -266,6 +267,7 @@ Route::group(['prefix' => 'v2'], function () {
     Route::apiResource('project', ProjectController::class);
     Route::apiResource('task-status', TaskStatusController::class);
     Route::apiResource('task-group', TaskGroupController::class);
+    Route::apiResource('chapter', ChapterController::class);
 
     Route::get('download/{type1}/{type2}/{uuid}/{filename}', function ($type1, $type2, $uuid, $filename) {
         header("Content-Type: {$type1}/{$type1}");
