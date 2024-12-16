@@ -83,12 +83,14 @@ const InteractiveButton = ({
       onMouseLeave={onMouseLeave}
     >
       <SuggestionButton
+        key={"SuggestionButton"}
         data={data}
         hideCount={hideCount}
         hideInZero={hideInZero}
       />
-      {compact ? undefined : <Divider type="vertical" />}
+      {compact ? undefined : <Divider key={"Divider"} type="vertical" />}
       <DiscussionButton
+        key={"DiscussionButton"}
         hideCount={hideCount}
         hideInZero={hideInZero}
         initCount={data.suggestionCount?.discussion}
