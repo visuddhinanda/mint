@@ -208,6 +208,20 @@ export interface IPaliTocListResponse {
   data: { rows: IPaliToc[]; count: number };
 }
 
+export interface IChapterToc {
+  book: number;
+  paragraph: number;
+  level: string;
+  text: string;
+  parent: number;
+}
+
+export interface IChapterTocListResponse {
+  ok: boolean;
+  message: string;
+  data: { rows: IChapterToc[]; count: number };
+}
+
 export interface IPaliBookListResponse {
   name: string;
   tag: string[];
