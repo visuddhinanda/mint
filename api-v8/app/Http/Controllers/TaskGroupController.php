@@ -38,43 +38,58 @@ class TaskGroupController extends Controller
         if (!$user) {
             return $this->error(__('auth.failed'), 401, 401);
         }
-        $studioId = Project::where('id', $request->get('project_id'))
-            ->value('owner_id');
-
-        if (!TaskController::canEdit($user['user_uid'], $studioId)) {
-            Log::error(__('auth.failed'), ['user' => $user['user_uid'], 'owner' => $studioId]);
-            return $this->error(__('auth.failed'), 403, 403);
-        }
-
+        //获取全部的project_id
         $input = $request->get(key: 'data');
-        $data = [];
+        $id = [];
         foreach ($input as $key => $value) {
-            $data[] = [
-                'id' => Str::uuid(),
-                'old_id' => $value['id'],
-                'title' => $value['title'],
-                'order' => $value['order'],
-                'parent_id' => $value['parent_id'],
-                'project_id' => $request->get('project_id'),
-                'owner_id' => $studioId,
-                'editor_id' => $user['user_uid'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+            $id[$value['project_id']] = 1;
         }
-        foreach ($data as $key => $value) {
-            if ($value['parent_id']) {
-                $found = array_filter($data, function ($element) use ($value) {
-                    return $element['old_id'] === $value['parent_id'];
-                });
-                if (count($found) > 0) {
-                    $data[$key]['parent_id'] = $found[0]['id'];
-                }
+        $projectsId = array_keys($id);
+        //鉴权
+        $projects = Project::whereIn('id', $projectsId)
+            ->select(['id', 'owner_id'])->get();
+        foreach ($projects as $key => $project) {
+            $id[$project->id] = $project->owner_id;
+            if (!TaskController::canEdit($user['user_uid'], $project->owner_id)) {
+                Log::error(__('auth.failed'), ['user' => $user['user_uid'], 'owner' => $project->owner_id]);
+                return $this->error(__('auth.failed'), 403, 403);
             }
         }
-        foreach ($data as $key => $value) {
-            unset($data[$key]['old_id']);
+
+        $data = [];
+        foreach ($input as $key => $project) {
+            # code...
+            $projectData = [];
+            foreach ($project['tasks'] as $key => $task) {
+                $projectData[] = [
+                    'id' => Str::uuid(),
+                    'old_id' => $task['id'],
+                    'title' => $task['title'],
+                    'order' => $task['order'],
+                    'parent_id' => $task['parent_id'],
+                    'project_id' => $project['project_id'],
+                    'owner_id' => $id[$project['project_id']],
+                    'editor_id' => $user['user_uid'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            foreach ($projectData as $key => $value) {
+                if ($value['parent_id']) {
+                    $found = array_filter($projectData, function ($element) use ($value) {
+                        return $element['old_id'] === $value['parent_id'];
+                    });
+                    if (count($found) > 0) {
+                        $projectData[$key]['parent_id'] = $found[0]['id'];
+                    }
+                }
+            }
+            foreach ($projectData as $key => $value) {
+                unset($projectData[$key]['old_id']);
+            }
+            $data = [...$data, ...$projectData];
         }
+
         $ok = Task::insert($data);
         if ($ok) {
             return $this->ok('ok');
