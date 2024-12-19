@@ -20,53 +20,55 @@ class ProjectController extends Controller
     public function index(Request $request)
     {
         $user = AuthApi::current($request);
-        if(!$user){
-            Log::error('notification auth failed {request}',['request'=>$request]);
-            return $this->error(__('auth.failed'),401,401);
+        if (!$user) {
+            Log::error('notification auth failed {request}', ['request' => $request]);
+            return $this->error(__('auth.failed'), 401, 401);
         }
         switch ($request->get('view')) {
             case 'studio':
-                $table = Project::where('owner_id',$user['user_uid'])
-                            ->whereNull('parent_id');
-                if($request->get('type','normal') !== 'all'){
-                    $table = $table->where('type',$request->get('type','normal'));
+                $table = Project::where('owner_id', $user['user_uid'])
+                    ->whereNull('parent_id');
+                if ($request->get('type', 'normal') !== 'all') {
+                    $table = $table->where('type', $request->get('type', 'normal'));
                 }
                 break;
             case 'project-tree':
-                $table = Project::where('id',$request->get('project_id'))
-                                ->orWhereJsonContains('path',$request->get('project_id'));
+                $table = Project::where('id', $request->get('project_id'))
+                    ->orWhereJsonContains('path', $request->get('project_id'));
                 break;
             default:
                 # code...
                 break;
         }
 
-        if($request->has('keyword')){
-            $table = $table->where('title','like','%'.$request->get('keyword').'%');
+        if ($request->has('keyword')) {
+            $table = $table->where('title', 'like', '%' . $request->get('keyword') . '%');
         }
-        if($request->has('status')){
-            $table = $table->whereIn('status',explode(',',$request->get('status')) );
+        if ($request->has('status')) {
+            $table = $table->whereIn('status', explode(',', $request->get('status')));
         }
         $count = $table->count();
 
         $sql = $table->toSql();
-        Log::debug('sql',['sql'=>$sql]);
+        Log::debug('sql', ['sql' => $sql]);
 
-        $table = $table->orderBy($request->get('order','created_at'),$request->get('dir','desc'));
+        $table = $table->orderBy($request->get('order', 'created_at'), $request->get('dir', 'desc'));
 
-        $table = $table->skip($request->get("offset",0))
-                    ->take($request->get('limit',10000));
+        $table = $table->skip($request->get("offset", 0))
+            ->take($request->get('limit', 10000));
 
         $result = $table->get();
 
         return $this->ok(
             [
-            "rows" => ProjectResource::collection($result),
-            "count" => $count,
-            ]);
+                "rows" => ProjectResource::collection($result),
+                "count" => $count,
+            ]
+        );
     }
 
-    public function canEdit($user_uid,$studio_uid){
+    public static function canEdit($user_uid, $studio_uid)
+    {
         return $user_uid == $studio_uid;
     }
 
@@ -80,17 +82,17 @@ class ProjectController extends Controller
     {
         //
         $user = AuthApi::current($request);
-        if(!$user){
-            return $this->error(__('auth.failed'),401,401);
+        if (!$user) {
+            return $this->error(__('auth.failed'), 401, 401);
         }
         $studioId = StudioApi::getIdByName($request->get('studio_name'));
-        if(!$this->canEdit($user['user_uid'],$studioId)){
-            return $this->error(__('auth.failed'),403,403);
+        if (!self::canEdit($user['user_uid'], $studioId)) {
+            return $this->error(__('auth.failed'), 403, 403);
         }
-        $new = Project::firstOrNew(['id'=>$request->get('id')]);
-        if(Str::isUuid($request->get('id'))){
+        $new = Project::firstOrNew(['id' => $request->get('id')]);
+        if (Str::isUuid($request->get('id'))) {
             $new->id = $request->get('id');
-        }else{
+        } else {
             $new->id =  Str::uuid();
         }
         $new->title = $request->get('title');
@@ -98,16 +100,16 @@ class ProjectController extends Controller
         $new->parent_id = $request->get('parent_id');
         $new->editor_id = $user['user_uid'];
         $new->owner_id = $studioId;
-        $new->type = $request->get('type','normal');
+        $new->type = $request->get('type', 'normal');
 
-        if(Str::isUuid($request->get('parent_id'))){
-            $parentPath = Project::where('id',$request->get('parent_id'))->value('path');
+        if (Str::isUuid($request->get('parent_id'))) {
+            $parentPath = Project::where('id', $request->get('parent_id'))->value('path');
             $parentPath = json_decode($parentPath);
-            if(!is_array($parentPath)){
+            if (!is_array($parentPath)) {
                 $parentPath = array();
             }
-            array_push($parentPath,$new->parent_id);
-            $new->path = json_encode($parentPath,JSON_UNESCAPED_UNICODE);
+            array_push($parentPath, $new->parent_id);
+            $new->path = json_encode($parentPath, JSON_UNESCAPED_UNICODE);
         }
         $new->save();
 
