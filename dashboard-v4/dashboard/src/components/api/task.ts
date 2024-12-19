@@ -139,7 +139,7 @@ export interface IProjectData {
 
 export interface IProjectUpdateRequest {
   id?: string;
-  studio_name: string;
+  studio_name?: string;
   title: string;
   type: TProjectType;
   description?: string | null;
@@ -185,12 +185,25 @@ export interface ITaskStatusInProject {
 }
 
 export interface ITaskGroupInsertRequest {
+  data: ITaskGroupInsertData[];
+}
+export interface ITaskGroupInsertData {
   project_id: string;
-  data: ITaskData[];
+  tasks: ITaskData[];
 }
 
 export interface ITaskGroupResponse {
   ok: boolean;
   message: string;
   data: string;
+}
+export interface IProjectTreeInsertRequest {
+  studio_name: string;
+  data: IProjectUpdateRequest[];
+}
+
+export interface IProjectTreeResponse {
+  ok: boolean;
+  message: string;
+  data: { leafs: string[] };
 }
