@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\App;
+
 use App\Http\Controllers\WbwTemplateController;
 use App\Http\Controllers\DhammaTermController;
 use App\Http\Controllers\SentenceController;
@@ -105,6 +107,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\TaskGroupController;
 use App\Http\Controllers\ChapterController;
+use App\Http\Controllers\ProjectTreeController;
 
 
 
@@ -268,6 +271,7 @@ Route::group(['prefix' => 'v2'], function () {
     Route::apiResource('task-status', TaskStatusController::class);
     Route::apiResource('task-group', TaskGroupController::class);
     Route::apiResource('chapter', ChapterController::class);
+    Route::apiResource('project-tree', ProjectTreeController::class);
 
     Route::get('download/{type1}/{type2}/{uuid}/{filename}', function ($type1, $type2, $uuid, $filename) {
         header("Content-Type: {$type1}/{$type1}");
