@@ -65,10 +65,10 @@ class TaskController extends Controller
             );
         }
         if ($request->has('assignees_id_includes')) {
-            $table = $table->whereJsonContains(
-                'assignees_id',
-                explode(',', $request->get('assignees_id_includes'))
-            );
+            $assigneesId = explode(',', $request->get('assignees_id_includes'));
+            $assigneesTasks = TaskAssignee::whereIn('assignee_id', $assigneesId)
+                ->select('task_id')->get();
+            $table = $table->whereIn('id', $assigneesTasks);
         }
         if ($request->has('assignees_id_not-includes')) {
             $table = $table->whereJsonDoesntContain(
@@ -76,11 +76,12 @@ class TaskController extends Controller
                 explode(',', $request->get('assignees_id_not-includes'))
             );
         }
+
         if ($request->get('sign_up_equals') === 'true') {
             $table = $table->whereNull('assignees_id')
                 ->whereNull('executor_id');
         }
-
+        /**某人参与的 */
         if ($request->has('participants_id_includes')) {
             $id = explode(',', $request->get('participants_id_includes'));
             $tasks_id = TaskAssignee::whereIn('assignee_id', $id)->select('task_id')->get();
