@@ -320,7 +320,7 @@ const TaskList = ({
       .map((item) => {
         return { ...item, children: getChildren(item, findIn) };
       });
-    console.debug("children", findIn, record, children);
+
     if (children.length > 0) {
       return children;
     }
@@ -586,8 +586,21 @@ const TaskList = ({
                 }
                 const url = "/v2/task-group";
                 const values: ITaskGroupInsertRequest = {
-                  project_id: projectId,
-                  data: data,
+                  data: [
+                    {
+                      project_id: projectId,
+                      tasks: data.map((item) => {
+                        return {
+                          id: item.id,
+                          title: item.title,
+                          order: item.order,
+                          parent_id: item.parent_id,
+                          project_id: projectId,
+                          is_milestone: item.is_milestone,
+                        };
+                      }),
+                    },
+                  ],
                 };
                 console.info("api request", url, values);
                 post<ITaskGroupInsertRequest, ITaskGroupResponse>(

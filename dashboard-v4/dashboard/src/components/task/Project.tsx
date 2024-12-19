@@ -187,7 +187,6 @@ const Project = ({ studioName, projectId, onRowClick, onSelect }: IWidget) => {
       .map((item) => {
         return { ...item, children: getChildren(item, findIn) };
       });
-    console.debug("children", findIn, record, children);
     if (children.length > 0) {
       return children;
     }
