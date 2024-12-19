@@ -1,5 +1,4 @@
 import { Button, Dropdown, MenuProps } from "antd";
-import exp from "constants";
 import { useState } from "react";
 
 export interface IMenu {
@@ -16,7 +15,7 @@ interface IWidget {
 const Options = ({ items, icon, text, initKey = "1", onChange }: IWidget) => {
   const [currKey, setCurrKey] = useState(initKey);
   const currValue = items.find(
-    (item) => item.key === currKey ?? initKey
+    (item) => item.key === (currKey ?? initKey)
   )?.label;
   const onClick: MenuProps["onClick"] = ({ key }) => {
     if (onChange) {
