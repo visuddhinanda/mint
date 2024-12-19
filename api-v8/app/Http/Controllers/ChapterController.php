@@ -18,29 +18,31 @@ class ChapterController extends Controller
         //
         switch ($request->get('view')) {
             case 'toc':
-                $chapter = PaliText::where('book',$request->get('book'))
-                        ->where('paragraph',$request->get('para'))
-                        ->first();
+                $chapter = PaliText::where('book', $request->get('book'))
+                    ->where('paragraph', $request->get('para'))
+                    ->first();
                 $start = $request->get('para');
-                $end = $request->get('para') + $chapter->chapter_len -1 ;
-                $table = PaliText::where('book',$request->get('book'))
-                    ->whereBetween('paragraph',[$start,$end])
-                    ->where('level','<',100)
-                    ->select(['book','paragraph','level','text','chapter_strlen']);
+                $end = $request->get('para') + $chapter->chapter_len - 1;
+                $table = PaliText::where('book', $request->get('book'))
+                    ->whereBetween('paragraph', [$start, $end])
+                    ->where('level', '<', 100)
+                    ->select(['book', 'paragraph', 'level', 'text', 'chapter_strlen', 'parent']);
                 break;
         }
         //获取记录总条数
         $count = $table->count();
         //处理排序
-        $table = $table->orderBy($request->get("order",'paragraph'),
-                                    $request->get("dir",'asc'));
+        $table = $table->orderBy(
+            $request->get("order", 'paragraph'),
+            $request->get("dir", 'asc')
+        );
         //处理分页
-        $table = $table->skip($request->get("offset",0))
-                        ->take($request->get("limit",1000));
+        $table = $table->skip($request->get("offset", 0))
+            ->take($request->get("limit", 1000));
         $result = $table->get();
         return $this->ok([
-            "rows"=>ChapterResource::collection($result),
-            "count"=>$count
+            "rows" => ChapterResource::collection($result),
+            "count" => $count
         ]);
     }
 
