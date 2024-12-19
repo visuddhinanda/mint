@@ -36,47 +36,55 @@ const TaskTable = ({ tasks }: IWidget) => {
 
     setProjects(Array.from(projectMap.values()));
 
-    const getNodeChildren = (task:ITaskData):number=>{
-      const children = tasks?.filter((value) => value.parent_id === task.id)
-      if(children && children.length>0){
-          return children.reduce((acc, cur) => {
-            return acc + getNodeChildren(cur)
-          }, children.length);
-      }else{
-        return 0
+    const getNodeChildren = (task: ITaskData): number => {
+      const children = tasks?.filter((value) => value.parent_id === task.id);
+      if (children && children.length > 0) {
+        return children.reduce((acc, cur) => {
+          return acc + getNodeChildren(cur);
+        }, children.length);
+      } else {
+        return 0;
       }
-    }
+    };
     //列表头
     let titles1: ITaskHeading[] = [];
     let titles2: ITaskHeading[] = [];
     let titles3: string[] = [];
+    let tRoot = new Map<string, ITaskData>();
     tasks
       ?.filter((value: ITaskData) => !value.parent_id)
       .forEach((task) => {
-        const children = tasks
-          ?.filter((value1) => value1.parent_id === task.id)
-          .map((task1) => {
-            const child: ITaskHeading = {
-              id: task1.id,
-              title: task1.title ?? "",
-              children: 0,
-            };
-            return child;
-          });
-        titles2 = [...titles2, ...children];
-
-        titles1.push({
-          title: task.title ?? "",
-          id: task.id,
-          children: getNodeChildren(task),
-        });
-
-        if (children.length === 0) {
-          titles3.push(task.title);
-        } else {
-          titles3 = [...titles3, ...children.map((item) => item.title)];
-        }
+        tRoot.set(task.title, task);
       });
+    console.debug("tasks", tasks);
+    tRoot.forEach((task) => {
+      const children = tasks
+        ?.filter((value1) => value1.parent_id === task.id)
+        .map((task1) => {
+          const child: ITaskHeading = {
+            id: task1.id,
+            title: task1.title ?? "",
+            children: 0,
+          };
+          return child;
+        });
+      console.debug("task children", task.title, children);
+      if (children) {
+        titles2 = [...titles2, ...children];
+      }
+
+      titles1.push({
+        title: task.title ?? "",
+        id: task.id,
+        children: getNodeChildren(task),
+      });
+
+      if (children && children.length > 0) {
+        titles3 = [...titles3, ...children.map((item) => item.title)];
+      } else {
+        titles3.push(task.title);
+      }
+    });
     const heading = [titles1, titles2];
     console.log("heading", heading);
     setTasksTitle(heading);
@@ -102,8 +110,8 @@ const TaskTable = ({ tasks }: IWidget) => {
                     </th>
                   );
                 })}
-              </tr>)
-            
+              </tr>
+            );
           })}
         </thead>
         <tbody>
