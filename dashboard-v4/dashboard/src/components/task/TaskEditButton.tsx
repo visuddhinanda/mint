@@ -1,4 +1,4 @@
-import { Button, Dropdown, Space, message } from "antd";
+import { Button, Dropdown, Popconfirm, Space, message } from "antd";
 import {
   CheckOutlined,
   ArrowLeftOutlined,
@@ -7,8 +7,10 @@ import {
   FieldTimeOutlined,
   EditOutlined,
   ArrowRightOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import { useIntl } from "react-intl";
+import type { MenuProps, PopconfirmProps } from "antd";
 
 import {
   ITaskData,
@@ -76,7 +78,6 @@ const TaskEditButton = ({ task, onChange, onEdit, onPreTask }: IWidget) => {
     case "done":
       newStatus = "restarted";
       buttonText = "重做";
-
       break;
     case "restarted":
       newStatus = "done";
@@ -86,93 +87,180 @@ const TaskEditButton = ({ task, onChange, onEdit, onPreTask }: IWidget) => {
       break;
   }
 
+  const handleMenuClick: MenuProps["onClick"] = (e) => {
+    console.log("click", e);
+    if (task?.id) {
+      setStatus({
+        id: task.id,
+        status: e.key,
+        studio_name: "",
+      });
+    }
+  };
+
+  interface IStatusMenu {
+    label: string;
+    key: TTaskStatus;
+    disabled?: boolean;
+  }
+
+  const requested_restart_enable =
+    task?.type === "instance" &&
+    task.status === "running" &&
+    task.pre_task &&
+    task.pre_task?.length > 0;
+  const items: IStatusMenu[] = [
+    {
+      key: "pending",
+      label: intl.formatMessage({
+        id: "buttons.task.status.change.to.pending",
+      }),
+      disabled: task?.type === "instance",
+    },
+    {
+      key: "published",
+      label: intl.formatMessage({
+        id: "buttons.task.status.change.to.published",
+      }),
+      disabled: task?.type === "instance",
+    },
+    {
+      key: "running",
+      label: intl.formatMessage({
+        id: `buttons.task.status.change.to.running`,
+      }),
+    },
+    {
+      key: "done",
+      label: intl.formatMessage({
+        id: `buttons.task.status.change.to.done`,
+      }),
+    },
+    {
+      key: "restarted",
+      label: intl.formatMessage({
+        id: `buttons.task.status.change.to.restarted`,
+      }),
+    },
+    {
+      key: "requested_restart",
+      label: intl.formatMessage({
+        id: `buttons.task.status.change.to.requested_restart`,
+      }),
+      disabled: !requested_restart_enable,
+    },
+  ];
+
+  const menuProps = {
+    items: items,
+    onClick: handleMenuClick,
+  };
+
+  const mainMenuItems: MenuProps["items"] = [
+    {
+      key: "edit",
+      label: intl.formatMessage({ id: "buttons.edit" }),
+      icon: <EditOutlined />,
+    },
+    {
+      key: "milestone",
+      label: task?.is_milestone ? "取消里程碑" : "设为里程碑",
+      icon: <CodeSandboxOutlined />,
+    },
+    {
+      key: "pre-task",
+      label: "设置前置任务",
+      icon: <ArrowLeftOutlined />,
+    },
+    {
+      key: "next-task",
+      label: "设置后置任务",
+      icon: <ArrowRightOutlined />,
+    },
+    {
+      type: "divider",
+    },
+    {
+      label: "历史记录",
+      key: "timeline",
+      icon: <FieldTimeOutlined />,
+    },
+    {
+      label: "删除",
+      key: "delete",
+      icon: <DeleteOutlined />,
+      danger: true,
+    },
+  ];
+  const mainMenuClick: MenuProps["onClick"] = (e) => {
+    switch (e.key) {
+      case "edit":
+        onEdit && onEdit();
+        break;
+      case "milestone":
+        if (task) {
+          if (task.id) {
+            setValue({
+              id: task.id,
+              is_milestone: !task.is_milestone,
+              studio_name: task.owner?.realName ?? "",
+            });
+          }
+        }
+        break;
+      case "pre-task":
+        onPreTask && onPreTask("pre");
+        break;
+      case "next-task":
+        onPreTask && onPreTask("next");
+        break;
+      default:
+        break;
+    }
+  };
+
+  const confirm: PopconfirmProps["onConfirm"] = (e) => {
+    console.log(e);
+    if (task?.id) {
+      setStatus({
+        id: task.id,
+        status: newStatus,
+        studio_name: "",
+      });
+    }
+  };
+
   return (
     <Space>
+      <Popconfirm
+        title={intl.formatMessage(
+          { id: "message.task.status.change" },
+          { status: newStatus }
+        )}
+        onConfirm={confirm}
+        okText="Yes"
+        cancelText="No"
+      >
+        {task?.type === "workflow" || requested_restart_enable ? (
+          <Dropdown.Button type="primary" trigger={["click"]} menu={menuProps}>
+            <CheckOutlined />
+            {buttonText}
+          </Dropdown.Button>
+        ) : (
+          <Button type="primary" icon={<CheckOutlined />}>
+            {buttonText}
+          </Button>
+        )}
+      </Popconfirm>
       <Dropdown.Button
         key={1}
         type="link"
         trigger={["click", "contextMenu"]}
         menu={{
-          items: [
-            {
-              key: "edit",
-              label: intl.formatMessage({ id: "buttons.edit" }),
-              icon: <EditOutlined />,
-            },
-            {
-              key: "milestone",
-              label: task?.is_milestone ? "取消里程碑" : "设为里程碑",
-              icon: <CodeSandboxOutlined />,
-            },
-            {
-              key: "pre-task",
-              label: "设置前置任务",
-              icon: <ArrowLeftOutlined />,
-            },
-            {
-              key: "next-task",
-              label: "设置后置任务",
-              icon: <ArrowRightOutlined />,
-            },
-            {
-              type: "divider",
-            },
-            {
-              label: "历史记录",
-              key: "timeline",
-              icon: <FieldTimeOutlined />,
-            },
-            {
-              label: "删除",
-              key: "delete",
-              icon: <DeleteOutlined />,
-              danger: true,
-            },
-          ],
-          onClick: (e) => {
-            switch (e.key) {
-              case "edit":
-                onEdit && onEdit();
-                break;
-              case "milestone":
-                if (task) {
-                  if (task.id) {
-                    setValue({
-                      id: task.id,
-                      is_milestone: !task.is_milestone,
-                      studio_name: task.owner?.realName ?? "",
-                    });
-                  }
-                }
-                break;
-              case "pre-task":
-                onPreTask && onPreTask("pre");
-                break;
-              case "next-task":
-                onPreTask && onPreTask("next");
-                break;
-              default:
-                break;
-            }
-          },
+          items: mainMenuItems,
+          onClick: mainMenuClick,
         }}
-      >
-        <Button
-          type="primary"
-          icon={<CheckOutlined />}
-          onClick={() => {
-            if (task?.id) {
-              setStatus({
-                id: task.id,
-                status: newStatus,
-                studio_name: "",
-              });
-            }
-          }}
-        >
-          {buttonText}
-        </Button>
-      </Dropdown.Button>
+      ></Dropdown.Button>
     </Space>
   );
 };
