@@ -281,7 +281,7 @@ const ProjectListWidget = ({
             content={
               <ProjectCreate
                 studio={studioName}
-                type={activeKey === "workflow" ? "workflow" : "normal"}
+                type={activeKey === "workflow" ? "workflow" : "instance"}
                 onCreate={() => {
                   setOpenCreate(false);
                   ref.current?.reload();
