@@ -71,10 +71,10 @@ class TaskController extends Controller
             $table = $table->whereIn('id', $assigneesTasks);
         }
         if ($request->has('assignees_id_not-includes')) {
-            $table = $table->whereJsonDoesntContain(
-                'assignees_id',
-                explode(',', $request->get('assignees_id_not-includes'))
-            );
+            $assigneesId = explode(',', $request->get('assignees_id_includes'));
+            $assigneesTasks = TaskAssignee::whereIn('assignee_id', $assigneesId)
+                ->select('task_id')->get();
+            $table = $table->whereNotIn('id', $assigneesTasks);
         }
 
         if ($request->get('sign_up_equals') === 'true') {
@@ -92,10 +92,11 @@ class TaskController extends Controller
         }
 
         if ($request->has('participants_id_not-includes')) {
-            $id = explode(',', $request->get('participants_id_not-includes'));
-            $table = $table->where(function ($query) use ($id) {
-                $query->whereJsonDoesntContain('assignees_id', $id)
-                    ->whereNotIn('executor_id', $id);
+            $id = explode(',', $request->get('participants_id_includes'));
+            $tasks_id = TaskAssignee::whereIn('assignee_id', $id)->select('task_id')->get();
+            $table = $table->where(function ($query) use ($id, $tasks_id) {
+                $query->whereNotIn('executor_id', $id)
+                    ->orWhereNotIn('id', $tasks_id);
             });
         }
 
@@ -162,6 +163,7 @@ class TaskController extends Controller
         $new->title = $request->get('title');
         $new->editor_id = $user['user_uid'];
         $new->parent_id = $request->get('parent_id');
+        $new->type = $request->get('type');
         //处理任务顺序
         if ($request->get('parent_id')) {
             $maxOrder = Task::where('parent_id', $request->get('parent_id'))
