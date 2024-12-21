@@ -142,7 +142,7 @@ const TaskBuilder = ({ studioName, book, para, style }: IWidget) => {
                   return {
                     id: item.paragraph.toString(),
                     title: item.text,
-                    type: "normal",
+                    type: "instance",
                     parent_id: item.parent.toString(),
                   };
                 }),
