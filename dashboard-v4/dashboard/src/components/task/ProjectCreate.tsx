@@ -19,9 +19,9 @@ interface IWidgetCourseCreate {
   type?: TProjectType;
   onCreate?: Function;
 }
-const TaskCreate = ({
+const ProjectCreate = ({
   studio = "",
-  type = "workflow",
+  type = "instance",
   onCreate,
 }: IWidgetCourseCreate) => {
   const intl = useIntl();
@@ -72,4 +72,4 @@ const TaskCreate = ({
   );
 };
 
-export default TaskCreate;
+export default ProjectCreate;
