@@ -59,7 +59,7 @@ interface IWidget {
 
 const ProjectListWidget = ({
   studioName,
-  type = "normal",
+  type = "instance",
   readonly = false,
   onSelect,
 }: IWidget) => {
