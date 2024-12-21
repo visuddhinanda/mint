@@ -6,6 +6,8 @@ import { EditableProTable, useRefFunction } from "@ant-design/pro-components";
 
 import {
   IProject,
+  IProjectData,
+  IProjectResponse,
   ITaskData,
   ITaskGroupInsertRequest,
   ITaskGroupResponse,
@@ -118,8 +120,22 @@ const TaskList = ({
   const [rawData, setRawData] = useState<readonly ITaskData[]>([]);
   const [form] = Form.useForm();
   const [selectedTask, setSelectedTask] = useState<string>();
+  const [project, setProject] = useState<IProjectData>();
 
   const [currFilter, setCurrFilter] = useState(filters);
+
+  useEffect(() => {
+    const url = `/v2/project/${projectId}`;
+    console.info("api request", url);
+    get<IProjectResponse>(url).then((json) => {
+      if (json.ok) {
+        setProject(json.data);
+      } else {
+        console.error(json.message);
+      }
+    });
+  }, [projectId]);
+
   const loopDataSourceFilter = (
     data: readonly ITaskData[],
     id: React.Key | undefined
@@ -378,11 +394,12 @@ const TaskList = ({
         actionRef={actionRef}
         // 关闭默认的新建按钮
         recordCreatorProps={
-          editable
+          editable && project
             ? {
                 record: () => ({
                   id: generateUUID(),
                   title: "新建任务",
+                  type: project.type === "workflow" ? "workflow" : "instance",
                   is_milestone: false,
                 }),
               }
@@ -411,9 +428,9 @@ const TaskList = ({
           url += params.orderby ? `&order=${params.orderby}` : "";
           url += params.direction ? `&dir=${params.direction}` : "";
 
-          console.info("api request", url);
+          console.info("task list api request", url);
           const res = await get<ITaskListResponse>(url);
-          console.info("project api response", res);
+          console.info("task list api response", res);
           setRawData(res.data.rows);
           onLoad && onLoad(res.data.rows);
           const root = res.data.rows
@@ -581,7 +598,7 @@ const TaskList = ({
               tiger={<Button type="primary">从模版创建任务</Button>}
               studioName={studioName}
               onData={(data) => {
-                if (!projectId) {
+                if (!projectId || !project) {
                   return;
                 }
                 const url = "/v2/task-group";
@@ -593,6 +610,10 @@ const TaskList = ({
                         return {
                           id: item.id,
                           title: item.title,
+                          type:
+                            project.type === "workflow"
+                              ? "workflow"
+                              : "instance",
                           order: item.order,
                           parent_id: item.parent_id,
                           project_id: projectId,
