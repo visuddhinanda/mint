@@ -11,16 +11,8 @@ import { useRef } from "react";
 import {
   IProjectCreateRequest,
   IProjectResponse,
-  ITaskCreateRequest,
-  ITaskResponse,
   TProjectType,
 } from "../api/task";
-
-interface IFormData {
-  title: string;
-  lang: string;
-  studio: string;
-}
 
 interface IWidgetCourseCreate {
   studio?: string;
@@ -29,7 +21,7 @@ interface IWidgetCourseCreate {
 }
 const TaskCreate = ({
   studio = "",
-  type = "normal",
+  type = "workflow",
   onCreate,
 }: IWidgetCourseCreate) => {
   const intl = useIntl();
