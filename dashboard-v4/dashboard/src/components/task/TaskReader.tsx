@@ -48,8 +48,10 @@ const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
   const [openNextTask, setOpenNextTask] = useState(false);
   useEffect(() => {
     const url = `/v2/task/${taskId}`;
-    console.info("api request", url);
+    console.info("task api request", url);
     get<ITaskResponse>(url).then((json) => {
+      console.info("task api response", json);
+
       if (json.ok) {
         onLoad && onLoad(json.data);
       }
