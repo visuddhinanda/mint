@@ -21,9 +21,11 @@ export type TTaskStatus =
   | "running"
   | "done"
   | "restarted"
+  | "requested_restart"
   | "closed"
   | "canceled"
   | "expired";
+export type TTaskType = "instance" | "workflow" | "group";
 
 export interface IProject {
   id: string;
@@ -35,7 +37,7 @@ export interface ITaskData {
   title: string;
   description?: string | null;
   html?: string | null;
-  type?: "task" | "group";
+  type: TTaskType;
   order?: number;
   assignees?: IUser[] | null;
   assignees_id?: string[] | null;
@@ -70,6 +72,7 @@ export interface ITaskUpdateRequest {
   studio_name: string;
   title?: string;
   description?: string | null;
+  type?: TTaskType;
   assignees_id?: string[] | null;
   parent_id?: string | null;
   project_id?: string | null;
@@ -94,6 +97,7 @@ export interface ITaskListResponse {
 export interface ITaskCreateRequest {
   title: string;
   studio: string;
+  type: TTaskType;
 }
 
 export interface ITaskResponse {
@@ -156,7 +160,7 @@ export interface IProjectResponse {
   message: string;
   ok: boolean;
 }
-export type TProjectType = "normal" | "workflow" | "endpoint";
+export type TProjectType = "instance" | "workflow" | "endpoint";
 export interface IProjectCreateRequest {
   title: string;
   type: TProjectType;
