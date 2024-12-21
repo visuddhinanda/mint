@@ -95,6 +95,12 @@ const items = {
   "buttons.manage": "管理",
   "buttons.delete.wbw.sentence": "删除整句逐词解析",
   "buttons.ai.translate": "AI 翻译",
+  "buttons.task.status.change.to.pending": "未发布",
+  "buttons.task.status.change.to.published": "发布",
+  "buttons.task.status.change.to.running": "领取",
+  "buttons.task.status.change.to.done": "完成任务",
+  "buttons.task.status.change.to.restarted": "重做",
+  "buttons.task.status.change.to.requested_restart": "请求重做",
 };
 
 export default items;

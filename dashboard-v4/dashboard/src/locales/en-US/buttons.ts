@@ -95,6 +95,11 @@ const items = {
   "buttons.manage": "Manage",
   "buttons.delete.wbw.sentence": "Delete Wbw",
   "buttons.ai.translate": "AI Translate",
+  "buttons.task.status.change.to.published": "发布",
+  "buttons.task.status.change.to.running": "领取",
+  "buttons.task.status.change.to.done": "完成任务",
+  "buttons.task.status.change.to.restarted": "重做",
+  "buttons.task.status.change.to.requested_restart": "请求重做",
 };
 
 export default items;
