@@ -4,7 +4,7 @@ import { IProject, ITaskData } from "../api/task";
 import "../article/article.css";
 import { Status } from "./TaskReader";
 import User from "../auth/User";
-import { Assignees } from "./TaskList";
+import Assignees from "./Assignees";
 
 interface ITaskHeading {
   id: string;
@@ -130,7 +130,7 @@ const TaskTable = ({ tasks }: IWidget) => {
                         {taskData?.executor ? (
                           <User {...taskData.executor} />
                         ) : taskData?.assignees ? (
-                          <Assignees data={taskData} />
+                          <Assignees task={taskData} />
                         ) : (
                           <></>
                         )}
