@@ -27,3 +27,5 @@ $ ./iapt-platform/mint/docker/jammy/start.sh
 - [A C++ library for communicating with a RabbitMQ message broker](https://github.com/CopernicaMarketingSoftware/AMQP-CPP)
 - [JSON for Modern C++](https://github.com/nlohmann/json)
 - [Lua](https://www.lua.org/manual/)
+- [A C++ header-only HTTP/HTTPS server and client library](https://github.com/yhirose/cpp-httplib)
+- [A basic tutorial introduction to gRPC in C++](https://grpc.io/docs/languages/cpp/basics/)

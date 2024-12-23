@@ -3,7 +3,7 @@ set_languages("c11", "c++20")
 
 add_requires(
     "libpqxx", "redis-plus-plus", "amqp-cpp", 
-    "nlohmann_json",
+    "nlohmann_json", "cpp-httplib", "grpc",
     "lua", "spdlog", "taywee_args"
 )
 
@@ -13,6 +13,7 @@ target("coconut")
     add_files("src/*.cpp")
     add_packages(
         "libpqxx", "redis-plus-plus", "amqp-cpp",
-        "nlohmann_json", 
+        "nlohmann_json", "cpp-httplib", 
+        "abseil", "grpc",
         "lua", "spdlog", "taywee_args"
     )
