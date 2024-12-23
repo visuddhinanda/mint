@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export CODE="palm-spring"
+export CODE="palm-jammy"
 export NAME="$CODE-$USER"
 
 if podman container exists $NAME; then

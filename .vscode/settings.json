@@ -15,7 +15,7 @@
     "**/node_modules/**": true
   },
   "[cpp]": {
-    "editor.defaultFormatter": "ms-vscode.cpptools"
+    "editor.defaultFormatter": "ms-vscode.cpptools-extension-pack"
   },
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
@@ -44,6 +44,9 @@
   "[java]": {
     "editor.defaultFormatter": "redhat.java"
   },
+  "[php]": {
+    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
+  },
   "[dockerfile]": {
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"
   },
@@ -62,8 +65,8 @@
   "[phoenix-heex]": {
     "editor.defaultFormatter": "JakeBecker.elixir-ls"
   },
-  "[php]": {
-    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
+  "[ini]": {
+    "editor.defaultFormatter": "lkrms.inifmt"
   },
   "java.configuration.updateBuildConfiguration": "automatic",
   "ansible.python.interpreterPath": "/bin/python"
