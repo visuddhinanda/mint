@@ -11,6 +11,7 @@ import TimeShow from "../general/TimeShow";
 import TaskEditButton, { TRelation } from "./TaskEditButton";
 import PreTask from "./PreTask";
 import Like from "../like/Like";
+import Assignees from "./Assignees";
 
 const { Title } = Typography;
 
@@ -154,11 +155,16 @@ const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
       </div>
       <Title>{task?.title}</Title>
       <div>
-        <Space>
-          <User {...task?.editor} />
-          <TimeShow updatedAt={task?.updated_at} />
-          <Like resId={task?.id} resType="task" />
-        </Space>
+        <div>
+          <Space>
+            <User {...task?.editor} />
+            <TimeShow updatedAt={task?.updated_at} />
+            <Like resId={task?.id} resType="task" />
+          </Space>
+        </div>
+        <div>
+          <Assignees task={task} showIcon={true} />
+        </div>
       </div>
       <Divider />
       <MdView html={task?.html} />
