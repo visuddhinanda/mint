@@ -43,7 +43,7 @@ RUN curl -L -o $HOME/downloads/pkl https://github.com/apple/pkl/releases/downloa
 
 
 # https://github.com/envoyproxy/envoy
-ENV ENVOY_VERSION "1.32.2"
+ENV ENVOY_VERSION "1.32.3"
 RUN wget -q -O $HOME/downloads/envoy https://github.com/envoyproxy/envoy/releases/download/v${ENVOY_VERSION}/envoy-${ENVOY_VERSION}-linux-x86_64 \
     && sudo cp $HOME/downloads/envoy /usr/local/bin/ \
     && sudo chmod +x /usr/local/bin/envoy
@@ -219,7 +219,7 @@ RUN tar xf $HOME/downloads/opensearch-${OPENSEARCH_VERSION}-linux-x64.tar.gz -C 
     && sudo mv $HOME/tmp/opensearch-${OPENSEARCH_VERSION} /opt/opensearch
 
 # https://github.com/grpc/grpc
-ENV GRPC_VERSION "v1.69.0"
+ENV GRPC_VERSION "v1.68.2"
 RUN git clone --recurse-submodules -b $GRPC_VERSION https://github.com/grpc/grpc.git $HOME/downloads/grpc
 # ENV PROTOBUF_VERSION "v3.21.8"
 # RUN cd $HOME/downloads/grpc/third_party/protobuf \
