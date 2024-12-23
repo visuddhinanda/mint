@@ -24,6 +24,7 @@ import Options, { IMenu } from "./Options";
 import Filter from "./Filter";
 import { Milestone, Status } from "./TaskReader";
 import { WorkflowModal } from "./Workflow";
+import Assignees from "./Assignees";
 
 const { Text } = Typography;
 function generateUUID() {
@@ -54,15 +55,7 @@ export const Executors = ({
     </Avatar.Group>
   );
 };
-export const Assignees = ({ data }: { data: ITaskData }) => {
-  return (
-    <Avatar.Group>
-      {data.assignees?.map((item, id) => {
-        return <User {...item} key={id} showName={false} />;
-      })}
-    </Avatar.Group>
-  );
-};
+
 export interface IFilter {
   field:
     | "executor_id"
@@ -125,6 +118,9 @@ const TaskList = ({
   const [currFilter, setCurrFilter] = useState(filters);
 
   useEffect(() => {
+    if (!projectId) {
+      return;
+    }
     const url = `/v2/project/${projectId}`;
     console.info("api request", url);
     get<IProjectResponse>(url).then((json) => {
@@ -228,7 +224,7 @@ const TaskList = ({
       search: false,
       readonly: true,
       render(dom, entity, index, action, schema) {
-        return <Assignees data={entity} />;
+        return <Assignees task={entity} />;
       },
     },
     {
