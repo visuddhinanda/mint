@@ -1,5 +1,6 @@
 import { GrammarPopShell } from "../dict/GrammarPop";
 import Article from "./Article";
+import DictPreferenceEditor from "./DictPreferenceEditor";
 import Exercise from "./Exercise";
 import GrammarTermLookup from "./GrammarTermLookup";
 import Mermaid from "./Mermaid";
@@ -66,6 +67,8 @@ const Widget = ({ tpl, props, children }: IWidgetMdTpl) => {
       return <GrammarTermLookup props={props ? props : ""} />;
     case "reference":
       return <Reference props={props ? props : ""} />;
+    case "dict-pref":
+      return props ? <DictPreferenceEditor props={props} /> : <>无效的参数</>;
     default:
       return <>未定义模版({tpl})</>;
   }

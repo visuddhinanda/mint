@@ -1,10 +1,9 @@
 import { EditableProTable, ProColumns } from "@ant-design/pro-components";
-import { get, post, put } from "../../request";
-import WbwFactors from "../template/Wbw/WbwFactors";
+import { get, put } from "../../request";
 import { IWbw } from "../template/Wbw/WbwWord";
 import WbwLookup from "../template/Wbw/WbwLookup";
 import { useState } from "react";
-import { Progress } from "antd";
+import { Button, Progress } from "antd";
 import WbwFactorsEditor from "../template/Wbw/WbwFactorsEditor";
 
 interface IPreferenceListResponse {
@@ -37,7 +36,14 @@ type DataSourceType = {
   created_at?: number;
   update_at?: number;
 };
-const DictPreferenceEditor = () => {
+export interface IDictPreferenceEditorWidget {
+  currPage?: number;
+  pageSize?: number;
+}
+const DictPreferenceEditor = ({
+  currPage,
+  pageSize = 100,
+}: IDictPreferenceEditorWidget) => {
   const [lookupWords, setLookupWords] = useState<string[]>([]);
   const [lookupRun, setLookupRun] = useState(false);
   const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([]);
@@ -142,14 +148,15 @@ const DictPreferenceEditor = () => {
       valueType: "option",
       width: 200,
       render: (text, record, _, action) => [
-        <a
+        <Button
+          type="link"
           key="editable"
           onClick={() => {
             action?.startEditable?.(record.id);
           }}
         >
           编辑
-        </a>,
+        </Button>,
       ],
     },
   ];
@@ -164,11 +171,18 @@ const DictPreferenceEditor = () => {
         scroll={{
           x: 960,
         }}
-        pagination={{
-          showQuickJumper: true,
-          showSizeChanger: true,
-          pageSize: 100,
-        }}
+        pagination={
+          currPage
+            ? false
+            : {
+                showQuickJumper: !currPage,
+                showSizeChanger: !currPage,
+                showLessItems: !currPage,
+                showPrevNextJumpers: !currPage,
+                current: 1,
+                pageSize: 100,
+              }
+        }
         search={false}
         options={{
           search: true,
@@ -177,10 +191,9 @@ const DictPreferenceEditor = () => {
         columns={columns}
         request={async (params = {}, sorter, filter) => {
           let url = `/v2/dict-preference`;
-          const offset =
-            ((params.current ? params.current : 1) - 1) *
-            (params.pageSize ? params.pageSize : 20);
-          url += `?limit=${params.pageSize}&offset=${offset}`;
+          const mPageSize = pageSize ?? params.pageSize ?? 100;
+          const offset = ((currPage ?? params.current ?? 1) - 1) * mPageSize;
+          url += `?limit=${mPageSize}&offset=${offset}`;
           url += params.keyword ? "&keyword=" + params.keyword : "";
           console.info("api request", url);
           const res = await get<IPreferenceListResponse>(url);
