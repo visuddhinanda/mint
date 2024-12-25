@@ -21,38 +21,40 @@ class DictPreferenceController extends Controller
     {
         //
         $dict_id = DictApi::getSysDict('system_preference');
-        if(!$dict_id){
-            return $this->error('没有找到 system_preference 字典',200,200);
+        if (!$dict_id) {
+            return $this->error('没有找到 system_preference 字典', 200, 200);
         }
-        $table = WordIndex::where('user_dicts.dict_id',$dict_id)
-                    ->leftJoin('user_dicts','word_indices.word','=','user_dicts.word')
-                    ->select([
-                        'user_dicts.id',
-                        'word_indices.word',
-                        'word_indices.count',
-                        'user_dicts.factors',
-                        'user_dicts.parent',
-                        'user_dicts.note',
-                        'user_dicts.confidence',
-                    ]);
+        $table = WordIndex::where('user_dicts.dict_id', $dict_id)
+            ->leftJoin('user_dicts', 'word_indices.word', '=', 'user_dicts.word')
+            ->select([
+                'user_dicts.id',
+                'word_indices.word',
+                'word_indices.count',
+                'user_dicts.factors',
+                'user_dicts.parent',
+                'user_dicts.note',
+                'user_dicts.confidence',
+            ]);
         //处理搜索
-        if(!empty($request->get("keyword"))){
-            $table = $table->where('word_indices.word', 'like', "%".$request->get("keyword")."%");
+        if (!empty($request->get("keyword"))) {
+            $table = $table->where('word_indices.word', 'like', "%" . $request->get("keyword") . "%");
         }
 
         //获取记录总条数
         $count = $table->count();
         //处理排序
-        $table = $table->orderBy($request->get("order",'word_indices.count'),
-                                    $request->get("dir",'desc'));
+        $table = $table->orderBy(
+            $request->get("order", 'word_indices.count'),
+            $request->get("dir", 'desc')
+        );
         //处理分页
-        $table = $table->skip($request->get("offset",0))
-                        ->take($request->get("limit",200));
+        $table = $table->skip($request->get("offset", 0))
+            ->take($request->get("limit", 200));
         //获取数据
         $result = $table->get();
         return $this->ok([
-            "rows"=>DictPreferenceResource::collection($result),
-            "count"=>$count
+            "rows" => DictPreferenceResource::collection($result),
+            "count" => $count
         ]);
     }
 
@@ -88,14 +90,20 @@ class DictPreferenceController extends Controller
     public function update(Request $request,  $id)
     {
         //
-		$newData = $request->all();
-		$result = UserDict::where('id', $id)
-				->update($newData);
-		if($result){
-			return $this->ok('ok');
-		}else{
-		    return $this->error("没有查询到数据");
-		}
+        $newData = $request->all();
+        $word = UserDict::findOrFail($id);
+        if (isset($newData['factors'])) {
+            $word->factors = $newData['factors'];
+        }
+        if (isset($newData['parent'])) {
+            $word->parent = $newData['parent'];
+        }
+        if (isset($newData['confidence'])) {
+            $word->confidence = $newData['confidence'];
+        }
+
+        $word->save();
+        return $this->ok(new DictPreferenceResource($word));
     }
 
     /**
