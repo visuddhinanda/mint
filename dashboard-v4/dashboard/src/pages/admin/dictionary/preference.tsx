@@ -1,7 +1,7 @@
-import DictPreferenceEditor from "../../../components/dict/DictPreferenceEditor";
+import DictPreference from "../../../components/dict/DictPreference";
 
 const Widget = () => {
-  return <DictPreferenceEditor />;
+  return <DictPreference />;
 };
 
 export default Widget;

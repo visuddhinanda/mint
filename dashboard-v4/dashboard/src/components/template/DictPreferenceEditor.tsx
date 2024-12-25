@@ -1,13 +1,11 @@
-import DictPreferenceEditor, {
-  IDictPreferenceEditorWidget,
-} from "../dict/DictPreferenceEditor";
+import DictPreference, { IDictPreferenceWidget } from "../dict/DictPreference";
 
 interface IWidgetTerm {
   props: string;
 }
-const DictPreferenceEditorWidget = ({ props }: IWidgetTerm) => {
-  const prop = JSON.parse(atob(props)) as IDictPreferenceEditorWidget;
-  return <DictPreferenceEditor {...prop} />;
+const DictPreferenceWidget = ({ props }: IWidgetTerm) => {
+  const prop = JSON.parse(atob(props)) as IDictPreferenceWidget;
+  return <DictPreference {...prop} />;
 };
 
-export default DictPreferenceEditorWidget;
+export default DictPreferenceWidget;
