@@ -5,6 +5,7 @@ import {
   message,
   Modal,
   Steps,
+  Tag,
   Typography,
 } from "antd";
 
@@ -20,6 +21,7 @@ import {
 } from "../api/task";
 
 import { post } from "../../request";
+import TaskBuilderProp, { IParam, IProp } from "./TaskBuilderProp";
 
 const { Paragraph } = Typography;
 
@@ -29,13 +31,18 @@ interface IBuildProjects {
 const BuildProjects = ({ onChange }: IBuildProjects) => {
   const [projectsTitle, setProjectsTitle] = useState<string[]>([]);
   const [projectTitle, setProjectTitle] = useState<string>("");
-  const [projectTitlePerf, setProjectTitlePerf] = useState<string>("1");
+  const [projectTitlePerf, setProjectTitlePerf] = useState<string>("01");
   const [projectsCount, setProjectsCount] = useState<number>(0);
 
   const buildTitles = (base: string, perf: string, count: number): string[] => {
     return Array.from(Array(count).keys()).map((item) => {
       const sn = parseInt(perf) + item;
-      return `${base}${sn}`;
+      const extraZero = perf.length - sn.toString().length;
+      let strSn: string = sn.toString();
+      if (extraZero > 0) {
+        strSn = Array(extraZero).fill("0").join("") + sn.toString();
+      }
+      return `${base}${strSn}`;
     });
   };
 
@@ -59,6 +66,7 @@ const BuildProjects = ({ onChange }: IBuildProjects) => {
       <div>
         后缀：
         <Input
+          defaultValue={projectTitlePerf}
           onChange={(e) => {
             setProjectTitlePerf(e.target.value);
             const projects = buildTitles(
@@ -86,9 +94,14 @@ const BuildProjects = ({ onChange }: IBuildProjects) => {
           }}
         />
       </div>
-      <div>
+      <div style={{ overflowY: "scroll", height: 370 }}>
         {projectsTitle.map((item, id) => {
-          return <Paragraph key={id}>{item}</Paragraph>;
+          return (
+            <Paragraph key={id}>
+              <Tag>{`${id + 1}`}</Tag>
+              {item}
+            </Paragraph>
+          );
         })}
       </div>
     </div>
@@ -96,19 +109,19 @@ const BuildProjects = ({ onChange }: IBuildProjects) => {
 };
 
 interface IModal {
-  tiger?: React.ReactNode;
   studioName?: string;
   parentId?: string;
 
   open?: boolean;
   onClose?: () => void;
+  onDone?: () => void;
 }
 export const TaskBuilderProjectsModal = ({
-  tiger,
   studioName,
   parentId,
   open = false,
   onClose,
+  onDone,
 }: IModal) => {
   return (
     <>
@@ -126,6 +139,7 @@ export const TaskBuilderProjectsModal = ({
           style={{ marginTop: 20 }}
           studioName={studioName}
           parentId={parentId}
+          onDone={onDone}
         />
       </Modal>
     </>
@@ -136,11 +150,18 @@ interface IWidget {
   studioName?: string;
   parentId?: string;
   style?: React.CSSProperties;
+  onDone?: () => void;
 }
-const TaskBuilderProjects = ({ studioName, parentId, style }: IWidget) => {
+const TaskBuilderProjects = ({
+  studioName,
+  parentId,
+  style,
+  onDone,
+}: IWidget) => {
   const [current, setCurrent] = useState(0);
   const [workflow, setWorkflow] = useState<ITaskData[]>();
   const [projectsTitle, setProjectsTitle] = useState<string[]>();
+  const [prop, setProp] = useState<IProp[]>();
 
   const [messages, setMessages] = useState<string[]>([]);
   const steps = [
@@ -158,12 +179,30 @@ const TaskBuilderProjects = ({ studioName, parentId, style }: IWidget) => {
       ),
     },
     {
+      title: "参数设置",
+      content: (
+        <div>
+          <TaskBuilderProp
+            workflow={workflow}
+            onChange={(data: IProp[] | undefined) => setProp(data)}
+          />
+        </div>
+      ),
+    },
+    {
       title: "生成",
       content: (
         <div>
-          {messages?.map((item, id) => {
-            return <div key={id}>{item}</div>;
-          })}
+          <div>
+            <Paragraph>新增任务组：{projectsTitle?.length}</Paragraph>
+            <Paragraph>每个任务组任务数量：{workflow?.length}</Paragraph>
+            <Paragraph>点击生成按钮生成</Paragraph>
+          </div>
+          <div>
+            {messages?.map((item, id) => {
+              return <div key={id}>{item}</div>;
+            })}
+          </div>
         </div>
       ),
     },
@@ -204,6 +243,7 @@ const TaskBuilderProjects = ({ studioName, parentId, style }: IWidget) => {
             type="primary"
             onClick={async () => {
               if (!studioName || !parentId || !projectsTitle) {
+                console.error("缺少参数", studioName, parentId, projectsTitle);
                 return;
               }
               //生成projects
@@ -211,12 +251,13 @@ const TaskBuilderProjects = ({ studioName, parentId, style }: IWidget) => {
               const url = "/v2/project-tree";
               const values: IProjectTreeInsertRequest = {
                 studio_name: studioName,
+                parent_id: parentId,
                 data: projectsTitle.map((item, id) => {
                   return {
                     id: item,
                     title: item,
                     type: "instance",
-                    parent_id: parentId,
+                    parent_id: null,
                   };
                 }),
               };
@@ -238,11 +279,32 @@ const TaskBuilderProjects = ({ studioName, parentId, style }: IWidget) => {
               if (!workflow) {
                 return;
               }
+              console.debug("prop", prop);
               let taskData: ITaskGroupInsertData[] = res.data.leafs.map(
-                (projectId) => {
+                (projectId, pId) => {
                   return {
                     project_id: projectId,
-                    tasks: workflow,
+                    tasks: workflow.map((task, tId) => {
+                      let newContent = task.description;
+                      prop
+                        ?.find((pValue) => pValue.taskId === task.id)
+                        ?.param?.forEach((value: IParam) => {
+                          const searchValue = `${value.key}=${value.value}`;
+                          const replaceValue =
+                            `${value.key}=` +
+                            (value.initValue + value.step * pId).toString();
+                          newContent = newContent?.replace(
+                            searchValue,
+                            replaceValue
+                          );
+                        });
+                      console.debug("description", newContent);
+                      return {
+                        ...task,
+                        type: "instance",
+                        description: newContent,
+                      };
+                    }),
                   };
                 }
               );
@@ -252,9 +314,16 @@ const TaskBuilderProjects = ({ studioName, parentId, style }: IWidget) => {
                 ITaskGroupInsertRequest,
                 ITaskGroupResponse
               >(taskUrl, { data: taskData });
+              console.info("api response", taskRes);
               if (taskRes.ok) {
                 message.success("ok");
-                setMessages((origin) => [...origin, "生成任务成功"]);
+                setMessages((origin) => [...origin, "生成任务成功."]);
+                onDone && onDone();
+              } else {
+                setMessages((origin) => [
+                  ...origin,
+                  "生成任务失败。错误信息：" + taskRes.data,
+                ]);
               }
             }}
           >
