@@ -1,6 +1,6 @@
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { EditableProTable, useRefFunction } from "@ant-design/pro-components";
-import { Button, Form, Space, Typography } from "antd";
+import { Button, Dropdown, Form, Space, Typography } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 
@@ -13,6 +13,7 @@ import {
 } from "../api/task";
 
 import { get, post } from "../../request";
+import { TaskBuilderProjectsModal } from "./TaskBuilderProjects";
 
 const { Text } = Typography;
 function generateUUID() {
@@ -33,12 +34,13 @@ const Project = ({ studioName, projectId, onRowClick, onSelect }: IWidget) => {
   const intl = useIntl();
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string>();
-
   const [title, setTitle] = useState<React.ReactNode>();
-
+  const [curr, setCurr] = useState<string>();
   const actionRef = useRef<ActionType>();
   const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([]);
   const [dataSource, setDataSource] = useState<readonly IProjectData[]>([]);
+  const [buildProjectsOpen, setBuildProjectsOpen] = useState(false);
+
   const [form] = Form.useForm();
 
   const ProjectTitle = ({ data }: { data?: IProjectData }) => (
@@ -151,18 +153,43 @@ const Project = ({ studioName, projectId, onRowClick, onSelect }: IWidget) => {
         >
           编辑
         </Button>,
-        <EditableProTable.RecordCreator
-          key="copy"
-          parentKey={record.id}
-          record={{
-            id: generateUUID(),
-            parent_id: record.id,
-          }}
-        >
-          <Button size="small" type="link">
-            插入子节点
-          </Button>
-        </EditableProTable.RecordCreator>,
+        record.type === "workflow" ? (
+          <></>
+        ) : (
+          <EditableProTable.RecordCreator
+            key="copy"
+            parentKey={record.id}
+            record={{
+              id: generateUUID(),
+              parent_id: record.id,
+            }}
+          >
+            <Dropdown.Button
+              size="small"
+              type="link"
+              menu={{
+                items: [
+                  {
+                    key: "multi",
+                    label: "批量添加",
+                  },
+                ],
+                onClick: (e) => {
+                  switch (e.key) {
+                    case "multi":
+                      setCurr(record.id);
+                      setBuildProjectsOpen(true);
+                      break;
+                    default:
+                      break;
+                  }
+                },
+              }}
+            >
+              插入子节点
+            </Dropdown.Button>
+          </EditableProTable.RecordCreator>
+        ),
         <Button
           type="link"
           danger
@@ -198,7 +225,13 @@ const Project = ({ studioName, projectId, onRowClick, onSelect }: IWidget) => {
   }, [projectId]);
   return (
     <>
-      <Space></Space>
+      <TaskBuilderProjectsModal
+        studioName={studioName}
+        parentId={curr}
+        open={buildProjectsOpen}
+        onClose={() => setBuildProjectsOpen(false)}
+        onDone={() => actionRef.current?.reload()}
+      />
       <EditableProTable<IProjectData>
         onRow={(record) => ({
           onClick: () => {
