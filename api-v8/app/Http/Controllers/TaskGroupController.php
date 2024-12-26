@@ -65,6 +65,8 @@ class TaskGroupController extends Controller
                     'id' => Str::uuid(),
                     'old_id' => $task['id'],
                     'title' => $task['title'],
+                    'type' => $task['type'],
+                    'description' => $task['description'],
                     'order' => $task['order'],
                     'parent_id' => $task['parent_id'],
                     'project_id' => $project['project_id'],
