@@ -27,10 +27,8 @@ class ProjectController extends Controller
         switch ($request->get('view')) {
             case 'studio':
                 $table = Project::where('owner_id', $user['user_uid'])
-                    ->whereNull('parent_id');
-                if ($request->get('type', 'normal') !== 'all') {
-                    $table = $table->where('type', $request->get('type', 'normal'));
-                }
+                    ->whereNull('parent_id')
+                    ->where('type', $request->get('type', 'instance'));
                 break;
             case 'project-tree':
                 $table = Project::where('id', $request->get('project_id'))
@@ -100,7 +98,7 @@ class ProjectController extends Controller
         $new->parent_id = $request->get('parent_id');
         $new->editor_id = $user['user_uid'];
         $new->owner_id = $studioId;
-        $new->type = $request->get('type', 'normal');
+        $new->type = $request->get('type', 'instance');
 
         if (Str::isUuid($request->get('parent_id'))) {
             $parentPath = Project::where('id', $request->get('parent_id'))->value('path');
