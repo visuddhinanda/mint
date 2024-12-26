@@ -45,7 +45,7 @@ class ProjectTreeController extends Controller
                 'id' => Str::uuid(),
                 'old_id' => $value['id'],
                 'title' => $value['title'],
-                'type' => 'normal',
+                'type' => $value['type'],
                 'parent_id' => $value['parent_id'],
                 'path' => null,
                 'owner_id' => $studioId,
@@ -66,6 +66,13 @@ class ProjectTreeController extends Controller
                 } else {
                     $newData[$key]['parent_id'] = null;
                 }
+            } else if (!empty($request->get('parent_id'))) {
+                $parentPath = json_decode(Project::find($request->get('parent_id'))->value('path'));
+                if (!is_array($parentPath)) {
+                    $parentPath = [];
+                }
+                $newData[$key]['path'] = json_encode([...$parentPath, $request->get('parent_id')], JSON_UNESCAPED_UNICODE);
+                $newData[$key]['parent_id'] = $request->get('parent_id');
             }
         }
         foreach ($newData as $key => $value) {
