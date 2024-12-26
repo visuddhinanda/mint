@@ -203,6 +203,7 @@ export interface ITaskGroupResponse {
 }
 export interface IProjectTreeInsertRequest {
   studio_name: string;
+  parent_id?: string | null;
   data: IProjectUpdateRequest[];
 }
 
