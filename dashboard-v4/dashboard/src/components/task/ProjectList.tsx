@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { ActionType, ProList } from "@ant-design/pro-components";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 import { Button, message, Modal, Popover } from "antd";
 import { Dropdown } from "antd";
@@ -17,29 +17,6 @@ import { getSorterUrl } from "../../utils";
 import { TransferOutLinedIcon } from "../../assets/icon";
 import { IProjectData, IProjectListResponse, TProjectType } from "../api/task";
 import ProjectCreate from "./ProjectCreate";
-
-export const channelTypeFilter = {
-  all: {
-    text: <FormattedMessage id="channel.type.all.title" />,
-    status: "Default",
-  },
-  translation: {
-    text: <FormattedMessage id="channel.type.translation.label" />,
-    status: "Success",
-  },
-  nissaya: {
-    text: <FormattedMessage id="channel.type.nissaya.label" />,
-    status: "Processing",
-  },
-  commentary: {
-    text: <FormattedMessage id="channel.type.commentary.label" />,
-    status: "Default",
-  },
-  original: {
-    text: <FormattedMessage id="channel.type.original.label" />,
-    status: "Default",
-  },
-};
 
 export interface IResNumberResponse {
   ok: boolean;
