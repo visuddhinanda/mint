@@ -192,9 +192,9 @@ const TypeArticleReaderToolbarWidget = ({
       <ArticleTplModal
         title={title}
         type="article"
-        id={articleId}
+        articleId={articleId}
         open={tplOpen}
-        onOpenChange={(visible: boolean) => setTplOpen(visible)}
+        onClose={() => setTplOpen(false)}
       />
       <WordCount
         open={wordCountOpen}
