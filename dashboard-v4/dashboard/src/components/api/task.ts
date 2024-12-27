@@ -148,6 +148,7 @@ export interface IProjectUpdateRequest {
   type: TProjectType;
   description?: string | null;
   parent_id?: string | null;
+  res_id?: string;
 }
 
 export interface IProjectListResponse {
@@ -199,7 +200,7 @@ export interface ITaskGroupInsertData {
 export interface ITaskGroupResponse {
   ok: boolean;
   message: string;
-  data: string;
+  data: { taskCount: number; taskRelationCount: number };
 }
 export interface IProjectTreeInsertRequest {
   studio_name: string;
@@ -207,8 +208,13 @@ export interface IProjectTreeInsertRequest {
   data: IProjectUpdateRequest[];
 }
 
+interface IProjectTreeData {
+  id: string;
+  resId?: string;
+  isLeaf: boolean;
+}
 export interface IProjectTreeResponse {
   ok: boolean;
   message: string;
-  data: { leafs: string[] };
+  data: { rows: IProjectTreeData[]; count: number };
 }
