@@ -614,6 +614,11 @@ class TemplateRender
         $book = $this->get_param($this->param, "book", 6);
         $paragraphs = $this->get_param($this->param, "paragraphs", 7);
         $anthology = $this->get_param($this->param, "anthology", 8);
+        if ($type === 'chapter' && empty($id)) {
+            $book = (int)$book;
+            $paragraphs = (int)$paragraphs;
+            $id = "{$book}-{$paragraphs}";
+        }
         $props = [
             "type" => $type,
             "id" => $id,
