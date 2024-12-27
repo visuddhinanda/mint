@@ -280,10 +280,11 @@ const TaskBuilderProjects = ({
                 return;
               }
               console.debug("prop", prop);
-              let taskData: ITaskGroupInsertData[] = res.data.leafs.map(
-                (projectId, pId) => {
+              let taskData: ITaskGroupInsertData[] = res.data.rows
+                .filter((value) => value.isLeaf)
+                .map((project, pId) => {
                   return {
-                    project_id: projectId,
+                    project_id: project.id,
                     tasks: workflow.map((task, tId) => {
                       let newContent = task.description;
                       prop
@@ -306,8 +307,7 @@ const TaskBuilderProjects = ({
                       };
                     }),
                   };
-                }
-              );
+                });
 
               console.info("api request", taskUrl, taskData);
               const taskRes = await post<
@@ -318,6 +318,14 @@ const TaskBuilderProjects = ({
               if (taskRes.ok) {
                 message.success("ok");
                 setMessages((origin) => [...origin, "生成任务成功."]);
+                setMessages((origin) => [
+                  ...origin,
+                  "生成任务" + taskRes.data.taskCount,
+                ]);
+                setMessages((origin) => [
+                  ...origin,
+                  "生成任务关联" + taskRes.data.taskRelationCount,
+                ]);
                 onDone && onDone();
               } else {
                 setMessages((origin) => [
