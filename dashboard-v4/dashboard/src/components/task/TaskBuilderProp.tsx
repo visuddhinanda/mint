@@ -1,12 +1,14 @@
-import { Divider, InputNumber } from "antd";
+import { Divider, Input, InputNumber } from "antd";
 
 import { ITaskData } from "../api/task";
 import "../article/article.css";
 import { useEffect, useState } from "react";
 
+type TParamType = "number" | "string";
 export interface IParam {
   key: string;
   value: string;
+  type: TParamType;
   initValue: number;
   step: number;
 }
@@ -24,32 +26,57 @@ const TaskBuilderProp = ({ workflow, onChange }: IWidget) => {
   //console.debug("TaskBuilderProp render");
   const [prop, setProp] = useState<IProp[]>();
   useEffect(() => {
-    setProp(
-      workflow?.map((item) => {
-        return {
-          taskTitle: item.title,
-          taskId: item.id,
-          param: item.description
-            ?.replaceAll("}}", "|}}")
-            .split("|")
-            .filter((value) => value.includes("=?"))
-            .map((item) => {
-              const [k, v] = item.split("=");
-              return {
-                key: k,
-                value: v,
-                initValue: 1,
-                step: v === "?++" ? 1 : v === "?+" ? 0 : -1,
-              };
-            }),
-        };
-      })
-    );
+    const newProp = workflow?.map((item) => {
+      const num = item.description
+        ?.replaceAll("}}", "|}}")
+        .split("|")
+        .filter((value) => value.includes("=?"))
+        .map((item) => {
+          const [k, v] = item.split("=");
+          const value: IParam = {
+            key: k,
+            value: v,
+            type: "number",
+            initValue: 1,
+            step: v === "?++" ? 1 : v === "?+" ? 0 : -1,
+          };
+          return value;
+        });
+      const constant = item.description
+        ?.replaceAll("}}", "|}}")
+        .split("|")
+        .filter((value) => value.includes("=%"))
+        .map((item) => {
+          const [k, v] = item.split("=");
+          const value: IParam = {
+            key: v,
+            value: "",
+            type: "string",
+            initValue: 0,
+            step: 0,
+          };
+          return value;
+        });
+      let output: IParam[] = [];
+      if (num) {
+        output = [...output, ...num];
+      }
+      if (constant) {
+        output = [...output, ...constant];
+      }
+      return {
+        taskTitle: item.title,
+        taskId: item.id,
+        param: output,
+      };
+    });
+    setProp(newProp);
   }, [workflow]);
 
   const change = (
     tIndex: number,
     pIndex: number,
+    value: string,
     initValue: number,
     step: number
   ) => {
@@ -59,7 +86,7 @@ const TaskBuilderProp = ({ workflow, onChange }: IWidget) => {
         taskId: item.taskId,
         param: item.param?.map((param, pId) => {
           if (tIndex === tId && pIndex === pId) {
-            return { ...param, initValue: initValue, step: step };
+            return { ...param, value: value, initValue: initValue, step: step };
           } else {
             return param;
           }
@@ -80,7 +107,7 @@ const TaskBuilderProp = ({ workflow, onChange }: IWidget) => {
               <thead>
                 <tr>
                   <td>变量名</td>
-                  <td>初始值</td>
+                  <td>值</td>
                   <td>递增步长</td>
                 </tr>
               </thead>
@@ -90,15 +117,39 @@ const TaskBuilderProp = ({ workflow, onChange }: IWidget) => {
                     <tr key={paramId}>
                       <td key={1}>{item.key}</td>
                       <td key={2}>
-                        <InputNumber
-                          defaultValue={item.initValue}
-                          value={item.initValue}
-                          onChange={(e) => {
-                            if (e) {
-                              change(taskId, paramId, e, item.step);
-                            }
-                          }}
-                        />
+                        {item.type === "number" ? (
+                          <InputNumber
+                            defaultValue={item.initValue}
+                            value={item.initValue}
+                            onChange={(e) => {
+                              if (e) {
+                                change(
+                                  taskId,
+                                  paramId,
+                                  item.value,
+                                  e,
+                                  item.step
+                                );
+                              }
+                            }}
+                          />
+                        ) : (
+                          <Input
+                            defaultValue={item.value}
+                            value={item.value}
+                            onChange={(e) => {
+                              if (e) {
+                                change(
+                                  taskId,
+                                  paramId,
+                                  e.target.value,
+                                  item.initValue,
+                                  item.step
+                                );
+                              }
+                            }}
+                          />
+                        )}
                       </td>
                       <td key={3}>
                         {item.value === "?" ? (
@@ -109,7 +160,13 @@ const TaskBuilderProp = ({ workflow, onChange }: IWidget) => {
                             readOnly={item.value === "?++"}
                             onChange={(e) => {
                               if (e) {
-                                change(taskId, paramId, item.initValue, e);
+                                change(
+                                  taskId,
+                                  paramId,
+                                  item.value,
+                                  item.initValue,
+                                  e
+                                );
                               }
                             }}
                           />
