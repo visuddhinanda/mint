@@ -24,6 +24,7 @@ import { ISearchParams } from "../../pages/library/article/show";
 import { TaskBuilderModal } from "../task/TaskBuilder";
 import { useAppSelector } from "../../hooks";
 import { currentUser } from "../../reducers/current-user";
+import { ArticleTplModal } from "../template/Builder/ArticleTpl";
 
 interface IWidget {
   type?: ArticleType;
@@ -67,6 +68,7 @@ const TypePaliWidget = ({
   const [errorCode, setErrorCode] = useState<number>();
   const [remains, setRemains] = useState(false);
   const [taskBuilderModalOpen, setTaskBuilderModalOpen] = useState(false);
+  const [tplOpen, setTplOpen] = useState(false);
   const user = useAppSelector(currentUser);
   const channels = channelId?.split("_");
 
@@ -249,10 +251,22 @@ const TypePaliWidget = ({
             open={taskBuilderModalOpen}
             onClose={() => setTaskBuilderModalOpen(false)}
           />
+          <ArticleTplModal
+            title={title}
+            type="chapter"
+            articleId={articleId}
+            channelsId={channelId}
+            open={tplOpen}
+            onClose={() => setTplOpen(false)}
+          />
           <div>
             <Dropdown
               menu={{
                 items: [
+                  {
+                    key: "tpl",
+                    label: "获取模板",
+                  },
                   {
                     key: "task",
                     label: "生成任务",
@@ -262,6 +276,9 @@ const TypePaliWidget = ({
                   switch (key) {
                     case "task":
                       setTaskBuilderModalOpen(true);
+                      break;
+                    case "tpl":
+                      setTplOpen(true);
                       break;
                   }
                 },
