@@ -38,6 +38,9 @@ class TaskController extends Controller
             case 'all':
                 $table = Task::whereNotNull('owner_id');
                 break;
+            case 'instance':
+                $table = Task::where('type', 'instance');
+                break;
             case 'studio':
                 $table = Task::where('owner_id', $user['user_uid']);
                 break;
