@@ -1,46 +1,41 @@
-import { useState } from "react";
-import { Col, Modal, Row, Tree } from "antd";
-import { Key } from "antd/lib/table/interface";
+import { useEffect, useState } from "react";
+import { Modal, Tabs } from "antd";
+
 import ArticleTpl from "./ArticleTpl";
 import VideoTpl from "./VideoTpl";
-
-interface DataNode {
-  title: React.ReactNode;
-  key: string;
-  isLeaf?: boolean;
-  children?: DataNode[];
-}
-
-interface tplListNode {
-  name: string;
-  component?: React.ReactNode;
-}
-
-const tplList: tplListNode[] = [
-  { name: "article", component: <ArticleTpl /> },
-  { name: "video", component: <VideoTpl /> },
-  { name: "note" },
-  { name: "term" },
-];
+import { ArticleType } from "../../article/Article";
 
 interface IWidget {
   trigger?: React.ReactNode;
+  open?: boolean;
+  tpl?: ArticleType;
+  articleId?: string;
+  title?: string;
+  onClose?: () => void;
 }
-const TplBuilderWidget = ({ trigger }: IWidget) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [template, setTemplate] =
-    useState<React.ReactNode>("在左侧列表选择一个模版");
+const TplBuilderWidget = ({
+  trigger,
+  open = false,
+  tpl,
+  articleId,
+  title,
+  onClose,
+}: IWidget) => {
+  const [isModalOpen, setIsModalOpen] = useState(open);
 
-  const treeData: DataNode[] = tplList.map((item) => {
-    return { title: item.name, key: item.name };
-  });
+  useEffect(() => setIsModalOpen(open), [open]);
+  useEffect(() => {}, [tpl]);
 
   const showModal = () => {
     setIsModalOpen(true);
   };
 
   const handleCancel = () => {
-    setIsModalOpen(false);
+    if (onClose) {
+      onClose();
+    } else {
+      setIsModalOpen(false);
+    }
   };
 
   return (
@@ -54,22 +49,18 @@ const TplBuilderWidget = ({ trigger }: IWidget) => {
         open={isModalOpen}
         onCancel={handleCancel}
       >
-        <Row>
-          <Col span={6}>
-            <Tree
-              treeData={treeData}
-              onSelect={(selectedKeys: Key[]) => {
-                if (selectedKeys.length > 0) {
-                  const tpl = tplList.find(
-                    (value) => value.name === selectedKeys[0]
-                  )?.component;
-                  setTemplate(tpl);
-                }
-              }}
-            />
-          </Col>
-          <Col span={18}>{template}</Col>
-        </Row>
+        <Tabs
+          tabPosition="left"
+          defaultActiveKey="article"
+          items={[
+            {
+              label: "article",
+              key: "article",
+              children: <ArticleTpl articleId={articleId} type={tpl} />,
+            }, // 务必填写 key
+            { label: "video", key: "video", children: <VideoTpl /> },
+          ]}
+        />
       </Modal>
     </>
   );
