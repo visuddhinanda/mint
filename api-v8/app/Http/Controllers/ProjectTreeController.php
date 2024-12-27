@@ -46,6 +46,7 @@ class ProjectTreeController extends Controller
                 'old_id' => $value['id'],
                 'title' => $value['title'],
                 'type' => $value['type'],
+                'res_id' => $value['res_id'],
                 'parent_id' => $value['parent_id'],
                 'path' => null,
                 'owner_id' => $studioId,
@@ -67,7 +68,8 @@ class ProjectTreeController extends Controller
                     $newData[$key]['parent_id'] = null;
                 }
             } else if (!empty($request->get('parent_id'))) {
-                $parentPath = json_decode(Project::find($request->get('parent_id'))->value('path'));
+                $pPath = Project::where('id', $request->get('parent_id'))->value('path');
+                $parentPath = json_decode($pPath);
                 if (!is_array($parentPath)) {
                     $parentPath = [];
                 }
@@ -75,21 +77,24 @@ class ProjectTreeController extends Controller
                 $newData[$key]['parent_id'] = $request->get('parent_id');
             }
         }
-        foreach ($newData as $key => $value) {
-            unset($newData[$key]['old_id']);
-        }
-        $leafs = [];
+        $output = [];
         foreach ($newData as $key => $value) {
             $children = array_filter($newData, function ($element) use ($value) {
                 return $element['parent_id'] === $value['id'];
             });
-            if (count($children) === 0) {
-                $leafs[] = $value['id'];
-            }
+            $output[] = [
+                'id' => $value['id'],
+                'resId' => $value['res_id'],
+                'isLeaf' => count($children) === 0,
+            ];
+            unset($newData[$key]['old_id']);
+            unset($newData[$key]['res_id']);
         }
+
         $ok = Project::insert($newData);
+
         if ($ok) {
-            return $this->ok(['leafs' => $leafs]);
+            return $this->ok(['rows' => $output, count($output)]);
         } else {
             return $this->error('error', 200, 200);
         }
