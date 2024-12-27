@@ -407,7 +407,7 @@ const TaskList = ({
           if (projectId) {
             url += `&view=project&project_id=${projectId}`;
           } else {
-            url += `&view=all`;
+            url += `&view=instance`;
           }
           if (currFilter) {
             url += `&`;
