@@ -1,11 +1,10 @@
 import { Button, List } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 
-import User from "../auth/User";
-import { ILikeData } from "../api/like";
+import User, { IUser } from "../auth/User";
 
 interface IWidget {
-  data?: ILikeData[];
+  data?: IUser[];
 }
 const WatchList = ({ data }: IWidget) => {
   return (
@@ -15,7 +14,7 @@ const WatchList = ({ data }: IWidget) => {
         <List.Item
           extra={[<Button type="text" danger icon={<DeleteOutlined />} />]}
         >
-          <User {...item.user} />
+          <User {...item} />
         </List.Item>
       )}
     />

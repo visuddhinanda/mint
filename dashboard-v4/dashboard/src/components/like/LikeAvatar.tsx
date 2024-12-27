@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 
-import { ILikeData, ILikeListResponse, TLikeType } from "../api/like";
-import { get } from "../../request";
-import User from "../auth/User";
-import { Popover, Space } from "antd";
-import WatchList from "./WatchList";
-import { WatchAddButton } from "./WatchAdd";
+import {
+  ILikeListResponse,
+  ILikeRequest,
+  ILikeResponse,
+  TLikeType,
+} from "../api/like";
+import { get, post } from "../../request";
+import { IUser } from "../auth/User";
+
+import { IDataType } from "./WatchAdd";
+import EditableAvatarGroup from "./EditableAvatarGroup";
 
 interface IWidget {
   resId?: string;
@@ -13,7 +18,7 @@ interface IWidget {
   type?: TLikeType;
 }
 const LikeAvatar = ({ resId, resType, type }: IWidget) => {
-  const [data, setData] = useState<ILikeData[]>();
+  const [data, setData] = useState<IUser[]>();
   useEffect(() => {
     if (!resId) {
       return;
@@ -23,41 +28,39 @@ const LikeAvatar = ({ resId, resType, type }: IWidget) => {
     get<ILikeListResponse>(url).then((json) => {
       console.info("api response", json);
       if (json.ok) {
-        setData(json.data.rows);
+        setData(json.data.rows.map((item) => item.user));
       }
     });
   }, [resId, type]);
   return (
-    <Space>
-      <Popover trigger={"click"} content={<WatchList data={data} />}>
-        <div>
-          {data?.map((item, id) => {
-            return (
-              <span
-                key={id}
-                style={{ display: "inline-block", marginRight: -8 }}
-              >
-                <User {...item.user} showName={false} hidePopover />
-              </span>
-            );
-          })}
-        </div>
-      </Popover>
-      <WatchAddButton
-        resId={resId}
-        resType={resType}
-        data={data}
-        onAdd={(user: ILikeData) => {
+    <>
+      <EditableAvatarGroup
+        users={data}
+        onFinish={async (values: IDataType) => {
+          if (!resId || !resType) {
+            console.error("no resId or resType", resId, resType);
+            return;
+          }
+          const update: ILikeRequest = {
+            type: "watch",
+            target_id: resId,
+            target_type: resType,
+            user_id: values.user_id,
+          };
+          const url = `/v2/like`;
+          console.info("watch add api request", url, values);
+          const add = await post<ILikeRequest, ILikeResponse>(url, update);
+          console.debug("watch add api response", add);
           setData((origin) => {
             if (origin) {
-              return [...origin, user];
+              return [...origin, add.data.user];
             } else {
-              return [user];
+              return [add.data.user];
             }
           });
         }}
       />
-    </Space>
+    </>
   );
 };
 
