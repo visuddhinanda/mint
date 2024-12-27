@@ -39,22 +39,21 @@ export const Status = ({ task }: { task?: ITaskData }) => {
 
 interface IWidget {
   taskId?: string;
-  task?: ITaskData;
-  onLoad?: (data: ITaskData) => void;
+
   onChange?: (data: ITaskData[]) => void;
   onEdit?: () => void;
 }
-const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
+const TaskReader = ({ taskId, onChange, onEdit }: IWidget) => {
   const [openPreTask, setOpenPreTask] = useState(false);
   const [openNextTask, setOpenNextTask] = useState(false);
+  const [task, setTask] = useState<ITaskData>();
   useEffect(() => {
     const url = `/v2/task/${taskId}`;
     console.info("task api request", url);
     get<ITaskResponse>(url).then((json) => {
       console.info("task api response", json);
-
       if (json.ok) {
-        onLoad && onLoad(json.data);
+        setTask(json.data);
       }
     });
   }, [taskId]);
@@ -101,6 +100,7 @@ const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
       console.info("api response", json);
       if (json.ok) {
         message.success("Success");
+        setTask(json.data);
         onChange && onChange([json.data]);
       } else {
         message.error(json.message);
@@ -139,8 +139,9 @@ const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
         <div>
           <TaskEditButton
             task={task}
-            onChange={(task: ITaskData[]) => {
-              onChange && onChange(task);
+            onChange={(tasks: ITaskData[]) => {
+              setTask(tasks.find((value) => value.id === taskId));
+              onChange && onChange(tasks);
             }}
             onEdit={onEdit}
             onPreTask={(type: TRelation) => {
@@ -163,7 +164,7 @@ const TaskReader = ({ taskId, task, onLoad, onChange, onEdit }: IWidget) => {
           </Space>
         </div>
         <div>
-          <Assignees task={task} showIcon={true} />
+          <Assignees task={task} showIcon={true} onChange={onChange} />
         </div>
       </div>
       <Divider />

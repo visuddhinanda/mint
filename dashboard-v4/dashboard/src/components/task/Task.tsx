@@ -2,7 +2,6 @@ import { useState } from "react";
 import { ITaskData } from "../api/task";
 import TaskReader from "./TaskReader";
 import TaskEdit from "./TaskEdit";
-import { set } from "lodash";
 
 interface IWidget {
   taskId?: string;
@@ -27,8 +26,6 @@ const Task = ({ taskId, onLoad, onChange }: IWidget) => {
       ) : (
         <TaskReader
           taskId={taskId}
-          task={task}
-          onLoad={(data: ITaskData) => setTask(data)}
           onChange={(data: ITaskData[]) => {
             onChange && onChange(data);
             setTask(data.find((t) => t.id === taskId));
