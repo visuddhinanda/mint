@@ -24,16 +24,16 @@ const { Paragraph } = Typography;
 
 interface IWidget {
   type?: ArticleType;
-  id?: string;
+  articleId?: string;
   title?: string;
   style?: TDisplayStyle;
-  channel?: string;
+  channel?: string | null;
   onSelect?: Function;
   onCancel?: Function;
 }
 const ArticleTplWidget = ({
   type,
-  id,
+  articleId,
   channel,
   title,
   style = "modal",
@@ -43,11 +43,11 @@ const ArticleTplWidget = ({
   const [currChannel, setCurrChannel] = useState(channel);
   const [styleText, setStyleText] = useState(style);
   const [typeText, setTypeText] = useState(type);
-  const [idText, setIdText] = useState(id);
+  const [idText, setIdText] = useState(articleId);
   const [tplText, setTplText] = useState("");
   const user = useAppSelector(currentUser);
 
-  const ids = id?.split("_");
+  const ids = articleId?.split("_");
   const id1 = ids ? ids[0] : undefined;
   const channels = ids
     ? ids.length > 1
@@ -104,8 +104,8 @@ const ArticleTplWidget = ({
           {"id："}
           <Space>
             <Input
-              disabled={id ? true : false}
-              defaultValue={id}
+              disabled={articleId ? true : false}
+              defaultValue={articleId}
               width={400}
               value={idText}
               placeholder="Id"
@@ -130,9 +130,9 @@ const ArticleTplWidget = ({
           {"channel："}
           <Space>
             <Input
-              defaultValue={channel}
+              defaultValue={channel ?? ""}
               width={400}
-              value={currChannel}
+              value={currChannel ?? ""}
               placeholder="channel"
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 setCurrChannel(event.target.value);
@@ -202,20 +202,22 @@ const ArticleTplWidget = ({
 interface IModalWidget {
   open?: boolean;
   type?: ArticleType;
-  id?: string;
+  articleId?: string;
+  channelsId?: string | null;
   title?: string;
   style?: TDisplayStyle;
   trigger?: JSX.Element;
-  onOpenChange?: Function;
+  onClose?: () => void;
 }
 export const ArticleTplModal = ({
   open = false,
   type,
-  id,
+  articleId,
+  channelsId,
   title,
   style = "modal",
   trigger,
-  onOpenChange,
+  onClose,
 }: IModalWidget) => {
   const [isModalOpen, setIsModalOpen] = useState(open);
 
@@ -230,9 +232,10 @@ export const ArticleTplModal = ({
   };
 
   const handleCancel = () => {
-    setIsModalOpen(false);
-    if (typeof onOpenChange !== "undefined") {
-      onOpenChange(false);
+    if (onClose) {
+      onClose();
+    } else {
+      setIsModalOpen(false);
     }
   };
 
@@ -247,7 +250,13 @@ export const ArticleTplModal = ({
         onCancel={handleCancel}
         destroyOnClose
       >
-        <ArticleTplWidget type={type} id={id} title={title} style={style} />
+        <ArticleTplWidget
+          type={type}
+          articleId={articleId}
+          channel={channelsId}
+          title={title}
+          style={style}
+        />
       </Modal>
     </>
   );
