@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\Project;
+use App\Models\TaskRelation;
+use App\Models\TaskAssignee;
+
 use Illuminate\Support\Facades\Log;
 
 use Illuminate\Http\Request;
@@ -57,15 +60,23 @@ class TaskGroupController extends Controller
         }
 
         $data = [];
+        $trData = [];
+        $taData = [];
         foreach ($input as $key => $project) {
             # code...
             $projectData = [];
+            $tasks = [];
+            $taskRelationData = [];
+            $taskAssigneesData = [];
             foreach ($project['tasks'] as $key => $task) {
+                $uuid = Str::uuid();
+                $tasks[$task['id']] = $uuid;
                 $projectData[] = [
-                    'id' => Str::uuid(),
+                    'id' => $uuid,
                     'old_id' => $task['id'],
                     'title' => $task['title'],
-                    'type' => $task['type'],
+                    'type' => 'instance',
+                    'status' => $task['status'],
                     'description' => $task['description'],
                     'order' => $task['order'],
                     'parent_id' => $task['parent_id'],
@@ -90,11 +101,46 @@ class TaskGroupController extends Controller
                 unset($projectData[$key]['old_id']);
             }
             $data = [...$data, ...$projectData];
+
+            //处理 task relation
+            $tasksId = array_keys($tasks);
+            $taskRelations = TaskRelation::whereIn('task_id', $tasksId)
+                ->get();
+            foreach ($taskRelations as $key => $value) {
+                $taskRelationData[] = [
+                    'task_id' => $tasks[$value->task_id],
+                    'next_task_id' => $tasks[$value->next_task_id],
+                    'editor_id' => $user['user_uid'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            $trData = [...$trData, ...$taskRelationData];
+
+            //处理 task assignee
+            $ta = TaskAssignee::whereIn('task_id', $tasksId)->get();
+            foreach ($ta as $key => $value) {
+                $taskAssigneesData[] = [
+                    'id' => Str::uuid(),
+                    'task_id' => $tasks[$value->task_id],
+                    'assignee_id' => $value->assignee_id,
+                    'editor_id' => $user['user_uid'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            $taData = [...$taData, ...$taskAssigneesData];
         }
 
-        $ok = Task::insert($data);
-        if ($ok) {
-            return $this->ok('ok');
+        $taskOk = Task::insert($data);
+        $taskRelationOk = TaskRelation::insert($trData);
+        $taskAssigneeOk = TaskAssignee::insert($taData);
+        if ($taskOk && $taskRelationOk && $taskAssigneeOk) {
+            return $this->ok([
+                'taskCount' => count($data),
+                'taskRelationCount' => count($trData),
+                'taskAssigneeCount' => count($taData),
+            ]);
         } else {
             return $this->error('error', 200, 200);
         }
