@@ -13,6 +13,7 @@ import {
 import ChapterToc from "../article/ChapterToc";
 import { IChapterToc } from "../api/Corpus";
 import { post } from "../../request";
+import TaskBuilderProp, { IParam, IProp } from "./TaskBuilderProp";
 
 interface IModal {
   tiger?: React.ReactNode;
@@ -64,6 +65,8 @@ const TaskBuilder = ({ studioName, book, para, style }: IWidget) => {
   const [workflow, setWorkflow] = useState<ITaskData[]>();
   const [chapter, setChapter] = useState<IChapterToc[]>();
   const [messages, setMessages] = useState<string[]>([]);
+  const [prop, setProp] = useState<IProp[]>();
+
   const steps = [
     {
       title: "章节选择",
@@ -82,6 +85,17 @@ const TaskBuilder = ({ studioName, book, para, style }: IWidget) => {
           studioName={studioName}
           onData={(data) => setWorkflow(data)}
         />
+      ),
+    },
+    {
+      title: "参数设置",
+      content: (
+        <div>
+          <TaskBuilderProp
+            workflow={workflow}
+            onChange={(data: IProp[] | undefined) => setProp(data)}
+          />
+        </div>
       ),
     },
     {
@@ -144,6 +158,7 @@ const TaskBuilder = ({ studioName, book, para, style }: IWidget) => {
                     title: item.text,
                     type: "instance",
                     parent_id: item.parent.toString(),
+                    res_id: `${item.book}-${item.paragraph}`,
                   };
                 }),
               };
@@ -165,14 +180,55 @@ const TaskBuilder = ({ studioName, book, para, style }: IWidget) => {
               if (!workflow) {
                 return;
               }
-              let taskData: ITaskGroupInsertData[] = res.data.leafs.map(
-                (projectId) => {
+              let taskData: ITaskGroupInsertData[] = res.data.rows
+                .filter((value) => value.isLeaf)
+                .map((project, pId) => {
                   return {
-                    project_id: projectId,
-                    tasks: workflow,
+                    project_id: project.id,
+                    tasks: workflow.map((task, tId) => {
+                      let newContent = task.description;
+                      prop
+                        ?.find((pValue) => pValue.taskId === task.id)
+                        ?.param?.forEach((value: IParam) => {
+                          //替换数字参数
+                          if (value.type === "number") {
+                            const searchValue = `${value.key}=${value.value}`;
+                            const replaceValue =
+                              `${value.key}=` +
+                              (value.initValue + value.step * pId).toString();
+                            newContent = newContent?.replace(
+                              searchValue,
+                              replaceValue
+                            );
+                          } else if (value.type === "string") {
+                            newContent = newContent?.replace(
+                              value.key,
+                              value.value
+                            );
+                          }
+                          //替换book
+                          if (project.resId) {
+                            const [book, para] = project.resId.split("-");
+                            newContent = newContent?.replace(
+                              "book=#",
+                              `book=${book}`
+                            );
+                            newContent = newContent?.replace(
+                              "paragraphs=#",
+                              `paragraphs=${para}`
+                            );
+                          }
+                        });
+
+                      console.debug("description", newContent);
+                      return {
+                        ...task,
+                        type: "instance",
+                        description: newContent,
+                      };
+                    }),
                   };
-                }
-              );
+                });
 
               console.info("api request", taskUrl, taskData);
               const taskRes = await post<
@@ -182,6 +238,14 @@ const TaskBuilder = ({ studioName, book, para, style }: IWidget) => {
               if (taskRes.ok) {
                 message.success("ok");
                 setMessages((origin) => [...origin, "生成任务成功"]);
+                setMessages((origin) => [
+                  ...origin,
+                  "生成任务" + taskRes.data.taskCount,
+                ]);
+                setMessages((origin) => [
+                  ...origin,
+                  "生成任务关联" + taskRes.data.taskRelationCount,
+                ]);
               }
             }}
           >
