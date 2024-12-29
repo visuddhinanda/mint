@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { Divider, Space, Tag, Typography, message } from "antd";
-import { CodeSandboxOutlined } from "@ant-design/icons";
+import { Button, Divider, Space, Tag, Typography, message } from "antd";
+import { CodeSandboxOutlined, EditOutlined } from "@ant-design/icons";
 
 import { ITaskData, ITaskResponse, ITaskUpdateRequest } from "../api/task";
 import { get, patch } from "../../request";
@@ -12,28 +12,17 @@ import TaskEditButton, { TRelation } from "./TaskEditButton";
 import PreTask from "./PreTask";
 import Like from "../like/Like";
 import Assignees from "./Assignees";
+import PlanDate from "./PlanDate";
+import TaskTitle from "./TaskTitle";
+import TaskStatus from "./TaskStatus";
 
-const { Title } = Typography;
+const { Text } = Typography;
 
 export const Milestone = ({ task }: { task?: ITaskData }) => {
   return task?.is_milestone ? (
     <Tag icon={<CodeSandboxOutlined />} color="error">
       里程碑
     </Tag>
-  ) : null;
-};
-
-export const Status = ({ task }: { task?: ITaskData }) => {
-  return task?.status === "pending" ? (
-    <Tag color="default">未发布</Tag>
-  ) : task?.status === "published" ? (
-    <Tag color="warning">待领取</Tag>
-  ) : task?.status === "running" ? (
-    <Tag color="processing">进行中</Tag>
-  ) : task?.status === "done" ? (
-    <Tag color="success">已完成</Tag>
-  ) : task?.status === "restarted" ? (
-    <Tag color="error">已重启</Tag>
   ) : null;
 };
 
@@ -111,7 +100,7 @@ const TaskReader = ({ taskId, onChange, onEdit }: IWidget) => {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Space>
-          <Status task={task} />
+          <TaskStatus task={task} />
           <Milestone task={task} />
           <PreTask
             task={task}
@@ -154,7 +143,13 @@ const TaskReader = ({ taskId, onChange, onEdit }: IWidget) => {
           />
         </div>
       </div>
-      <Title>{task?.title}</Title>
+      <TaskTitle
+        task={task}
+        onChange={(data) => {
+          setTask(data[0]);
+          onChange && onChange(data);
+        }}
+      />
       <div>
         <div>
           <Space>
@@ -164,11 +159,41 @@ const TaskReader = ({ taskId, onChange, onEdit }: IWidget) => {
           </Space>
         </div>
         <div>
-          <Assignees task={task} showIcon={true} onChange={onChange} />
+          <Space>
+            <Text key={"1"}>指派给</Text>
+            <Assignees
+              key={"assignees"}
+              task={task}
+              onChange={(data) => {
+                setTask(data[0]);
+                onChange && onChange(data);
+              }}
+            />
+            <Text>|</Text>
+            <Text key={"2"}>执行人</Text>
+            <User key={"executor"} {...task?.executor} />
+          </Space>
+        </div>
+        <div>
+          <PlanDate />
         </div>
       </div>
       <Divider />
-      <MdView html={task?.html} />
+      <div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            padding: 8,
+          }}
+        >
+          <span></span>
+          <span>
+            <Button icon={<EditOutlined />}>编辑</Button>
+          </span>
+        </div>
+        <MdView html={task?.html} />
+      </div>
     </div>
   );
 };

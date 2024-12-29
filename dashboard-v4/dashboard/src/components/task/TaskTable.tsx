@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 
 import { IProject, ITaskData } from "../api/task";
 import "../article/article.css";
-import { Status } from "./TaskReader";
 import User from "../auth/User";
 import Assignees from "./Assignees";
+import TaskStatusButton from "./TaskStatusButton";
 
 interface ITaskHeading {
   id: string;
@@ -136,7 +136,7 @@ const TaskTable = ({ tasks }: IWidget) => {
                         )}
                       </div>
                       <div>
-                        <Status task={taskData} />
+                        <TaskStatusButton type="tag" task={taskData} />
                       </div>
                     </div>
                   </td>
