@@ -1,5 +1,4 @@
-import { message, Space, Typography } from "antd";
-import { TeamOutlined } from "@ant-design/icons";
+import { message } from "antd";
 
 import { ITaskData, ITaskResponse, ITaskUpdateRequest } from "../api/task";
 import { IUser } from "../auth/User";
@@ -7,32 +6,16 @@ import EditableAvatarGroup from "../like/EditableAvatarGroup";
 import { useEffect, useState } from "react";
 import { IDataType } from "../like/WatchAdd";
 import { patch } from "../../request";
-const { Text } = Typography;
 
 interface IWidget {
   task?: ITaskData;
-  showIcon?: boolean;
-  readonly?: boolean;
   onChange?: (data: ITaskData[]) => void;
 }
-const Assignees = ({
-  task,
-  showIcon = false,
-  readonly = false,
-  onChange,
-}: IWidget) => {
+const Assignees = ({ task, onChange }: IWidget) => {
   const [data, setData] = useState<IUser[] | null>();
   useEffect(() => setData(task?.assignees), [task]);
   return (
-    <Space>
-      {showIcon ? (
-        <Text>
-          <TeamOutlined />
-          指派给
-        </Text>
-      ) : (
-        <></>
-      )}
+    <>
       <EditableAvatarGroup
         users={data ?? undefined}
         onFinish={async (values: IDataType) => {
@@ -67,7 +50,7 @@ const Assignees = ({
           );
         }}
       />
-    </Space>
+    </>
   );
 };
 
