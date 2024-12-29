@@ -22,9 +22,10 @@ import User, { IUser } from "../auth/User";
 import { GroupIcon } from "../../assets/icon";
 import Options, { IMenu } from "./Options";
 import Filter from "./Filter";
-import { Milestone, Status } from "./TaskReader";
+import { Milestone } from "./TaskReader";
 import { WorkflowModal } from "./Workflow";
 import Assignees from "./Assignees";
+import TaskStatusButton from "./TaskStatusButton";
 
 const { Text } = Typography;
 function generateUUID() {
@@ -189,7 +190,7 @@ const TaskList = ({
             ) : (
               <></>
             )}
-            <Status task={entity} />
+            <TaskStatusButton type="tag" task={entity} onChange={onChange} />
             <Milestone task={entity} />
             {entity.project ? (
               <Text type="secondary">
