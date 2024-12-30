@@ -22,6 +22,9 @@ const TaskStatus = ({ task }: { task?: ITaskData }) => {
     case "restarted":
       color = "error";
       break;
+    case "requested_restart":
+      color = "warning";
+      break;
   }
   return (
     <Tag color={color}>
