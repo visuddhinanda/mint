@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 
-import { Button, Divider, Space, Tag, Typography, message } from "antd";
-import { CodeSandboxOutlined, EditOutlined } from "@ant-design/icons";
+import { Divider, Space, Tag, Typography, message } from "antd";
+import { CodeSandboxOutlined } from "@ant-design/icons";
 
 import { ITaskData, ITaskResponse, ITaskUpdateRequest } from "../api/task";
 import { get, patch } from "../../request";
-import MdView from "../template/MdView";
 import User from "../auth/User";
 import TimeShow from "../general/TimeShow";
 import TaskEditButton, { TRelation } from "./TaskEditButton";
@@ -15,6 +14,7 @@ import Assignees from "./Assignees";
 import PlanDate from "./PlanDate";
 import TaskTitle from "./TaskTitle";
 import TaskStatus from "./TaskStatus";
+import Description from "./Description";
 
 const { Text } = Typography;
 
@@ -179,21 +179,7 @@ const TaskReader = ({ taskId, onChange, onEdit }: IWidget) => {
         </div>
       </div>
       <Divider />
-      <div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            padding: 8,
-          }}
-        >
-          <span></span>
-          <span>
-            <Button icon={<EditOutlined />}>编辑</Button>
-          </span>
-        </div>
-        <MdView html={task?.html} />
-      </div>
+      <Description task={task} />
     </div>
   );
 };
