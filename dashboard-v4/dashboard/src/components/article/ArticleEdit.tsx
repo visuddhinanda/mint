@@ -25,6 +25,7 @@ import { IStudio } from "../auth/Studio";
 import ArticleEditTools from "./ArticleEditTools";
 import { useAppSelector } from "../../hooks";
 import { currentUser } from "../../reducers/current-user";
+import "./article.css";
 
 interface IFormData {
   uid: string;
