@@ -71,7 +71,7 @@ const Workflow = ({ studioName, onSelect, onData }: IWidget) => {
           studioName={studioName}
           projectId={projectId}
           readonly
-          onData={onData}
+          onChange={onData}
         />
       </div>
     </div>
