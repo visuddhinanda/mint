@@ -39,8 +39,9 @@ const TaskStatusButton = ({
 
   const setStatus = (setting: ITaskUpdateRequest) => {
     const url = `/v2/task-status/${setting.id}`;
-
+    console.info("api request", url, setting);
     patch<ITaskUpdateRequest, ITaskListResponse>(url, setting).then((json) => {
+      console.info("api response", json);
       if (json.ok) {
         message.success("Success");
         onChange && onChange(json.data.rows);
@@ -83,6 +84,9 @@ const TaskStatusButton = ({
       menuEnable = ["restarted"];
       break;
     case "restarted":
+      menuEnable = ["done"];
+      break;
+    case "requested_restart":
       menuEnable = ["done"];
       break;
   }
@@ -147,32 +151,34 @@ const TaskStatusButton = ({
     }
   };
   let newStatus: TTaskStatus = "pending";
-  let buttonText = "发布";
+
   switch (task?.status) {
     case "pending":
       newStatus = "published";
-      buttonText = "发布";
       break;
     case "published":
       newStatus = "running";
-      buttonText = "领取";
       break;
     case "running":
       newStatus = "done";
-      buttonText = "完成任务";
-
       break;
     case "done":
       newStatus = "restarted";
-      buttonText = "重做";
       break;
     case "restarted":
       newStatus = "done";
-      buttonText = "完成任务";
+      break;
+    case "requested_restart":
+      newStatus = "done";
       break;
     default:
       break;
   }
+
+  let buttonText = intl.formatMessage({
+    id: `buttons.task.status.change.to.${newStatus}`,
+    defaultMessage: "unknown",
+  });
   return (
     <Popconfirm
       title={intl.formatMessage(
