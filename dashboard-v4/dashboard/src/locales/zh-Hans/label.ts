@@ -71,7 +71,7 @@ const items = {
   "labels.task.status.running": "进行中",
   "labels.task.status.done": "已完成",
   "labels.task.status.restarted": "已重启",
-  "labels.task.status.restart_requested": "已请求重启",
+  "labels.task.status.requested_restart": "已请求重启",
   "labels.task.status.closed": "已关闭",
   "labels.task.status.canceled": "已取消",
   "labels.task.status.expired": "已过期",

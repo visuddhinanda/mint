@@ -63,7 +63,7 @@ const items = {
   "labels.task.status.running": "running",
   "labels.task.status.done": "done",
   "labels.task.status.restarted": "restarted",
-  "labels.task.status.restart_requested": "restart requested",
+  "labels.task.status.requested_restart": "requested restart",
   "labels.task.status.closed": "closed",
   "labels.task.status.canceled": "canceled",
   "labels.task.status.expired": "expired",
