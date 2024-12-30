@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useIntl } from "react-intl";
-import { Avatar, Button, Form, message, Space, Typography } from "antd";
+import { Button, Form, message, Space, Typography } from "antd";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { EditableProTable, useRefFunction } from "@ant-design/pro-components";
 
@@ -18,7 +18,6 @@ import {
 } from "../api/task";
 import { get, post } from "../../request";
 import TaskEditDrawer from "./TaskEditDrawer";
-import User, { IUser } from "../auth/User";
 import { GroupIcon } from "../../assets/icon";
 import Options, { IMenu } from "./Options";
 import Filter from "./Filter";
@@ -26,8 +25,22 @@ import { Milestone } from "./TaskReader";
 import { WorkflowModal } from "./Workflow";
 import Assignees from "./Assignees";
 import TaskStatusButton from "./TaskStatusButton";
+import Executors from "./Executors";
 
 const { Text } = Typography;
+
+export const treeToList = (tree: readonly ITaskData[]): ITaskData[] => {
+  let output: ITaskData[] = [];
+  const scan = (value: ITaskData) => {
+    value.children?.forEach(scan);
+    value.children = undefined;
+    if (value.type !== "group") {
+      output.push(value);
+    }
+  };
+  tree.forEach(scan);
+  return output;
+};
 function generateUUID() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
     var r = (Math.random() * 16) | 0,
@@ -35,27 +48,6 @@ function generateUUID() {
     return v.toString(16);
   });
 }
-
-export const Executors = ({
-  data,
-  all,
-}: {
-  data: ITaskData;
-  all: readonly ITaskData[];
-}) => {
-  const children = all.filter((value) => value.parent_id === data.id);
-  let executors: IUser[] = data.executor ? [data.executor] : [];
-  children.forEach((task) => {
-    executors = executors.concat(task.executor ?? []);
-  });
-  return (
-    <Avatar.Group>
-      {executors.map((item, id) => {
-        return <User {...item} key={id} showName={executors.length === 1} />;
-      })}
-    </Avatar.Group>
-  );
-};
 
 export interface IFilter {
   field:
@@ -86,23 +78,23 @@ interface IParams {
 interface IWidget {
   studioName?: string;
   projectId?: string;
+  taskTree?: readonly ITaskData[];
   editable?: boolean;
   filters?: IFilter[];
   status?: TTaskStatus[];
   sortBy?: "order" | "created_at" | "updated_at" | "started_at" | "finished_at";
   groupBy?: "executor_id" | "owner_id" | "status" | "project_id";
-  onLoad?: (data: ITaskData[]) => void;
-  onChange?: (data: ITaskData[]) => void;
+  onChange?: (treeData: ITaskData[]) => void;
 }
 const TaskList = ({
   studioName,
   projectId,
+  taskTree,
   editable = false,
   status,
   sortBy = "order",
   groupBy,
   filters,
-  onLoad,
   onChange,
 }: IWidget) => {
   const intl = useIntl();
@@ -118,6 +110,23 @@ const TaskList = ({
 
   const [currFilter, setCurrFilter] = useState(filters);
 
+  console.info("render");
+  const getChildren = (
+    record: ITaskData,
+    findIn: ITaskData[]
+  ): ITaskData[] | undefined => {
+    const children = findIn
+      .filter((item) => item.parent_id === record.id)
+      .map((item) => {
+        return { ...item, children: getChildren(item, findIn) };
+      });
+
+    if (children.length > 0) {
+      return children;
+    }
+    return undefined;
+  };
+
   useEffect(() => {
     if (!projectId) {
       return;
@@ -132,6 +141,12 @@ const TaskList = ({
       }
     });
   }, [projectId]);
+
+  useEffect(() => {
+    if (taskTree) {
+      setDataSource(taskTree);
+    }
+  }, [taskTree]);
 
   const loopDataSourceFilter = (
     data: readonly ITaskData[],
@@ -156,6 +171,22 @@ const TaskList = ({
   const removeRow = useRefFunction((record: ITaskData) => {
     setDataSource(loopDataSourceFilter(dataSource, record.id));
   });
+
+  const changeData = (data: ITaskData[]) => {
+    console.debug("task change", data);
+    const update = (item: ITaskData): ITaskData => {
+      item.children = item.children?.map(update);
+      const found = data.find((t) => t.id === item.id);
+      if (found) {
+        return { ...found, children: item.children };
+      }
+      return item;
+    };
+    const newData = dataSource.map(update);
+    setRawData(treeToList(newData));
+    setDataSource(newData);
+    onChange && onChange(JSON.parse(JSON.stringify(newData)));
+  };
 
   const columns: ProColumns<ITaskData>[] = [
     {
@@ -190,7 +221,7 @@ const TaskList = ({
             ) : (
               <></>
             )}
-            <TaskStatusButton type="tag" task={entity} onChange={onChange} />
+            <TaskStatusButton type="tag" task={entity} onChange={changeData} />
             <Milestone task={entity} />
             {entity.project ? (
               <Text type="secondary">
@@ -225,7 +256,7 @@ const TaskList = ({
       search: false,
       readonly: true,
       render(dom, entity, index, action, schema) {
-        return <Assignees task={entity} />;
+        return <Assignees task={entity} onChange={changeData} />;
       },
     },
     {
@@ -302,6 +333,8 @@ const TaskList = ({
               record={{
                 id: generateUUID(),
                 parent_id: record.id,
+                status: "pending",
+                type: project?.type === "workflow" ? "workflow" : "instance",
               }}
             >
               <Button size="small" type="link">
@@ -323,22 +356,6 @@ const TaskList = ({
         }
       : { search: false },
   ];
-
-  const getChildren = (
-    record: ITaskData,
-    findIn: ITaskData[]
-  ): ITaskData[] | undefined => {
-    const children = findIn
-      .filter((item) => item.parent_id === record.id)
-      .map((item) => {
-        return { ...item, children: getChildren(item, findIn) };
-      });
-
-    if (children.length > 0) {
-      return children;
-    }
-    return undefined;
-  };
 
   useEffect(() => {
     actionRef.current?.reload();
@@ -398,6 +415,7 @@ const TaskList = ({
                   title: "新建任务",
                   type: project.type === "workflow" ? "workflow" : "instance",
                   is_milestone: false,
+                  status: "pending",
                 }),
               }
             : false
@@ -428,8 +446,7 @@ const TaskList = ({
           console.info("task list api request", url);
           const res = await get<ITaskListResponse>(url);
           console.info("task list api response", res);
-          setRawData(res.data.rows);
-          onLoad && onLoad(res.data.rows);
+          //setRawData(res.data.rows);
           const root = res.data.rows
             .filter((item) => item.parent_id === null)
             .map((item) => {
@@ -443,7 +460,13 @@ const TaskList = ({
         }}
         value={dataSource}
         onChange={(value: readonly ITaskData[]) => {
-          setDataSource(value);
+          console.info("onChange");
+          setRawData(treeToList(value));
+          if (onChange) {
+            onChange(JSON.parse(JSON.stringify(value)));
+          } else {
+            setDataSource(value);
+          }
         }}
         editable={{
           form,
@@ -640,21 +663,7 @@ const TaskList = ({
         taskId={selectedTask}
         openDrawer={open}
         onClose={() => setOpen(false)}
-        onChange={(data: ITaskData[]) => {
-          console.debug("task change", data);
-          setDataSource((origin) => {
-            const update = (item: ITaskData): ITaskData => {
-              item.children = item.children?.map(update);
-              const found = data.find((t) => t.id === item.id);
-              if (found) {
-                return { ...found, children: item.children };
-              }
-              return item;
-            };
-            return origin.map(update);
-          });
-          onChange && onChange(data);
-        }}
+        onChange={changeData}
       />
     </>
   );
