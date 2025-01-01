@@ -185,9 +185,22 @@ const DictPreference = ({
             dataIndex: "labels",
             render: (_, row) => {
               return (
-                <Tag color="blue" key={row.count}>
-                  {row.count}
-                </Tag>
+                <Space>
+                  <Tag color="blue" key={row.count}>
+                    {row.count}
+                  </Tag>
+                  <div style={{ width: 100 }}>
+                    <Progress
+                      size="small"
+                      percent={Math.round(row.confidence ?? 0)}
+                      status={
+                        row.confidence !== undefined && row.confidence < 50
+                          ? "exception"
+                          : undefined
+                      }
+                    />
+                  </div>
+                </Space>
               );
             },
             search: false,
@@ -196,22 +209,13 @@ const DictPreference = ({
           actions: {
             render: (text, row) => {
               return [
-                <div style={{ width: 100 }}>
-                  <Progress
-                    size="small"
-                    percent={Math.round(row.confidence ?? 0)}
-                    status={
-                      row.confidence !== undefined && row.confidence < 50
-                        ? "exception"
-                        : undefined
-                    }
-                  />
-                </div>,
                 <Button
                   type="link"
                   icon={<CheckOutlined />}
                   onClick={async () => {}}
-                />,
+                >
+                  确认
+                </Button>,
               ];
             },
             search: false,
