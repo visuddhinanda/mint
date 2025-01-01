@@ -13,12 +13,16 @@ import {
 } from "@ant-design/icons";
 
 import { useAppSelector } from "../../hooks";
-import { currentUser as _currentUser } from "../../reducers/current-user";
+import {
+  currentUser as _currentUser,
+  studioList,
+} from "../../reducers/current-user";
 import { TooltipPlacement } from "antd/lib/tooltip";
 import SettingModal from "./setting/SettingModal";
 import { AdminIcon } from "../../assets/icon";
 import User from "./User";
 import { fullUrl } from "../../utils";
+import Studio from "./Studio";
 
 const { Title, Paragraph } = Typography;
 
@@ -33,6 +37,7 @@ const SignInAvatarWidget = ({ style, placement = "bottomRight" }: IWidget) => {
   const [settingOpen, setSettingOpen] = useState(false);
 
   const user = useAppSelector(_currentUser);
+  const studios = useAppSelector(studioList);
 
   console.debug("user", user);
 
@@ -61,77 +66,89 @@ const SignInAvatarWidget = ({ style, placement = "bottomRight" }: IWidget) => {
       </Paragraph>
     );
 
+    let userList = [
+      {
+        key: user.realName,
+        label: <User {...user} />,
+      },
+    ];
+    const studioList = studios?.map((item, id) => {
+      return {
+        key: item.realName ?? "",
+        label: <Studio data={item} />,
+      };
+    });
+    if (studioList) {
+      userList = [...userList, ...studioList];
+    }
     return (
       <>
         <Popover
           content={
-            <div>
+            <div style={{ width: 350 }}>
               <>{welcome}</>
               <Divider></Divider>
-              <Menu
-                style={{ width: 256 }}
-                mode={"inline"}
-                selectable={false}
-                items={[
-                  {
-                    key: "account",
-                    label: "选择账户",
-                    icon: <UserOutlined />,
-                    children: [
-                      {
-                        key: user.realName,
-                        label: <User {...user} />,
-                      },
-                    ],
-                  },
-                  {
-                    key: "setting",
-                    label: "设置",
-                    icon: <SettingOutlined />,
-                  },
-                  {
-                    key: "admin",
-                    label: intl.formatMessage({
-                      id: "buttons.admin",
-                    }),
-                    icon: <AdminIcon />,
-                    disabled: !canManage,
-                  },
-                  {
-                    key: "blog",
-                    label: intl.formatMessage({
-                      id: "columns.library.blog.label",
-                    }),
-                    icon: <HomeOutlined key="home" />,
-                  },
-                  {
-                    key: "logout",
-                    label: intl.formatMessage({
-                      id: "buttons.sign-out",
-                    }),
-                    icon: <LogoutOutlined />,
-                  },
-                ].filter((value) => !value.disabled)}
-                onClick={(info) => {
-                  switch (info.key) {
-                    case "setting":
-                      setSettingOpen(true);
-                      break;
-                    case "admin":
-                      window.open(fullUrl(`/admin`), "_blank");
-                      break;
-                    case "blog":
-                      const blog = `/blog/${user.realName}/overview`;
-                      window.open(fullUrl(blog), "_blank");
-                      break;
-                    case "logout":
-                      sessionStorage.removeItem("token");
-                      localStorage.removeItem("token");
-                      navigate("/anonymous/users/sign-in");
-                      break;
-                  }
-                }}
-              />
+              <div style={{ maxHeight: 500, overflowY: "auto" }}>
+                <Menu
+                  style={{ width: "100%" }}
+                  mode={"inline"}
+                  selectable={false}
+                  items={[
+                    {
+                      key: "account",
+                      label: "选择账户",
+                      icon: <UserOutlined />,
+                      children: userList,
+                    },
+                    {
+                      key: "setting",
+                      label: "设置",
+                      icon: <SettingOutlined />,
+                    },
+                    {
+                      key: "admin",
+                      label: intl.formatMessage({
+                        id: "buttons.admin",
+                      }),
+                      icon: <AdminIcon />,
+                      disabled: !canManage,
+                    },
+                    {
+                      key: "blog",
+                      label: intl.formatMessage({
+                        id: "columns.library.blog.label",
+                      }),
+                      icon: <HomeOutlined key="home" />,
+                    },
+                    {
+                      key: "logout",
+                      label: intl.formatMessage({
+                        id: "buttons.sign-out",
+                      }),
+                      icon: <LogoutOutlined />,
+                    },
+                  ].filter((value) => !value.disabled)}
+                  onClick={(info) => {
+                    switch (info.key) {
+                      case "setting":
+                        setSettingOpen(true);
+                        break;
+                      case "admin":
+                        window.open(fullUrl(`/admin`), "_blank");
+                        break;
+                      case "blog":
+                        const blog = `/blog/${user.realName}/overview`;
+                        window.open(fullUrl(blog), "_blank");
+                        break;
+                      case "logout":
+                        sessionStorage.removeItem("token");
+                        localStorage.removeItem("token");
+                        navigate("/anonymous/users/sign-in");
+                        break;
+                    }
+                  }}
+                />
+              </div>
             </div>
           }
           placement={placement}
