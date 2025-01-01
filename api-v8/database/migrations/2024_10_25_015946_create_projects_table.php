@@ -14,9 +14,10 @@ class CreateProjectsTable extends Migration
     public function up()
     {
         Schema::create('projects', function (Blueprint $table) {
-            $table->uuid('id')->primary()->default(DB::raw('uuid_generate_v1mc()'));
-            $table->string('title',512)->index();
-            $table->string('type',32)->index()->default('normal');
+            $table->id();
+            $table->uuid('uid')->unique();
+            $table->string('title', 512)->index();
+            $table->string('type', 32)->index()->default('normal');
             $table->text('description')->nullable();
             $table->jsonb('executors_id')->index()->nullable();
             $table->uuid('parent_id')->index()->nullable();
@@ -27,7 +28,6 @@ class CreateProjectsTable extends Migration
             $table->jsonb('status')->index()->nullable();
             $table->timestamp('started_at')->nullable()->index();
             $table->timestamp('finished_at')->nullable()->index();
-            $table->softDeletes();
             $table->timestamps();
         });
     }
