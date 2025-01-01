@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class CreateTasksTable extends Migration
 {
@@ -30,8 +31,8 @@ class CreateTasksTable extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->uuid('id')->primary()->default(DB::raw('uuid_generate_v1mc()'));
-            $table->string('title',512)->index();
-            $table->string('type',32)->index()->default('project');
+            $table->string('title', 512)->index();
+            $table->string('type', 32)->index()->default('project');
             $table->text('description')->nullable();
             $table->uuid('parent_id')->index()->nullable();
             $table->jsonb('assignees_id')->index()->nullable();
@@ -45,11 +46,15 @@ class CreateTasksTable extends Migration
             $table->uuid('owner_id')->index();
             $table->uuid('editor_id')->index();
             $table->integer('order')->index()->default(1);
-            $table->string('status',32)->index()->default('pending');
+            $table->string('status', 32)->index()->default('pending');
             $table->boolean('closed_by_subtask')->default(true);
             $table->timestamp('started_at')->nullable()->index();
             $table->timestamp('finished_at')->nullable()->index();
-            $table->softDeletes();
+            $table->timestamp('begin_at')->nullable()->index();
+            $table->timestamp('end_at')->nullable()->index();
+            $table->boolean('plan_with_time')->index()->default(false);
+            $table->boolean('hide_description')->index()->default(false); //在开始时间之前隐藏描述
+            $table->text('script')->nullable();
             $table->timestamps();
         });
     }
