@@ -1,10 +1,10 @@
 [
     {
-        "name":"Defualt",
-        "file":"defualt"
-    },    
+        "name": "Default",
+        "file": "default"
+    },
     {
-        "name":"CSCD4",
-        "file":"cscd"
+        "name": "CSCD4",
+        "file": "cscd"
     }
 ]

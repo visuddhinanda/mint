@@ -79,14 +79,14 @@ require_once '../public/function.php';
                 <div> </div>
                 <div style=''>
                     <select onchange='viewChanged(this)'>
-                        <option value='list'>列表</option>                    
+                        <option value='list'>列表</option>
                         <option value='card'>卡片</option>
                     </select>
                 </div>
             </div>
 			<div>
 				<div id='tag_list_setting_div'>
-                            
+
                     <div class='inner' id='filter-setting' style='display: flex;'>
 							<button id='btn-filter' onclick="tag_list_slide_toggle(this)">
 								标签过滤
@@ -127,7 +127,7 @@ require_once '../public/function.php';
                                 <div style='display:flex;justify-content: space-between;'><button>还原默认</button><button onclick="updateSetting()">应用</button></div>
                             </div>
                         </div>
-                </div>			
+                </div>
 			</div>
             <div>
                 <div class='main_menu' id = 'main_menu'>
@@ -146,7 +146,7 @@ require_once '../public/function.php';
                 <div id="tag_list" style='display:none;'>
                     <div id="tag_list_head" style="display:flex;justify-content: space-between;border-bottom: 1px solid var(--border-line-color);">
                         <div style='width:20em;'>
-                            
+
                         </div>
                         <div>
                             <button id="btn-tag_list_close" onclick='close_tag_list()'>X</button>
@@ -189,7 +189,7 @@ require_once '../public/function.php';
 
             <div id='palicanon-category'></div>
 
-            
+
             <div id='filter_bar'>
                 <div id='filter_bar_left'></div>
                 <div id='filter_bar_right'>
@@ -270,10 +270,10 @@ require_once '../public/function.php';
     <script>
         $(document).ready(function() {
 			$("#nav_community").addClass('active');
-            
+
             let indexFilename = localStorage.getItem('palicanon_tag_category');
             if(!indexFilename){
-                indexFilename = "defualt";
+                indexFilename = "default";
             }
             loadTagCategory(indexFilename);
             loadTagCategoryIndex();
@@ -289,7 +289,7 @@ require_once '../public/function.php';
             if(isset($_GET["channel"])){
                 echo "_channel = '{$_GET["channel"]}';";
             }
-            
+
             switch ($_view) {
                 case 'community':
                     //echo "community_onload();";
