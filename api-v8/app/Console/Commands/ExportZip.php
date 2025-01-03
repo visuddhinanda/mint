@@ -18,7 +18,7 @@ class ExportZip extends Command
      *
      * @var string
      */
-    protected $signature = 'export:zip {filename : filename} {title : title} {format?  : zip file format 7z,lzma,gz }';
+    protected $signature = 'export:zip {filename : filename} {title : title} {id : 标识符} {format?  : zip file format 7z,lzma,gz }';
 
     /**
      * The console command description.
@@ -167,6 +167,7 @@ class ExportZip extends Command
             $info = array();
         }
         $info[] = [
+            'id' => $this->argument('id'),
             'title' => $this->argument('title'),
             'filename' => $zipFile,
             'url' => $url,

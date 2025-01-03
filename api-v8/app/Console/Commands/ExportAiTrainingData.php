@@ -43,8 +43,8 @@ class ExportAiTrainingData extends Command
     public function handle()
     {
         Log::debug('task export offline sentence-table start');
-        $filename = 'wikipali-offline-ai-training-'.date("Y-m-d").'.tsv';
-        $exportFile = storage_path('app/public/export/offline/'.$filename);
+        $filename = 'wikipali-offline-ai-training-' . date("Y-m-d") . '.tsv';
+        $exportFile = storage_path('app/public/export/offline/' . $filename);
         $fp = fopen($exportFile, 'w');
         if ($fp === false) {
             die('无法创建文件');
@@ -55,41 +55,48 @@ class ExportAiTrainingData extends Command
         ];
         $start = time();
         foreach ($channels as $key => $channel) {
-            $db = Sentence::where('channel_uid',$channel);
+            $db = Sentence::where('channel_uid', $channel);
             $bar = $this->output->createProgressBar($db->count());
-            $srcDb = $db->select(['book_id','paragraph',
-                                    'word_start','word_end',
-                                    'content','content_type'])->cursor();
+            $srcDb = $db->select([
+                'book_id',
+                'paragraph',
+                'word_start',
+                'word_end',
+                'content',
+                'content_type'
+            ])->cursor();
             foreach ($srcDb as $sent) {
-                $content = MdRender::render($sent->content,
-                                [$channel],
-                                null,
-                                'read',
-                                'translation',
-                                $sent->content_type,
-                                'text',
-                                );
-                $origin = PaliSentence::where('book',$sent->book_id)
-                                        ->where('paragraph',$sent->paragraph)
-                                        ->where('word_begin',$sent->word_start)
-                                        ->where('word_end',$sent->word_end)
-                                        ->value('text');
+                $content = MdRender::render(
+                    $sent->content,
+                    [$channel],
+                    null,
+                    'read',
+                    'translation',
+                    $sent->content_type,
+                    'text',
+                );
+                $origin = PaliSentence::where('book', $sent->book_id)
+                    ->where('paragraph', $sent->paragraph)
+                    ->where('word_begin', $sent->word_start)
+                    ->where('word_end', $sent->word_end)
+                    ->value('text');
                 $currData = array(
                     $origin,
                     str_replace("\n", "", $content),
-                    );
+                );
 
-                fwrite($fp, implode("\t", $currData)."\n");
+                fwrite($fp, implode("\t", $currData) . "\n");
 
                 $bar->advance();
             }
         }
         fclose($fp);
-        $this->info((time() - $start).' seconds');
-        $this->call('export:zip',[
-            'filename'=>$filename,
-            'title' => 'wikipali ai training data',
-            'format'=> $this->option('format'),
+        $this->info((time() - $start) . ' seconds');
+        $this->call('export:zip', [
+            'id' => 'ai-translating-training-data',
+            'filename' => $filename,
+            'title' => 'wikipali ai translating training data',
+            'format' => $this->option('format'),
         ]);
         return 0;
     }
