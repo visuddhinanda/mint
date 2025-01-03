@@ -110,6 +110,7 @@ use App\Http\Controllers\TaskGroupController;
 use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\ProjectTreeController;
 use App\Http\Controllers\SiteInfoController;
+use App\Http\Controllers\PaliBookCategoryController;
 
 
 
@@ -275,6 +276,7 @@ Route::group(['prefix' => 'v2'], function () {
     Route::apiResource('chapter', ChapterController::class);
     Route::apiResource('project-tree', ProjectTreeController::class);
     Route::apiResource('site-info', SiteInfoController::class);
+    Route::apiResource('pali-book-category', PaliBookCategoryController::class);
 
     Route::get('download/{type1}/{type2}/{uuid}/{filename}', function ($type1, $type2, $uuid, $filename) {
         header("Content-Type: {$type1}/{$type1}");
