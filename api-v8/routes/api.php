@@ -2,8 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Cache;
 
 use App\Http\Controllers\WbwTemplateController;
 use App\Http\Controllers\DhammaTermController;
