@@ -286,13 +286,6 @@ Route::group(['prefix' => 'v2'], function () {
         file_put_contents("php://output", $content);
     });
 
-    Route::get('palibook/{file}', function ($file) {
-        if ($file === 'default') {
-            $file = "defualt";
-        }
-        return file_get_contents(public_path("app/palicanon/category/{$file}.json"));
-    });
-
     Route::get('guide/{lang}/{file}', function ($lang, $file) {
         $filename = public_path("app/users_guide/{$lang}/{$file}.md");
         if (file_exists($filename)) {
