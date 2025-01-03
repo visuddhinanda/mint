@@ -77,14 +77,16 @@ const BoolTreeListWidget = ({
       };
     }
     if (currRoot) {
-      get<IPaliBookListResponse[]>(`/v2/palibook/${currRoot}`).then((json) => {
-        console.log("Book List ajax", json);
-        const treeData = json.map(treeMap);
-        setTocData(treeData);
-        if (typeof onTocLoad !== "undefined") {
-          onTocLoad(json);
+      get<IPaliBookListResponse[]>(`/v2/pali-book-category/${currRoot}`).then(
+        (json) => {
+          console.log("Book List ajax", json);
+          const treeData = json.map(treeMap);
+          setTocData(treeData);
+          if (typeof onTocLoad !== "undefined") {
+            onTocLoad(json);
+          }
         }
-      });
+      );
     }
   }, [currRoot]);
 

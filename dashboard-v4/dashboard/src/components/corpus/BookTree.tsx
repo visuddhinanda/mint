@@ -73,12 +73,14 @@ const BookTreeWidget = ({
         setPathToNode(node.children, node.path);
       }
     }
-    get<IPaliBookListResponse[]>(`/v2/palibook/${value}`).then((json) => {
-      let newTree: ITocTree[] = json.map(treeMap);
-      setPathToNode(newTree, []);
-      console.log("root", newTree);
-      setTreeData(newTree);
-    });
+    get<IPaliBookListResponse[]>(`/v2/pali-book-category/${value}`).then(
+      (json) => {
+        let newTree: ITocTree[] = json.map(treeMap);
+        setPathToNode(newTree, []);
+        console.log("root", newTree);
+        setTreeData(newTree);
+      }
+    );
   }
 
   return (
