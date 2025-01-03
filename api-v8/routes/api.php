@@ -109,6 +109,7 @@ use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\TaskGroupController;
 use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\ProjectTreeController;
+use App\Http\Controllers\SiteInfoController;
 
 
 
@@ -273,6 +274,7 @@ Route::group(['prefix' => 'v2'], function () {
     Route::apiResource('task-group', TaskGroupController::class);
     Route::apiResource('chapter', ChapterController::class);
     Route::apiResource('project-tree', ProjectTreeController::class);
+    Route::apiResource('site-info', SiteInfoController::class);
 
     Route::get('download/{type1}/{type2}/{uuid}/{filename}', function ($type1, $type2, $uuid, $filename) {
         header("Content-Type: {$type1}/{$type1}");
@@ -296,26 +298,5 @@ Route::group(['prefix' => 'v2'], function () {
         } else {
             return json_encode(['ok' => false, 'message' => "no file {$lang}/{$file}"]);
         }
-    });
-
-    Route::get('siteinfo/{locale}', function ($locale) {
-        if (!in_array($locale, ['en', 'zh-Hans', 'zh-Hant'])) {
-            App::setLocale('en');
-        } else {
-            App::setLocale($locale);
-        }
-        $site = [
-            'logo' => __("site.logo"),
-            'title' => __('site.title'),
-            'subhead' => __('site.subhead'),
-            'keywords' => __('site.keywords'),
-            'description' => __('site.description'),
-            'copyright' => __('site.copyright'),
-            'author' => [
-                'name' => __('site.author.name'),
-                'email' => __('site.author.email'),
-            ],
-        ];
-        return json_encode($site);
     });
 });
