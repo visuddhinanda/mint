@@ -73,7 +73,7 @@ export const grammarTermFetch = () => {
 };
 
 const init = () => {
-  get<ISiteInfoResponse | IErrorResponse>("/v2/siteinfo/en").then(
+  get<ISiteInfoResponse | IErrorResponse>("/v2/site-info/en").then(
     (response) => {
       if ("title" in response) {
         const it: ISite = {
