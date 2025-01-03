@@ -277,14 +277,4 @@ Route::group(['prefix' => 'v2'], function () {
     Route::apiResource('project-tree', ProjectTreeController::class);
     Route::apiResource('site-info', SiteInfoController::class);
     Route::apiResource('pali-book-category', PaliBookCategoryController::class);
-
-
-    Route::get('guide/{lang}/{file}', function ($lang, $file) {
-        $filename = public_path("app/users_guide/{$lang}/{$file}.md");
-        if (file_exists($filename)) {
-            return json_encode(['ok' => true, 'message' => '', 'data' => file_get_contents($filename)]);
-        } else {
-            return json_encode(['ok' => false, 'message' => "no file {$lang}/{$file}"]);
-        }
-    });
 });
