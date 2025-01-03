@@ -278,13 +278,6 @@ Route::group(['prefix' => 'v2'], function () {
     Route::apiResource('site-info', SiteInfoController::class);
     Route::apiResource('pali-book-category', PaliBookCategoryController::class);
 
-    Route::get('download/{type1}/{type2}/{uuid}/{filename}', function ($type1, $type2, $uuid, $filename) {
-        header("Content-Type: {$type1}/{$type1}");
-        header("Content-Disposition: attachment; filename=\"{$filename}\"");
-        $content = Cache::get("download/tmp/{$uuid}");
-        //TODO 换成redis 集群
-        file_put_contents("php://output", $content);
-    });
 
     Route::get('guide/{lang}/{file}', function ($lang, $file) {
         $filename = public_path("app/users_guide/{$lang}/{$file}.md");
