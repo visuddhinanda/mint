@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cache;
 
 use App\Http\Controllers\WbwTemplateController;
 use App\Http\Controllers\DhammaTermController;
@@ -277,6 +278,7 @@ Route::group(['prefix' => 'v2'], function () {
         header("Content-Type: {$type1}/{$type1}");
         header("Content-Disposition: attachment; filename=\"{$filename}\"");
         $content = Cache::get("download/tmp/{$uuid}");
+        //TODO 换成redis 集群
         file_put_contents("php://output", $content);
     });
 
