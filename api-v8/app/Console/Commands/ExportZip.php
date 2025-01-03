@@ -49,11 +49,13 @@ class ExportZip extends Command
         $exportPath = 'app/public/export/offline';
         $exportFile = $this->argument('filename');
 
-        Log::debug('export offline: zip file {filename} {format}',
-                    [
-                        'filename'=>$exportFile,
-                        'format'=>$this->argument('format')
-                    ]);
+        Log::debug(
+            'export offline: zip file {filename} {format}',
+            [
+                'filename' => $exportFile,
+                'format' => $this->argument('format')
+            ]
+        );
         switch ($this->argument('format')) {
             case '7z':
                 $zipFile = $exportFile . ".7z";
@@ -66,112 +68,125 @@ class ExportZip extends Command
                 break;
         }
         //
-        $exportFullFileName = storage_path($exportPath.'/'.$exportFile);
-        if(!file_exists($exportFullFileName)){
-            Log::error('export offline: no db file {filename}',['filename'=>$exportFullFileName]);
-            $this->error('export offline: no db file {filename}'.$exportFullFileName);
+        $exportFullFileName = storage_path($exportPath . '/' . $exportFile);
+        if (!file_exists($exportFullFileName)) {
+            Log::error('export offline: no db file {filename}', ['filename' => $exportFullFileName]);
+            $this->error('export offline: no db file {filename}' . $exportFullFileName);
             return 1;
         }
 
-        $zipFullFileName = storage_path($exportPath.'/'.$zipFile);
-        if(file_exists($zipFullFileName)){
-            Log::debug('export offline: delete old zip file:'.$zipFullFileName);
+        $zipFullFileName = storage_path($exportPath . '/' . $zipFile);
+        if (file_exists($zipFullFileName)) {
+            Log::debug('export offline: delete old zip file:' . $zipFullFileName);
             unlink($zipFullFileName);
         }
 
-        shell_exec("cd ".storage_path($exportPath));
+        shell_exec("cd " . storage_path($exportPath));
         switch ($this->argument('format')) {
             case '7z':
                 $command = [
-                    '7z', 'a', '-t7z', '-m0=lzma',
-                    '-mx=9', '-mfb=64', '-md=32m', '-ms=on',
-                    $zipFullFileName,$exportFullFileName
+                    '7z',
+                    'a',
+                    '-t7z',
+                    '-m0=lzma',
+                    '-mx=9',
+                    '-mfb=64',
+                    '-md=32m',
+                    '-ms=on',
+                    $zipFullFileName,
+                    $exportFullFileName
                 ];
                 break;
             case 'lzma':
-                $command = ['xz', '-k', '-9', '--format=lzma',$exportFullFileName];
+                $command = ['xz', '-k', '-9', '--format=lzma', $exportFullFileName];
                 break;
             default:
                 $command = ['gzip', $exportFullFileName];
                 break;
         }
 
-        $this->info( implode(' ',$command));
-        Log::debug('export offline zip start',['command'=>$command,'format'=>$this->argument('format')]);
+        $this->info(implode(' ', $command));
+        Log::debug('export offline zip start', ['command' => $command, 'format' => $this->argument('format')]);
         $process = new Process($command);
         $process->run();
         $this->info($process->getOutput());
         $this->info('压缩完成');
-        Log::debug('zip file {filename} in {format} saved.',
-                    [
-                        'filename'=>$exportFile,
-                        'format'=>$this->argument('format')
-                    ]);
+        Log::debug(
+            'zip file {filename} in {format} saved.',
+            [
+                'filename' => $exportFile,
+                'format' => $this->argument('format')
+            ]
+        );
 
         $url = array();
         foreach (config('mint.server.cdn_urls') as $key => $cdn) {
             $url[] = [
-                    'link' => $cdn . '/' . $zipFile,
-                    'hostname' =>'china cdn-' . $key,
-                ];
+                'link' => $cdn . '/' . $zipFile,
+                'hostname' => 'china cdn-' . $key,
+            ];
         }
 
         $bucket = config('mint.attachments.bucket_name.temporary');
-        $tmpFile =  $bucket.'/'. $zipFile ;
+        $tmpFile =  $bucket . '/' . $zipFile;
 
-        $this->info('upload file='.$tmpFile);
-        Log::debug('export offline: upload file {filename}',['filename'=>$tmpFile]);
+        $this->info('upload file=' . $tmpFile);
+        Log::debug('export offline: upload file {filename}', ['filename' => $tmpFile]);
 
         Storage::put($tmpFile, file_get_contents($zipFullFileName));
 
-        $this->info('upload done file='.$tmpFile);
-        Log::debug('export offline: upload done {filename}',['filename'=>$tmpFile]);
+        $this->info('upload done file=' . $tmpFile);
+        Log::debug('export offline: upload done {filename}', ['filename' => $tmpFile]);
 
         if (App::environment('local')) {
             $link = Storage::url($tmpFile);
-        }else{
-            try{
+        } else {
+            try {
                 $link = Storage::temporaryUrl($tmpFile, now()->addDays(2));
-            }catch(\Exception $e){
+            } catch (\Exception $e) {
                 $this->error('generate temporaryUrl fail');
-                Log::error('export offline: generate temporaryUrl fail {Exception}',
-                            [
-                                'exception'=>$e,
-                                'file'=>$tmpFile
-                            ]);
+                Log::error(
+                    'export offline: generate temporaryUrl fail {Exception}',
+                    [
+                        'exception' => $e,
+                        'file' => $tmpFile
+                    ]
+                );
                 return 1;
             }
         }
-        $this->info('link = '.$link);
-        Log::info('export offline: link='.$link);
+        $this->info('link = ' . $link);
+        Log::info('export offline: link=' . $link);
 
         $url[] = [
-            'link'=>$link,
-            'hostname'=>'Amazon cloud storage(Hongkong)',
+            'link' => $link,
+            'hostname' => 'Amazon cloud storage(Hongkong)',
         ];
         $info = RedisClusters::get('/offline/index');
-        if(!is_array($info)){
+        if (!is_array($info)) {
             $info = array();
         }
         $info[] = [
             'title' => $this->argument('title'),
-            'filename'=>$zipFile,
+            'filename' => $zipFile,
             'url' => $url,
-            'create_at'=>date("Y-m-d H:i:s"),
-            'chapter'=>RedisClusters::get("/export/chapter/count"),
-            'filesize'=>filesize($zipFullFileName),
-            'min_app_ver'=>'1.3',
-            ];
-        RedisClusters::put('/offline/index',$info);
+            'create_at' => date("Y-m-d H:i:s"),
+            'chapter' => RedisClusters::get("/export/chapter/count"),
+            'filesize' => filesize($zipFullFileName),
+            'min_app_ver' => '1.3',
+        ];
+        RedisClusters::put('/offline/index', $info);
         sleep(5);
         try {
             unlink($exportFullFileName);
         } catch (\Throwable $th) {
-            Log::error('export offline: delete  file fail {Exception}',
-                        [
-                            'exception'=>$th,
-                            'file'=>$exportFullFileName
-                        ]);
+            Log::error(
+                'export offline: delete  file fail {Exception}',
+                [
+                    'exception' => $th,
+                    'file' => $exportFullFileName
+                ]
+            );
         }
 
         return 0;
