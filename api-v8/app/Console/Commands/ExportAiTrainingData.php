@@ -44,7 +44,7 @@ class ExportAiTrainingData extends Command
     {
         Log::debug('task export offline sentence-table start');
         $filename = 'wikipali-offline-ai-training-' . date("Y-m-d") . '.tsv';
-        $exportFile = storage_path('app/public/export/offline/' . $filename);
+        $exportFile = storage_path('app/tmp/export/offline/' . $filename);
         $fp = fopen($exportFile, 'w');
         if ($fp === false) {
             die('无法创建文件');
@@ -81,7 +81,7 @@ class ExportAiTrainingData extends Command
                     ->where('word_end', $sent->word_end)
                     ->value('text');
                 $currData = array(
-                    $origin,
+                    str_replace("\n", "", $origin),
                     str_replace("\n", "", $content),
                 );
 
@@ -94,7 +94,7 @@ class ExportAiTrainingData extends Command
         $this->info((time() - $start) . ' seconds');
         $this->call('export:zip', [
             'id' => 'ai-translating-training-data',
-            'filename' => $filename,
+            'filename' => $exportFile,
             'title' => 'wikipali ai translating training data',
             'format' => $this->option('format'),
         ]);
