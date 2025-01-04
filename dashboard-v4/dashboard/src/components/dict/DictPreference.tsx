@@ -15,6 +15,40 @@ import { useEffect, useState } from "react";
 import WbwLookup from "../template/Wbw/WbwLookup";
 import Lookup from "./Lookup";
 
+interface IOkButton {
+  data: IApiResponseDictData;
+  onChange?: (data: IApiResponseDictData) => void;
+}
+const OkButton = ({ data, onChange }: IOkButton) => {
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      type="link"
+      icon={<CheckOutlined />}
+      loading={loading}
+      onClick={async () => {
+        const url = `/v2/dict-preference/${data.id}`;
+        const values: IPreferenceRequest = {
+          confidence: 100,
+        };
+        console.debug("api request", url, values);
+        setLoading(true);
+        const result = await put<IPreferenceRequest, IPreferenceResponse>(
+          url,
+          values
+        );
+        setLoading(false);
+        console.info("api response", result);
+        if (result.ok) {
+          onChange && onChange(result.data);
+        }
+      }}
+    >
+      确认
+    </Button>
+  );
+};
+
 const toWbw = (data: IApiResponseDictData): IWbw => {
   return {
     book: 1,
@@ -43,11 +77,12 @@ const FactorsEditor = ({ data }: IFactorsEditorWidget) => {
       factors: value,
       confidence: 100,
     };
-    console.log("api request", url, data);
+    console.debug("api request", url, data);
     const result = await put<IPreferenceRequest, IPreferenceResponse>(
       url,
       values
     );
+    console.info("api response", result);
     setWbw(toWbw(result.data));
     setInput(result.data.factors);
     return result;
@@ -103,6 +138,7 @@ const DictPreference = ({
 }: IDictPreferenceWidget) => {
   const [lookupWords, setLookupWords] = useState<string[]>([]);
   const [lookupRun, setLookupRun] = useState(false);
+  const [data, setData] = useState<IApiResponseDictData[]>([]);
   return (
     <>
       <WbwLookup words={lookupWords} run={lookupRun} />
@@ -112,7 +148,9 @@ const DictPreference = ({
           filterType: "light",
         }}
         rowKey="name"
-        headerTitle=""
+        headerTitle="单词首选项"
+        dataSource={data}
+        onDataSourceChange={setData}
         request={async (params = {} as Record<string, any>) => {
           let url = `/v2/dict-preference`;
           const mPageSize = pageSize ?? params.pageSize ?? 100;
@@ -209,13 +247,25 @@ const DictPreference = ({
           actions: {
             render: (text, row) => {
               return [
-                <Button
-                  type="link"
-                  icon={<CheckOutlined />}
-                  onClick={async () => {}}
-                >
-                  确认
-                </Button>,
+                <OkButton
+                  data={row}
+                  onChange={(data) => {
+                    setData((origin) => {
+                      origin.forEach(
+                        (
+                          value: IApiResponseDictData,
+                          index: number,
+                          array: IApiResponseDictData[]
+                        ) => {
+                          if (value.id === row.id) {
+                            array[index] = data;
+                          }
+                        }
+                      );
+                      return origin;
+                    });
+                  }}
+                />,
               ];
             },
             search: false,
