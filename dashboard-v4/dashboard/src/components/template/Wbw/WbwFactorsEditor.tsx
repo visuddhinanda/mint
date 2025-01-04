@@ -4,6 +4,7 @@ import { LoadingOutlined, WarningOutlined } from "@ant-design/icons";
 import WbwFactors from "./WbwFactors";
 import { IWbw, TWbwDisplayMode } from "./WbwWord";
 import { IPreferenceResponse } from "../../api/Dict";
+import { Space } from "antd";
 
 interface IWidget {
   initValue: IWbw;
@@ -15,7 +16,7 @@ const WbwFactorsEditor = ({ initValue, display, onChange }: IWidget) => {
   const [error, setError] = useState(false);
 
   return (
-    <>
+    <Space>
       {loading ? <LoadingOutlined /> : error ? <WarningOutlined /> : <></>}
       <WbwFactors
         key="factors"
@@ -34,7 +35,7 @@ const WbwFactorsEditor = ({ initValue, display, onChange }: IWidget) => {
           }
         }}
       />
-    </>
+    </Space>
   );
 };
 
