@@ -46,42 +46,50 @@ class ExportZip extends Command
     {
         Log::debug('export offline: 开始压缩');
         $this->info('export offline: 开始压缩');
-        $exportPath = 'app/public/export/offline';
+        $defaultExportPath = storage_path('app/public/export/offline');
         $exportFile = $this->argument('filename');
-
+        $filename = basename($exportFile);
+        if ($filename === $exportFile) {
+            $exportFullFileName = $defaultExportPath . '/' . $filename;
+            $exportPath = $defaultExportPath;
+        } else {
+            $exportFullFileName = $exportFile;
+            $exportPath = dirname($exportFile);
+        }
         Log::debug(
             'export offline: zip file {filename} {format}',
             [
                 'filename' => $exportFile,
-                'format' => $this->argument('format')
+                'format' => $this->argument('format'),
+                'exportFullFileName' => $exportFullFileName,
+                'exportPath' => $exportPath,
             ]
         );
         switch ($this->argument('format')) {
             case '7z':
-                $zipFile = $exportFile . ".7z";
+                $zipFile = $filename . ".7z";
                 break;
             case 'lzma':
-                $zipFile = $exportFile . ".lzma";
+                $zipFile = $filename . ".lzma";
                 break;
             default:
-                $zipFile = $exportFile . ".gz";
+                $zipFile = $filename . ".gz";
                 break;
         }
         //
-        $exportFullFileName = storage_path($exportPath . '/' . $exportFile);
         if (!file_exists($exportFullFileName)) {
-            Log::error('export offline: no db file {filename}', ['filename' => $exportFullFileName]);
-            $this->error('export offline: no db file {filename}' . $exportFullFileName);
+            Log::error('export offline: no  file {filename}', ['filename' => $exportFullFileName]);
+            $this->error('export offline: no  file {filename}' . $exportFullFileName);
             return 1;
         }
 
-        $zipFullFileName = storage_path($exportPath . '/' . $zipFile);
+        $zipFullFileName = $exportPath . '/' . $zipFile;
         if (file_exists($zipFullFileName)) {
             Log::debug('export offline: delete old zip file:' . $zipFullFileName);
             unlink($zipFullFileName);
         }
 
-        shell_exec("cd " . storage_path($exportPath));
+        shell_exec("cd " . $exportPath);
         switch ($this->argument('format')) {
             case '7z':
                 $command = [
