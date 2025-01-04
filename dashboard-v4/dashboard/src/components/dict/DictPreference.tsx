@@ -14,6 +14,7 @@ import WbwFactorsEditor from "../template/Wbw/WbwFactorsEditor";
 import { useEffect, useState } from "react";
 import WbwLookup from "../template/Wbw/WbwLookup";
 import Lookup from "./Lookup";
+import WbwParentEditor from "../template/Wbw/WbwParentEditor";
 
 interface IOkButton {
   data: IApiResponseDictData;
@@ -127,6 +128,71 @@ const FactorsEditor = ({ data }: IFactorsEditorWidget) => {
   );
 };
 
+interface IParentEditorWidget {
+  data: IApiResponseDictData;
+}
+const ParentEditor = ({ data }: IParentEditorWidget) => {
+  const [wbw, setWbw] = useState(toWbw(data));
+  const [input, setInput] = useState(data.factors);
+  const [type, setType] = useState(false);
+
+  useEffect(() => setWbw(toWbw(data)), [data]);
+
+  const upload = async (value: string) => {
+    const url = `/v2/dict-preference/${data.id}`;
+    const values: IPreferenceRequest = {
+      parent: value,
+      confidence: 100,
+    };
+    console.debug("api request", url, data);
+    const result = await put<IPreferenceRequest, IPreferenceResponse>(
+      url,
+      values
+    );
+    console.info("api response", result);
+    setWbw(toWbw(result.data));
+    setInput(result.data.factors);
+    return result;
+  };
+  return type ? (
+    <div style={{ display: "flex" }}>
+      <Input
+        width={400}
+        value={input ?? ""}
+        placeholder="Title"
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          setInput(event.target.value);
+        }}
+      />
+      <Button
+        type="text"
+        icon={<CheckOutlined />}
+        onClick={async () => {
+          upload(input ?? "");
+          setType(false);
+        }}
+      />
+    </div>
+  ) : (
+    <Space>
+      <WbwParentEditor
+        key="factors"
+        initValue={wbw}
+        display={"block"}
+        onChange={async (e: string): Promise<IPreferenceResponse> => {
+          const result = upload(e ?? "");
+          return result;
+        }}
+      />
+      <Button
+        type="text"
+        icon={<EditOutlined />}
+        onClick={() => setType(true)}
+      />
+    </Space>
+  );
+};
+
 export interface IDictPreferenceWidget {
   currPage?: number;
   pageSize?: number;
@@ -211,11 +277,11 @@ const DictPreference = ({
             search: false,
             render(dom, entity, index, action, schema) {
               return (
-                <div>
-                  <div>
-                    <FactorsEditor data={entity} />
-                  </div>
-                </div>
+                <Space>
+                  <FactorsEditor data={entity} />
+                  <span>|</span>
+                  <ParentEditor data={entity} />
+                </Space>
               );
             },
           },
