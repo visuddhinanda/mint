@@ -33,6 +33,7 @@ class CreateTasksTable extends Migration
             $table->uuid('id')->primary()->default(DB::raw('uuid_generate_v1mc()'));
             $table->string('title', 512)->index();
             $table->string('type', 32)->index()->default('project');
+            $table->string('category', 256)->nullable()->index(); //分类 审稿，百科 等
             $table->text('summary')->nullable();
             $table->text('description')->nullable();
             $table->uuid('parent_id')->index()->nullable();
