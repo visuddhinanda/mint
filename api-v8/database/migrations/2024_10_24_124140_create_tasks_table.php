@@ -33,6 +33,7 @@ class CreateTasksTable extends Migration
             $table->uuid('id')->primary()->default(DB::raw('uuid_generate_v1mc()'));
             $table->string('title', 512)->index();
             $table->string('type', 32)->index()->default('project');
+            $table->text('summary')->nullable();
             $table->text('description')->nullable();
             $table->uuid('parent_id')->index()->nullable();
             $table->jsonb('assignees_id')->index()->nullable();
@@ -44,6 +45,7 @@ class CreateTasksTable extends Migration
             $table->uuid('next_task_id')->index()->nullable();
             $table->boolean('is_milestone')->index()->default(false);
             $table->uuid('owner_id')->index();
+            $table->uuid('creator_id')->index();
             $table->uuid('editor_id')->index();
             $table->integer('order')->index()->default(1);
             $table->string('status', 32)->index()->default('pending');
@@ -53,7 +55,7 @@ class CreateTasksTable extends Migration
             $table->timestamp('begin_at')->nullable()->index();
             $table->timestamp('end_at')->nullable()->index();
             $table->boolean('plan_with_time')->index()->default(false);
-            $table->boolean('hide_description')->index()->default(false); //在开始时间之前隐藏描述
+            $table->boolean('hide_description_before_begin')->index()->default(false); //在开始时间之前隐藏描述
             $table->text('script')->nullable();
             $table->timestamps();
         });
