@@ -119,6 +119,7 @@ class ExportOffline extends Command
         ]);
 
         $this->call('export:ai.training.data');
+        $this->call('export:ai.pali.word.token');
         unlink($exportStop);
         return 0;
     }
