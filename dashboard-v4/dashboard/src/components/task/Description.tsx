@@ -1,18 +1,21 @@
 import { useState } from "react";
-import { Button } from "antd";
+import { Button, message } from "antd";
 import { EditOutlined, CheckOutlined } from "@ant-design/icons";
 
-import { ITaskData } from "../api/task";
+import { ITaskData, ITaskResponse, ITaskUpdateRequest } from "../api/task";
 import MdView from "../template/MdView";
 import MDEditor from "@uiw/react-md-editor";
 import "../article/article.css";
+import { patch } from "../../request";
 
 interface IWidget {
   task?: ITaskData;
+  onChange?: (data: ITaskData[]) => void;
 }
-const Description = ({ task }: IWidget) => {
+const Description = ({ task, onChange }: IWidget) => {
   const [mode, setMode] = useState<"read" | "edit">("read");
   const [content, setContent] = useState(task?.description);
+  const [loading, setLoading] = useState(false);
   return (
     <div>
       <div
@@ -38,7 +41,32 @@ const Description = ({ task }: IWidget) => {
               ghost
               type="primary"
               icon={<CheckOutlined />}
-              onClick={() => setMode("read")}
+              loading={loading}
+              onClick={() => {
+                if (!task) {
+                  return;
+                }
+                let setting: ITaskUpdateRequest = {
+                  id: task.id,
+                  studio_name: "",
+                  description: content,
+                };
+                const url = `/v2/task/${setting.id}`;
+                console.info("api request", url, setting);
+                setLoading(true);
+                patch<ITaskUpdateRequest, ITaskResponse>(url, setting)
+                  .then((json) => {
+                    console.info("api response", json);
+                    if (json.ok) {
+                      message.success("Success");
+                      setMode("read");
+                      onChange && onChange([json.data]);
+                    } else {
+                      message.error(json.message);
+                    }
+                  })
+                  .finally(() => setLoading(false));
+              }}
             >
               完成
             </Button>
