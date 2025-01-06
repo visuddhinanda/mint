@@ -6,6 +6,9 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use App\Models\WordIndex;
 use App\Models\WbwTemplate;
+use App\Models\UserDict;
+use Illuminate\Support\Facades\Log;
+
 use App\Tools\TurboSplit;
 use App\Http\Api\DictApi;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +21,7 @@ class UpgradeCompound extends Command
      * php -d memory_limit=1024M artisan upgrade:compound  --api=https://next.wikipali.org/api --from=182852 --to=30000
      * @var string
      */
-    protected $signature = 'upgrade:compound {word?} {--book=} {--debug} {--test} {--continue} {--api=} {--from=0} {--to=0} {--min=7} {--max=50}';
+    protected $signature = 'upgrade:compound {word?} {--book=} {--debug} {--test} {--continue} {--api=} {--from=0} {--to=0} {--min=7} {--max=300}';
 
     /**
      * The console command description.
@@ -52,12 +55,12 @@ class UpgradeCompound extends Command
         }
         $confirm = '';
         if ($this->option('api')) {
-            $confirm .= 'api=' . $this->option('api') . "\n";
+            $confirm .= 'api=' . $this->option('api') . PHP_EOL;
         }
-        $confirm .= "min=" . $this->option('min') . "\n";
-        $confirm .= "max="  . $this->option('max') . "\n";
-        $confirm .= "from="  . $this->option('from') . "\n";
-        $confirm .= "to="  . $this->option('to') . "\n";
+        $confirm .= "min=" . $this->option('min') . PHP_EOL;
+        $confirm .= "max="  . $this->option('max') . PHP_EOL;
+        $confirm .= "from="  . $this->option('from') . PHP_EOL;
+        $confirm .= "to="  . $this->option('to') . PHP_EOL;
 
         if (!$this->confirm($confirm)) {
             return 0;
@@ -108,10 +111,9 @@ class UpgradeCompound extends Command
             return 0;
         }
 
-
         $_word = $this->argument('word');
         if (!empty($_word)) {
-            $words = array((object)array('real' => $_word));
+            $words = array((object)array('real' => $_word, 'id' => 0));
             $count = 1;
         } else if ($this->option('book')) {
             $words = WbwTemplate::select('real')
@@ -151,20 +153,68 @@ class UpgradeCompound extends Command
         $sn = 0;
         $wordIndex = array();
         $result = array();
+        $dbHas = array();
+        $fDbHas = fopen(__DIR__ . '/compound.csv', 'r');
+        while (! feof($fDbHas)) {
+            $dbHas[] = trim(fgets($fDbHas));
+        }
+        fclose($fDbHas);
+        $this->info('load db has ' . count($dbHas));
         foreach ($words as $key => $word) {
             if (\App\Tools\Tools::isStop()) {
                 return 0;
+            }
+            if (in_array($word->real, $dbHas)) {
+                $this->info("[{$key}]{$word->real}数据库中已经有了");
+                continue;
             }
             $sn++;
             $startAt = microtime(true);
             $now = date('Y-m-d H:i:s');
             $this->info("[{$now}]{$word->real} start id={$word->id}");
-            $ts = new TurboSplit();
-            if ($this->option('debug')) {
-                $ts->debug(true);
-            }
             $wordIndex[] = $word->real;
-            $parts = $ts->splitA($word->real);
+
+            //先查询vir数据有没有拆分
+            $parts = array();
+            $wbwWords = WbwTemplate::where('real', $word->real)
+                ->select('word')->groupBy('word')->get();
+            foreach ($wbwWords as $key => $wbwWord) {
+                if (strpos($wbwWord->word, '-') !== false) {
+                    $wbwFactors = explode('-', $wbwWord->word);
+                    //看词尾是否能找到语尾
+                    $endWord = end($wbwFactors);
+                    $endWordInDict = UserDict::where('word', $endWord)->get();
+                    foreach ($endWordInDict as $key => $oneWord) {
+                        if (
+                            !empty($oneWord->type) &&
+                            strpos($oneWord->type, 'base') === false &&
+                            $oneWord->type !== '.cp.'
+                        ) {
+                            $parts[] = [
+                                'word' => $oneWord->real,
+                                'type' => $oneWord->type,
+                                'grammar' => $oneWord->grammar,
+                                'parent' => $oneWord->parent,
+                                'factors' => implode('+', array_slice($wbwFactors, 0, -1)) . '+' . $oneWord->factors,
+                                'confidence' => 100,
+                            ];
+                        }
+                    }
+                }
+            }
+            if (count($parts) === 0) {
+                if (mb_strlen($word->real, 'UTF-8') > 100) {
+                    Log::error('超长' . $word->real);
+                }
+                $ts = new TurboSplit();
+                if ($this->option('debug')) {
+                    $ts->debug(true);
+                }
+                $parts = $ts->splitA($word->real);
+            } else {
+                $this->info("找到vri拆分数据：" . count($parts));
+            }
+
             $time = round(microtime(true) - $startAt, 2);
             $percent = (int)($sn * 100 / $count);
 
@@ -198,8 +248,17 @@ class UpgradeCompound extends Command
                 $result[] = $new;
 
                 if (!empty($_word)) {
-                    $output = "[{$resultCount}],{$part['word']},{$part['type']},{$part['grammar']},{$part['parent']},{$part['factors']},{$part['confidence']}";
-                    $this->info($output);
+                    //指定拆分单词输出结果
+                    $debugOutput = [
+                        $resultCount,
+                        $part['word'],
+                        $part['type'],
+                        $part['grammar'],
+                        $part['parent'],
+                        $part['factors'],
+                        $part['confidence']
+                    ];
+                    $this->info(implode(',', $debugOutput));
                 }
             }
 
