@@ -15,6 +15,7 @@ import PlanDate from "./PlanDate";
 import TaskTitle from "./TaskTitle";
 import TaskStatus from "./TaskStatus";
 import Description from "./Description";
+import Category from "./Category";
 
 const { Text } = Typography;
 
@@ -28,7 +29,6 @@ export const Milestone = ({ task }: { task?: ITaskData }) => {
 
 interface IWidget {
   taskId?: string;
-
   onChange?: (data: ITaskData[]) => void;
   onEdit?: () => void;
 }
@@ -150,36 +150,50 @@ const TaskReader = ({ taskId, onChange, onEdit }: IWidget) => {
           onChange && onChange(data);
         }}
       />
-      <div>
-        <div>
-          <Space>
-            <User {...task?.editor} />
-            <TimeShow updatedAt={task?.updated_at} />
-            <Like resId={task?.id} resType="task" />
-          </Space>
-        </div>
-        <div>
-          <Space>
-            <Text key={"1"}>指派给</Text>
-            <Assignees
-              key={"assignees"}
-              task={task}
-              onChange={(data) => {
-                setTask(data[0]);
-                onChange && onChange(data);
-              }}
-            />
-            <Text>|</Text>
-            <Text key={"2"}>执行人</Text>
-            <User key={"executor"} {...task?.executor} />
-          </Space>
-        </div>
-        <div>
-          <PlanDate />
-        </div>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <Space>
+          <User {...task?.editor} />
+          <TimeShow updatedAt={task?.updated_at} />
+          <Like resId={task?.id} resType="task" />
+        </Space>
+        <Space>
+          <Text type="secondary" key={"2"}>
+            执行人
+          </Text>
+          <User key={"executor"} {...task?.executor} />
+        </Space>
+        <Space>
+          <Text type="secondary" key={"1"}>
+            指派给
+          </Text>
+          <Assignees
+            key={"assignees"}
+            task={task}
+            onChange={(data) => {
+              setTask(data[0]);
+              onChange && onChange(data);
+            }}
+          />
+        </Space>
+        <Space>
+          <Text type="secondary">起止日期</Text>
+          <div style={{ width: 400 }}>
+            <PlanDate />
+          </div>
+        </Space>
+        <Space>
+          <Text type="secondary">类别</Text>
+          <Category />
+        </Space>
       </div>
       <Divider />
-      <Description task={task} />
+      <Description
+        task={task}
+        onChange={(data) => {
+          setTask(data[0]);
+          onChange && onChange(data);
+        }}
+      />
     </div>
   );
 };
