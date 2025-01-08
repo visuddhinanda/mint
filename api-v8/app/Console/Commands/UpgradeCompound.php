@@ -23,7 +23,7 @@ class UpgradeCompound extends Command
      * php -d memory_limit=2024M artisan upgrade:compound  --api=https://next.wikipali.org/api --from=0 --to=500000
      * @var string
      */
-    protected $signature = 'upgrade:compound {word?} {--book=} {--debug} {--test} {--continue} {--api=} {--from=0} {--to=0} {--min=7} {--max=300}';
+    protected $signature = 'upgrade:compound {word?} {--book=} {--debug} {--test} {--continue} {--api=} {--from=0} {--to=0} {--min=7} {--max=50}';
 
     /**
      * The console command description.
@@ -145,7 +145,6 @@ class UpgradeCompound extends Command
             }
             $words = WordIndex::whereBetween('id', [$from, $to])
                 ->where('len', '>', $this->option('min'))
-                ->where('len', '<', $this->option('max'))
                 ->orderBy('id')
                 ->selectRaw('id,word as real')
                 ->cursor();
@@ -216,7 +215,7 @@ class UpgradeCompound extends Command
                 }
             }
             if (count($parts) === 0) {
-                if (mb_strlen($word->real, 'UTF-8') > 60) {
+                if (mb_strlen($word->real, 'UTF-8') > $this->option('max')) {
                     Log::error('超长,give up' . $word->real);
                     continue;
                 }
