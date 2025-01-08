@@ -243,6 +243,9 @@ class UpgradeCompound extends Command
                 if (isset($part['type']) && $part['type'] === ".v.") {
                     continue;
                 }
+                if (empty($part['word'])) {
+                    continue;
+                }
                 $resultCount++;
                 $new = array();
                 $new['word'] = $part['word'];
