@@ -166,9 +166,12 @@ class TurboSplit
     }
 
     /**
-     * 查询单词是否存在
+     * 查询单词是否存在于词干表
+     * 如果存在，返回单词权重
+     * 如果不存在，变格后返回权重和语尾长度
+     *
      * @param  string  $word
-     * @return array(int $wordWeight, int $endingLenght)
+     * @return array(int $wordWeight, int $endingLength)
      */
     public function dict_lookup($word)
     {
@@ -179,18 +182,19 @@ class TurboSplit
         $search = $word;
 
         //获取单词权重
-        $row = RedisClusters::remember(
+        $weight = RedisClusters::remember(
             'palicanon/wordpart/weight/' . $search,
             config('mint.cache.expire'),
             function () use ($search) {
                 return WordPart::where('word', $search)->value('weight');
             }
         );
-        if ($row) {
+        if ($weight) {
             //找到
-            $this->log($search . '=' . $row);
-            return array($row, 0);
+            $this->log($search . '=' . $weight);
+            return array($weight, 0);
         } else {
+            //没找到
             if ($this->options["lookup_declension"]) {
                 return array(0, 0);
             }
@@ -206,21 +210,21 @@ class TurboSplit
                     }
                 }
             }
-            #找到最高频的base
+            #找到权重最高的base
             $base_weight = 0;
             $len = 0;
-            foreach ($newWord as $x => $x_value) {
-                $row = RedisClusters::remember(
-                    'palicanon/wordpart/weight/' . $search,
+            foreach ($newWord as $x => $x_len) {
+                $weight = RedisClusters::remember(
+                    'palicanon/wordpart/weight/' . $x,
                     config('mint.cache.expire'),
                     function () use ($x) {
                         return WordPart::where('word', $x)->value('weight');
                     }
                 );
-                if ($row) {
-                    if ($row > $base_weight) {
-                        $base_weight = $row;
-                        $len = $x_value;
+                if ($weight) {
+                    if ($weight > $base_weight) {
+                        $base_weight = $weight;
+                        $len = $x_len;
                     }
                 }
             }
@@ -237,7 +241,7 @@ class TurboSplit
      *
      *
      */
-    public function isExsit($word, $adj_len = 0)
+    public function isExist($word, $adj_len = 0)
     {
         $this->log("正在查询：{$word}");
 
@@ -318,7 +322,7 @@ class TurboSplit
         }
         //直接找到
 
-        $confidence = $this->isExsit($strWord, $adj_len);
+        $confidence = $this->isExist($strWord, $adj_len);
         if ($confidence > $c_threshhold) {
             array_push($output, array($strWord, "", $confidence));
             if (isset($node['sum_cf'])) {
@@ -332,7 +336,7 @@ class TurboSplit
         } else if (mb_strlen($strWord, "UTF-8") < 6) {
             //按照语尾查询
             $search = "[{$strWord}]";
-            $confidence = $this->isExsit($search);
+            $confidence = $this->isExist($search);
             $this->log("查询:{$search}-信心指数{$confidence}");
             if ($confidence > $c_threshhold) {
                 array_push($output, array($search, "", $confidence));
@@ -370,7 +374,7 @@ class TurboSplit
                         if (mb_substr($strWord, $i - $row["len"], $row["len"], "UTF-8") == $row["c"]) {
                             $str1 = mb_substr($strWord, 0, $i - $row["len"], "UTF-8") . $row["a"];
                             $str2 = $row["b"] . mb_substr($strWord, $i, null, "UTF-8");
-                            $confidence = $this->isExsit($str1, $adj_len) * $row["cf"];
+                            $confidence = $this->isExist($str1, $adj_len) * $row["cf"];
                             if ($confidence > $c_threshhold) {
                                 //信心指数大于预设的阈值，插入
                                 array_push($output, array($str1, $str2, $confidence, $row["adj_len"]));
@@ -408,7 +412,7 @@ class TurboSplit
                         if (mb_substr($strWord, $i, $row["len"], "UTF-8") == $row["c"]) {
                             $str1 = mb_substr($strWord, 0, $i, "UTF-8") . $row["a"];
                             $str2 = $row["b"] . mb_substr($strWord, $i + $row["len"], null, "UTF-8");
-                            $confidence = $this->isExsit($str2, $adj_len) * $row["cf"];
+                            $confidence = $this->isExist($str2, $adj_len) * $row["cf"];
                             if ($confidence > $c_threshhold) {
                                 array_push($output, array($str2, $str1, $confidence, $row["adj_len"]));
                                 if (isset($node['sum_cf'])) {
