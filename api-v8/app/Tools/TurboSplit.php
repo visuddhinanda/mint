@@ -289,23 +289,15 @@ class TurboSplit
     }
 
     /**
-     * word
-     * cf
-     * children[]
-     */
-    /**
      * 核心拆分函数
-     * $strWord, word to be look up 要查询的词
-     * $deep, 当前递归深度
-     * $forward 搜索方向
-     *   true 正向
-     *   false 反向
-     * $express=true, 快速查询
-     * $adj_len=0 长度校正系数
-     * $c_threshhold 信心指数阈值
      *
-     *
-     *
+     * @param  string  $strWord word to be look up 要查询的词
+     * @param  int  $deep  当前递归深度
+     * @param  boolean  $forward 搜索方向 true 正向  false 反向
+     * @param  boolean  $express=true, 快速查询
+     * @param  int  $adj_len=0 长度校正系数
+     * @param  int  $c_threshhold 信心指数阈值
+     * @return void
      */
     function split(&$node, $deep = 0, $express = false, $adj_len = 0, $c_threshhold = 0.8, $w_threshhold = 0.8, $forward = true, $sandhi_advance = false)
     {
