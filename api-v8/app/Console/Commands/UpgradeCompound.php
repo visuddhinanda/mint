@@ -14,11 +14,13 @@ use App\Http\Api\DictApi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
+use Symfony\Component\Process\Exception\RuntimeException;
+
 class UpgradeCompound extends Command
 {
     /**
      * The name and signature of the console command.
-     * php -d memory_limit=1024M artisan upgrade:compound  --api=https://next.wikipali.org/api --from=182852 --to=30000
+     * php -d memory_limit=2024M artisan upgrade:compound  --api=https://next.wikipali.org/api --from=0 --to=500000
      * @var string
      */
     protected $signature = 'upgrade:compound {word?} {--book=} {--debug} {--test} {--continue} {--api=} {--from=0} {--to=0} {--min=7} {--max=300}';
@@ -160,6 +162,7 @@ class UpgradeCompound extends Command
         }
         fclose($fDbHas);
         $this->info('load db has ' . count($dbHas));
+        $lastId = 0;
         foreach ($words as $key => $word) {
             if (\App\Tools\Tools::isStop()) {
                 return 0;
@@ -203,8 +206,9 @@ class UpgradeCompound extends Command
                 }
             }
             if (count($parts) === 0) {
-                if (mb_strlen($word->real, 'UTF-8') > 100) {
-                    Log::error('超长' . $word->real);
+                if (mb_strlen($word->real, 'UTF-8') > 60) {
+                    Log::error('超长,give up' . $word->real);
+                    continue;
                 }
                 $ts = new TurboSplit();
                 if ($this->option('debug')) {
@@ -264,7 +268,12 @@ class UpgradeCompound extends Command
 
             if (count($wordIndex) % 100 === 0) {
                 //每100个单词上传一次
-                $this->upload($wordIndex, $result, $this->option('api'));
+                $ok = $this->upload($wordIndex, $result, $this->option('api'));
+                if (!$ok) {
+                    Log::error('break on ' . $word->id);
+                    return 1;
+                }
+                $lastId = $word->id;
                 $wordIndex = array();
                 $result = array();
             }
@@ -286,17 +295,40 @@ class UpgradeCompound extends Command
         }
         $this->info('url = ' . $url);
         $this->info('uploading size=' . strlen(json_encode($words, JSON_UNESCAPED_UNICODE)));
-        $response = Http::post(
-            $url,
-            [
-                'index' => $index,
-                'words' => $words,
-            ]
-        );
-        if ($response->ok()) {
-            $this->info('upload ok');
-        } else {
-            $this->error('upload fail.');
+
+        $httpError = false;
+        $loop = 0;
+        $Max_Loop = 10;
+        do {
+            if ($loop > 0) {
+                $this->error('try again ' . $loop);
+            }
+            try {
+                $response = Http::post(
+                    $url,
+                    [
+                        'index' => $index,
+                        'words' => $words,
+                    ]
+                );
+                if ($response->ok()) {
+                    $this->info('upload ok');
+                    $httpError = false;
+                } else {
+                    $this->error('upload fail.');
+                    Log::error('upload fail.');
+                    throw new \Exception('http error');
+                }
+            } catch (\Exception $e) {
+                Log::error('send notification failed', ['exception' => $e]);
+                $httpError = true;
+            }
+            $loop++;
+        } while ($httpError && $loop < $Max_Loop);
+        if ($httpError) {
+            Log::error('upload fail.try max');
+            return false;
         }
+        return true;
     }
 }
