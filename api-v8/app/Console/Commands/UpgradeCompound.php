@@ -334,8 +334,8 @@ class UpgradeCompound extends Command
                 $this->error('upload fail.');
                 Log::error('upload fail.' . $response->body());
             }
-        } catch (\Throwable $throwable) {
-            Log::error('send notification failed', ['exception' => $throwable]);
+        } catch (GuzzleException $e) {
+            Log::error('send data failed', ['exception' => $e, 'body' => $e->getResponse()->getBody()->getContents()]);
             $httpError = true;
         }
 
