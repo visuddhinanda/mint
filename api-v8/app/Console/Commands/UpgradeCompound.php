@@ -2,6 +2,10 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Http\Client\Response;
+use Illuminate\Http\Client\RequestException;
+use Exception;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use App\Models\WordIndex;
@@ -307,34 +311,33 @@ class UpgradeCompound extends Command
         $this->info('uploading size=' . strlen(json_encode($words, JSON_UNESCAPED_UNICODE)));
 
         $httpError = false;
-        $loop = 0;
         $Max_Loop = 10;
-        do {
-            if ($loop > 0) {
-                $this->error('try again ' . $loop);
-            }
-            try {
-                $response = Http::post(
+
+        try {
+            $response = Http::retry($Max_Loop, 100, function (Exception $exception) {
+                Log::error('upload fail.', ['error' => $exception]);
+                $this->error('upload fail. try again');
+                return true;
+            })
+                ->post(
                     $url,
                     [
                         'index' => $index,
                         'words' => $words,
                     ]
                 );
-                if ($response->ok()) {
-                    $this->info('upload ok');
-                    $httpError = false;
-                } else {
-                    $this->error('upload fail.');
-                    Log::error('upload fail.');
-                    throw new \Exception('http error');
-                }
-            } catch (\Exception $e) {
-                Log::error('send notification failed', ['exception' => $e]);
-                $httpError = true;
+            if ($response->ok()) {
+                $this->info('upload ok');
+                $httpError = false;
+            } else {
+                $this->error('upload fail.');
+                Log::error('upload fail.');
             }
-            $loop++;
-        } while ($httpError && $loop < $Max_Loop);
+        } catch (\Throwable $throwable) {
+            Log::error('send notification failed', ['exception' => $throwable]);
+            $httpError = true;
+        }
+
         if ($httpError) {
             Log::error('upload fail.try max');
             return false;
