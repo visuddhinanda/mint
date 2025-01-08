@@ -155,19 +155,29 @@ class UpgradeCompound extends Command
         $sn = 0;
         $wordIndex = array();
         $result = array();
+
+        /*
         $dbHas = array();
         $fDbHas = fopen(__DIR__ . '/compound.csv', 'r');
         while (! feof($fDbHas)) {
             $dbHas[] = trim(fgets($fDbHas));
         }
         fclose($fDbHas);
+
         $this->info('load db has ' . count($dbHas));
-        $lastId = 0;
+*/
         foreach ($words as $key => $word) {
             if (\App\Tools\Tools::isStop()) {
                 return 0;
             }
-            if (in_array($word->real, $dbHas)) {
+            //判断数据库里面是否有
+            /*
+            $exists = in_array($word->real, $dbHas)
+            */
+            $exists = UserDict::where('dict_id', $dict_id)
+                ->where('word', $word->real)
+                ->exists();
+            if ($exists) {
                 $this->info("[{$key}]{$word->real}数据库中已经有了");
                 continue;
             }
@@ -273,7 +283,6 @@ class UpgradeCompound extends Command
                     Log::error('break on ' . $word->id);
                     return 1;
                 }
-                $lastId = $word->id;
                 $wordIndex = array();
                 $result = array();
             }
@@ -287,7 +296,9 @@ class UpgradeCompound extends Command
 
     private function upload($index, $words, $url = null)
     {
-
+        if (count($words) === 0) {
+            return;
+        }
         if (!$url) {
             $url = config('app.url') . '/api/v2/compound';
         } else {
