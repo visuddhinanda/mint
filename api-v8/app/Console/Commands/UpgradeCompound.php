@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 
 use App\Tools\TurboSplit;
 use App\Http\Api\DictApi;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
@@ -331,7 +332,7 @@ class UpgradeCompound extends Command
                 $httpError = false;
             } else {
                 $this->error('upload fail.');
-                Log::error('upload fail.');
+                Log::error('upload fail.' . $response->body());
             }
         } catch (\Throwable $throwable) {
             Log::error('send notification failed', ['exception' => $throwable]);
