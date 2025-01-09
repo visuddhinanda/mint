@@ -163,6 +163,9 @@ export const ArticleCtl = ({
         </Link>
       );
       break;
+    case "window":
+      output = <div style={{ width: "100%" }}>{article}</div>;
+      break;
     default:
       break;
   }
