@@ -1,8 +1,8 @@
 import { Card, Collapse, Modal, Space } from "antd";
 import { Typography } from "antd";
 import { useState } from "react";
-import Article, { ArticleType } from "../article/Article";
-import { Link } from "react-router-dom";
+import Article, { ArticleMode, ArticleType } from "../article/Article";
+import { Link, useSearchParams } from "react-router-dom";
 import { fullUrl } from "../../utils";
 import { useIntl } from "react-intl";
 
@@ -18,6 +18,7 @@ export type TDisplayStyle =
 interface IWidgetChapterCtl {
   type?: ArticleType;
   id?: string;
+  mode?: ArticleMode;
   anthology?: string;
   book?: string;
   paragraphs?: string;
@@ -32,6 +33,7 @@ interface IWidgetChapterCtl {
 export const ArticleCtl = ({
   type,
   id,
+  mode = "auto",
   anthology,
   channel,
   parentChannels,
@@ -44,6 +46,19 @@ export const ArticleCtl = ({
 }: IWidgetChapterCtl) => {
   const intl = useIntl();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  let currMode: ArticleMode;
+  if (mode === "auto") {
+    if (searchParams.get("mode") !== null) {
+      currMode = searchParams.get("mode") as ArticleMode;
+    } else {
+      currMode = "read";
+    }
+  } else {
+    currMode = mode;
+  }
+
   const showModal = () => {
     setIsModalOpen(true);
   };
@@ -68,7 +83,7 @@ export const ArticleCtl = ({
       channelId={channel}
       parentChannels={parentChannels}
       focus={focus}
-      mode="read"
+      mode={currMode}
       hideInteractive={true}
       hideTitle={true}
       isSubWindow
