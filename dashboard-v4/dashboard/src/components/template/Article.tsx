@@ -59,6 +59,11 @@ export const ArticleCtl = ({
     currMode = mode;
   }
 
+  const orgChannels = channel ? channel.split(",") : [];
+  const strUrlChannels = searchParams.get("channel");
+  const urlChannels = strUrlChannels ? strUrlChannels.split(",") : [];
+  const currChannels = [...orgChannels, ...urlChannels];
+
   const showModal = () => {
     setIsModalOpen(true);
   };
@@ -80,7 +85,7 @@ export const ArticleCtl = ({
       anthologyId={anthology}
       book={book}
       para={paragraphs}
-      channelId={channel}
+      channelId={currChannels.join(",")}
       parentChannels={parentChannels}
       focus={focus}
       mode={currMode}
