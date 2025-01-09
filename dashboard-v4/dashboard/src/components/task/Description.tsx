@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, message } from "antd";
 import { EditOutlined, CheckOutlined } from "@ant-design/icons";
 
@@ -16,6 +16,8 @@ const Description = ({ task, onChange }: IWidget) => {
   const [mode, setMode] = useState<"read" | "edit">("read");
   const [content, setContent] = useState(task?.description);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => setContent(task?.description), [task]);
   return (
     <div>
       <div
