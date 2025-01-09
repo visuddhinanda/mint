@@ -90,9 +90,16 @@ export const ArticleCtl = ({
     />
   );
   let output = <></>;
-  let articleLink = `/article/${type}/${id}?mode=read`;
+  let articleLink = `/article/${type}/${id}?mode=${currMode}`;
   articleLink += channel ? `&channel=${channel}` : "";
 
+  const OpenLink = (
+    <Link to={articleLink} target="_blank">
+      {intl.formatMessage({
+        id: "buttons.open.in.new.tab",
+      })}
+    </Link>
+  );
   switch (style) {
     case "modal":
       output = (
@@ -143,7 +150,11 @@ export const ArticleCtl = ({
       );
       break;
     case "card":
-      output = <Card title={aTitle}>{article}</Card>;
+      output = (
+        <Card title={aTitle} extra={OpenLink}>
+          {article}
+        </Card>
+      );
       break;
     case "toggle":
       output = (
