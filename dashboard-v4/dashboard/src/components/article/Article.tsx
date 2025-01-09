@@ -14,7 +14,7 @@ import TypeSeries from "./TypeSeries";
 import DiscussionCount from "../discussion/DiscussionCount";
 import TypeTask from "./TypeTask";
 
-export type ArticleMode = "read" | "edit" | "wbw";
+export type ArticleMode = "read" | "edit" | "wbw" | "auto";
 export type ArticleType =
   | "anthology"
   | "article"
