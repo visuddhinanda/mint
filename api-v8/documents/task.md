@@ -2,9 +2,9 @@
 
 ```mermaid
 flowchart LR
-classDef done fill:darkgreen;
-classDef progressing fill:darkblue;
-classDef plan fill:black;
+classDef done fill:darkgreen,color:#fff;
+classDef progressing fill:darkblue,color:#fff;
+classDef plan fill:black,color:#fff;
 
 c1[课外任务]:::plan;
 c2[课程中考试]:::plan;
