@@ -149,7 +149,8 @@ class UpgradeCompound extends Command
                 $to = $max;
             }
             $words = WordIndex::whereBetween('id', [$from, $to])
-                ->where('len', '>', $this->option('min'))
+                ->where('len', '>=', $this->option('min'))
+                ->where('len', '<=', $this->option('max'))
                 ->orderBy('id')
                 ->selectRaw('id,word as real')
                 ->cursor();
@@ -224,10 +225,6 @@ class UpgradeCompound extends Command
                 }
             }
             if (count($parts) === 0) {
-                if (mb_strlen($word->real, 'UTF-8') > $this->option('max')) {
-                    Log::error('超长,give up' . $word->real);
-                    continue;
-                }
                 $ts = new TurboSplit();
                 if ($this->option('debug')) {
                     $ts->debug(true);
