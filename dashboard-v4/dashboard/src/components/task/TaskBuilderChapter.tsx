@@ -14,18 +14,24 @@ import ChapterToc from "../article/ChapterToc";
 import { IChapterToc } from "../api/Corpus";
 import { post } from "../../request";
 import TaskBuilderProp, { IParam, IProp } from "./TaskBuilderProp";
+import {
+  IPayload,
+  ITokenCreate,
+  ITokenCreateResponse,
+  ITokenData,
+} from "../api/token";
 
 interface IModal {
-  tiger?: React.ReactNode;
   studioName?: string;
+  channels?: string[];
   book?: number;
   para?: number;
   open?: boolean;
   onClose?: () => void;
 }
-export const TaskBuilderModal = ({
-  tiger,
+export const TaskBuilderChapterModal = ({
   studioName,
+  channels,
   book,
   para,
   open = false,
@@ -43,9 +49,10 @@ export const TaskBuilderModal = ({
         onOk={onClose}
         onCancel={onClose}
       >
-        <TaskBuilder
+        <TaskBuilderChapter
           style={{ marginTop: 20 }}
           studioName={studioName}
+          channels={channels}
           book={book}
           para={para}
         />
@@ -56,14 +63,22 @@ export const TaskBuilderModal = ({
 
 interface IWidget {
   studioName?: string;
+  channels?: string[];
   book?: number;
   para?: number;
   style?: React.CSSProperties;
 }
-const TaskBuilder = ({ studioName, book, para, style }: IWidget) => {
+const TaskBuilderChapter = ({
+  studioName,
+  book,
+  para,
+  style,
+  channels,
+}: IWidget) => {
   const [current, setCurrent] = useState(0);
   const [workflow, setWorkflow] = useState<ITaskData[]>();
   const [chapter, setChapter] = useState<IChapterToc[]>();
+  const [tokens, setTokens] = useState<ITokenData[]>();
   const [messages, setMessages] = useState<string[]>([]);
   const [prop, setProp] = useState<IProp[]>();
 
@@ -74,7 +89,30 @@ const TaskBuilder = ({ studioName, book, para, style }: IWidget) => {
         <ChapterToc
           book={book}
           para={para}
-          onData={(data) => setChapter(data)}
+          onData={(data: IChapterToc[]) => {
+            setChapter(data);
+            //获取channel token
+            let payload: IPayload[] = [];
+            channels?.forEach((channel) => {
+              data.forEach((chapter) => {
+                payload.push({
+                  res_id: channel,
+                  res_type: "channel",
+                  book: chapter.book,
+                  para_start: chapter.paragraph,
+                });
+              });
+            });
+            const url = "/v2/access-token";
+            const values = { payload: payload };
+            console.info("api request", url, values);
+            post<ITokenCreate, ITokenCreateResponse>(url, values).then(
+              (json) => {
+                console.info("api response", json);
+                setTokens(json.data.rows);
+              }
+            );
+          }}
         />
       ),
     },
@@ -201,22 +239,32 @@ const TaskBuilder = ({ studioName, book, para, style }: IWidget) => {
                               replaceValue
                             );
                           } else if (value.type === "string") {
-                            newContent = newContent?.replace(
-                              value.key,
-                              value.value
-                            );
-                          }
-                          //替换book
-                          if (project.resId) {
-                            const [book, para] = project.resId.split("-");
-                            newContent = newContent?.replace(
-                              "book=#",
-                              `book=${book}`
-                            );
-                            newContent = newContent?.replace(
-                              "paragraphs=#",
-                              `paragraphs=${para}`
-                            );
+                            //替换book
+                            if (project.resId) {
+                              const [book, paragraph] =
+                                project.resId.split("-");
+                              newContent = newContent?.replace(
+                                "book=#",
+                                `book=${book}`
+                              );
+                              newContent = newContent?.replace(
+                                "paragraphs=#",
+                                `paragraphs=${paragraph}`
+                              );
+                              //查找token
+                              const mToken = tokens?.find(
+                                (token) =>
+                                  token.payload.book?.toString() === book &&
+                                  token.payload.para_start?.toString() ===
+                                    paragraph &&
+                                  token.payload.res_id === value.value
+                              );
+                              newContent = newContent?.replace(
+                                value.key,
+                                value.value +
+                                  (mToken ? "@" + mToken?.token : "")
+                              );
+                            }
                           }
                         });
 
@@ -257,4 +305,4 @@ const TaskBuilder = ({ studioName, book, para, style }: IWidget) => {
   );
 };
 
-export default TaskBuilder;
+export default TaskBuilderChapter;
