@@ -14,6 +14,7 @@ import Workflow from "./Workflow";
 import {
   IProjectTreeInsertRequest,
   IProjectTreeResponse,
+  IProjectUpdateRequest,
   ITaskData,
   ITaskGroupInsertData,
   ITaskGroupInsertRequest,
@@ -253,12 +254,14 @@ const TaskBuilderProjects = ({
                 studio_name: studioName,
                 parent_id: parentId,
                 data: projectsTitle.map((item, id) => {
-                  return {
+                  const project: IProjectUpdateRequest = {
                     id: item,
                     title: item,
                     type: "instance",
                     parent_id: null,
+                    res_id: id.toString(),
                   };
+                  return project;
                 }),
               };
               console.info("api request", url, values);
