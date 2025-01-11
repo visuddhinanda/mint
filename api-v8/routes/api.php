@@ -109,6 +109,7 @@ use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\ProjectTreeController;
 use App\Http\Controllers\SiteInfoController;
 use App\Http\Controllers\PaliBookCategoryController;
+use App\Http\Controllers\AccessTokenController;
 
 
 
@@ -275,4 +276,5 @@ Route::group(['prefix' => 'v2'], function () {
     Route::apiResource('project-tree', ProjectTreeController::class);
     Route::apiResource('site-info', SiteInfoController::class);
     Route::apiResource('pali-book-category', PaliBookCategoryController::class);
+    Route::apiResource('access-token', AccessTokenController::class);
 });
