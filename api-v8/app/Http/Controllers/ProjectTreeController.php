@@ -42,7 +42,7 @@ class ProjectTreeController extends Controller
         $newData = [];
         foreach ($request->get('data') as $key => $value) {
             $newData[] = [
-                'id' => Str::uuid(),
+                'uid' => Str::uuid(),
                 'old_id' => $value['id'],
                 'title' => $value['title'],
                 'type' => $value['type'],
@@ -68,7 +68,7 @@ class ProjectTreeController extends Controller
                     $newData[$key]['parent_id'] = null;
                 }
             } else if (!empty($request->get('parent_id'))) {
-                $pPath = Project::where('id', $request->get('parent_id'))->value('path');
+                $pPath = Project::where('uid', $request->get('parent_id'))->value('path');
                 $parentPath = json_decode($pPath);
                 if (!is_array($parentPath)) {
                     $parentPath = [];
@@ -80,10 +80,10 @@ class ProjectTreeController extends Controller
         $output = [];
         foreach ($newData as $key => $value) {
             $children = array_filter($newData, function ($element) use ($value) {
-                return $element['parent_id'] === $value['id'];
+                return $element['parent_id'] === $value['uid'];
             });
             $output[] = [
-                'id' => $value['id'],
+                'id' => $value['uid'],
                 'resId' => $value['res_id'],
                 'isLeaf' => count($children) === 0,
             ];

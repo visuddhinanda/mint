@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Project extends Model
 {
     use HasFactory;
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'uid';
     protected $casts = [
-        'id' => 'string'
+        'uid' => 'string'
     ];
+
     protected $fillable = ['id'];
 }

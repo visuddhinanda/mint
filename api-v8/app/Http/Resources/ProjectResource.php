@@ -18,7 +18,7 @@ class ProjectResource extends JsonResource
     public function toArray($request)
     {
         $data = [
-            'id' => $this->id,
+            'id' => $this->uid,
             'title' => $this->title,
             'type' => $this->type,
             'description' => $this->description,
@@ -27,8 +27,8 @@ class ProjectResource extends JsonResource
             'parent' => ProjectApi::getById($this->parent_id),
             'path' => ProjectApi::getListByIds(json_decode($this->path)),
             'description' => $this->description,
-            "owner"=> StudioApi::getById($this->owner_id),
-            "editor"=> UserApi::getIdByUuid($this->editor_id),
+            "owner" => StudioApi::getById($this->owner_id),
+            "editor" => UserApi::getIdByUuid($this->editor_id),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -31,7 +31,7 @@ class ProjectController extends Controller
                     ->where('type', $request->get('type', 'instance'));
                 break;
             case 'project-tree':
-                $table = Project::where('id', $request->get('project_id'))
+                $table = Project::where('uid', $request->get('project_id'))
                     ->orWhereJsonContains('path', $request->get('project_id'));
                 break;
             default:
@@ -50,7 +50,7 @@ class ProjectController extends Controller
         $sql = $table->toSql();
         Log::debug('sql', ['sql' => $sql]);
 
-        $table = $table->orderBy($request->get('order', 'created_at'), $request->get('dir', 'desc'));
+        $table = $table->orderBy($request->get('order', 'id'), $request->get('dir', 'asc'));
 
         $table = $table->skip($request->get("offset", 0))
             ->take($request->get('limit', 10000));
@@ -87,11 +87,11 @@ class ProjectController extends Controller
         if (!self::canEdit($user['user_uid'], $studioId)) {
             return $this->error(__('auth.failed'), 403, 403);
         }
-        $new = Project::firstOrNew(['id' => $request->get('id')]);
+        $new = Project::firstOrNew(['uid' => $request->get('id')]);
         if (Str::isUuid($request->get('id'))) {
-            $new->id = $request->get('id');
+            $new->uid = $request->get('id');
         } else {
-            $new->id =  Str::uuid();
+            $new->uid =  Str::uuid();
         }
         $new->title = $request->get('title');
         $new->description = $request->get('description');
@@ -101,7 +101,7 @@ class ProjectController extends Controller
         $new->type = $request->get('type', 'instance');
 
         if (Str::isUuid($request->get('parent_id'))) {
-            $parentPath = Project::where('id', $request->get('parent_id'))->value('path');
+            $parentPath = Project::where('uid', $request->get('parent_id'))->value('path');
             $parentPath = json_decode($parentPath);
             if (!is_array($parentPath)) {
                 $parentPath = array();
