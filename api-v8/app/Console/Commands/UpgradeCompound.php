@@ -174,6 +174,10 @@ class UpgradeCompound extends Command
             if (\App\Tools\Tools::isStop()) {
                 return 0;
             }
+            if (preg_match('/\d/', $word->real)) {
+                $this->info('数字不处理');
+                continue;
+            }
             //判断数据库里面是否有
             /*
             $exists = in_array($word->real, $dbHas)
