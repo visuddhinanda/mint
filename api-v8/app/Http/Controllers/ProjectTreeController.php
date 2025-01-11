@@ -61,9 +61,9 @@ class ProjectTreeController extends Controller
                     return $element['old_id'] == $value['parent_id'];
                 });
                 if (count($found) > 0) {
-                    $newData[$key]['parent_id'] = $found[0]['id'];
+                    $newData[$key]['parent_id'] = $found[0]['uid'];
                     $parentPath = $found[0]['path'] ? json_decode($found[0]['path']) : [];
-                    $newData[$key]['path'] = json_encode([...$parentPath, $found[0]['id']], JSON_UNESCAPED_UNICODE);
+                    $newData[$key]['path'] = json_encode([...$parentPath, $found[0]['uid']], JSON_UNESCAPED_UNICODE);
                 } else {
                     $newData[$key]['parent_id'] = null;
                 }
