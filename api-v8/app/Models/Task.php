@@ -12,7 +12,7 @@ class Task extends Model
     protected $casts = [
         'id' => 'string'
     ];
-    protected $fillable = ['id','owner_id','project_id'];
+    protected $fillable = ['id', 'creator_id', 'owner_id', 'project_id'];
 
     protected $dates = [
         'created_at',
