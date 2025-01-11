@@ -45,9 +45,9 @@ class TaskController extends Controller
                 $table = Task::where('owner_id', $user['user_uid']);
                 break;
             case 'project':
-                $projects = Project::where('id', $request->get('project_id'))
+                $projects = Project::where('uid', $request->get('project_id'))
                     ->orWhereJsonContains('path', $request->get('project_id'))
-                    ->select('id')
+                    ->select('uid')
                     ->get();
                 $table = Task::whereIn('project_id', $projects);
                 break;
@@ -155,9 +155,11 @@ class TaskController extends Controller
             ],
             [
                 'owner_id' => $studioId,
+                'creator_id' => $user['user_uid'],
                 'project_id' => $request->get('project_id'),
             ],
         );
+
         if (Str::isUuid($request->get('id'))) {
             $new->id = $request->get('id');
         } else {

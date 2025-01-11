@@ -49,10 +49,10 @@ class TaskGroupController extends Controller
         }
         $projectsId = array_keys($id);
         //鉴权
-        $projects = Project::whereIn('id', $projectsId)
-            ->select(['id', 'owner_id'])->get();
+        $projects = Project::whereIn('uid', $projectsId)
+            ->select(['uid', 'owner_id'])->get();
         foreach ($projects as $key => $project) {
-            $id[$project->id] = $project->owner_id;
+            $id[$project->uid] = $project->owner_id;
             if (!TaskController::canEdit($user['user_uid'], $project->owner_id)) {
                 Log::error(__('auth.failed'), ['user' => $user['user_uid'], 'owner' => $project->owner_id]);
                 return $this->error(__('auth.failed'), 403, 403);
@@ -83,6 +83,7 @@ class TaskGroupController extends Controller
                     'project_id' => $project['project_id'],
                     'owner_id' => $id[$project['project_id']],
                     'editor_id' => $user['user_uid'],
+                    'creator_id' => $user['user_uid'],
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
