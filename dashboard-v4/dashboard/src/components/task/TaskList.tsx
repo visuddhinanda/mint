@@ -635,6 +635,7 @@ const TaskList = ({
                               ? "workflow"
                               : "instance",
                           order: item.order,
+                          status: item.status,
                           parent_id: item.parent_id,
                           project_id: projectId,
                           is_milestone: item.is_milestone,
