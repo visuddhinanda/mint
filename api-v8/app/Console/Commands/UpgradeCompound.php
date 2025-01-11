@@ -121,7 +121,7 @@ class UpgradeCompound extends Command
         $_word = $this->argument('word');
         if (!empty($_word)) {
             $words = array((object)array('real' => $_word, 'id' => 0));
-            $count = 1;
+            $total = 1;
         } else if ($this->option('book')) {
             $words = WbwTemplate::select('real')
                 ->where('book', $this->option('book'))
@@ -134,7 +134,7 @@ class UpgradeCompound extends Command
                                     SELECT "real" from wbw_templates where book = ? and type <> ? and real <> ? group by real) T',
                 [$this->option('book'), '.ctl.', '']
             );
-            $count = $query[0]->count;
+            $total = $query[0]->count;
         } else {
             $min = WordIndex::min('id');
             $max = WordIndex::max('id');
@@ -154,10 +154,12 @@ class UpgradeCompound extends Command
                 ->orderBy('id')
                 ->selectRaw('id,word as real')
                 ->cursor();
-            $count = $to - $from + 1;
+            $total = WordIndex::whereBetween('id', [$from, $to])
+                ->where('len', '>=', $this->option('min'))
+                ->where('len', '<=', $this->option('max'))
+                ->count();
         }
 
-        $sn = 0;
         $wordIndex = array();
         $result = array();
 
@@ -175,8 +177,9 @@ class UpgradeCompound extends Command
             if (\App\Tools\Tools::isStop()) {
                 return 0;
             }
+            $percent = (int)($key * 100 / $total);
             if (preg_match('/\d/', $word->real)) {
-                $this->info('数字不处理');
+                $this->info("[{$percent}%] {$word->real} 数字不处理");
                 continue;
             }
             //判断数据库里面是否有
@@ -187,13 +190,13 @@ class UpgradeCompound extends Command
                 ->where('word', $word->real)
                 ->exists();
             if ($exists) {
-                $this->info("[{$key}]{$word->real}数据库中已经有了");
+                $this->info("[{$percent}%]-{$key}-{$word->real}数据库中已经有了");
                 continue;
             }
-            $sn++;
+
             $startAt = microtime(true);
             $now = date('Y-m-d H:i:s');
-            $this->info("[{$now}]{$word->real} start id={$word->id}");
+            $this->info("[{$percent}%]-[{$now}]{$word->real} start id={$word->id}");
             $wordIndex[] = $word->real;
 
             //先查询vir数据有没有拆分
@@ -235,9 +238,8 @@ class UpgradeCompound extends Command
             }
 
             $time = round(microtime(true) - $startAt, 2);
-            $percent = (int)($sn * 100 / $count);
 
-            $this->info("[{$percent}%][{$sn}] {$word->real}  {$time}s");
+            $this->info("[{$percent}%][{$key}] {$word->real}  {$time}s");
 
             $resultCount = 0;
             foreach ($parts as $part) {
