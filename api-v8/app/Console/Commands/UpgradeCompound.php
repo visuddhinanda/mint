@@ -286,7 +286,7 @@ class UpgradeCompound extends Command
                 }
             }
 
-            if (count($wordIndex) % 100 === 0) {
+            if (count($wordIndex) % 2 === 0) {
                 //每100个单词上传一次
                 $ok = $this->upload($wordIndex, $result, $this->option('api'));
                 if (!$ok) {
