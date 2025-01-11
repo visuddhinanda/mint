@@ -21,7 +21,7 @@ import store from "../../store";
 import { refresh } from "../../reducers/focus";
 import Navigate from "./Navigate";
 import { ISearchParams } from "../../pages/library/article/show";
-import { TaskBuilderModal } from "../task/TaskBuilder";
+import { TaskBuilderChapterModal } from "../task/TaskBuilderChapter";
 import { useAppSelector } from "../../hooks";
 import { currentUser } from "../../reducers/current-user";
 import { ArticleTplModal } from "../template/Builder/ArticleTpl";
@@ -244,10 +244,11 @@ const TypePaliWidget = ({
         <ErrorResult code={errorCode} />
       ) : (
         <>
-          <TaskBuilderModal
+          <TaskBuilderChapterModal
             studioName={user?.realName}
             book={parseInt(mBook ?? "0")}
             para={parseInt(mPara ?? "0")}
+            channels={channels}
             open={taskBuilderModalOpen}
             onClose={() => setTaskBuilderModalOpen(false)}
           />
