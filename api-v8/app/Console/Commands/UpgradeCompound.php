@@ -28,7 +28,7 @@ class UpgradeCompound extends Command
      * php -d memory_limit=2024M artisan upgrade:compound  --api=https://next.wikipali.org/api --from=0 --to=500000
      * @var string
      */
-    protected $signature = 'upgrade:compound {word?} {--book=} {--debug} {--test} {--continue} {--api=} {--from=0} {--to=0} {--min=7} {--max=50}';
+    protected $signature = 'upgrade:compound {word?} {--book=} {--debug} {--test} {--continue} {--api=} {--from=0} {--to=0} {--min=7} {--max=50} {--timeout=600}';
 
     /**
      * The console command description.
@@ -87,7 +87,7 @@ class UpgradeCompound extends Command
         //
         if ($this->option('test')) {
             //调试代码
-            $ts = new TurboSplit(['timeout' => 600]);
+            $ts = new TurboSplit(['timeout' => $this->option('timeout')]);
             Storage::disk('local')->put("tmp/compound.md", "# Turbo Split");
             //获取需要拆的词
             $list = [
@@ -231,7 +231,7 @@ class UpgradeCompound extends Command
                 }
             }
             if (count($parts) === 0) {
-                $ts = new TurboSplit(['timeout' => 600]);
+                $ts = new TurboSplit(['timeout' => $this->option('timeout')]);
                 if ($this->option('debug')) {
                     $ts->debug(true);
                 }
