@@ -37,7 +37,7 @@ class UpgradeCompound extends Command
      */
     protected $description = 'auto split compound word';
 
-
+    protected $MaxOneLoopTime = 120;
 
     /**
      * Create a new command instance.
@@ -173,8 +173,12 @@ class UpgradeCompound extends Command
 
         $this->info('load db has ' . count($dbHas));
 */
+
+        $loopTime = 0;
         foreach ($words as $key => $word) {
+            $startAt = microtime(true);
             if (\App\Tools\Tools::isStop()) {
+                $this->info('system stop');
                 return 0;
             }
             $percent = (int)($key * 100 / $total);
@@ -194,7 +198,6 @@ class UpgradeCompound extends Command
                 continue;
             }
 
-            $startAt = microtime(true);
             $now = date('Y-m-d H:i:s');
             $this->info("[{$percent}%]-[{$now}]{$word->real} start id={$word->id}");
             $wordIndex[] = $word->real;
@@ -236,10 +239,6 @@ class UpgradeCompound extends Command
             } else {
                 $this->info("找到vri拆分数据：" . count($parts));
             }
-
-            $time = round(microtime(true) - $startAt, 2);
-
-            $this->info("[{$percent}%][{$key}] {$word->real}  {$time}s");
 
             $resultCount = 0;
             foreach ($parts as $part) {
@@ -286,8 +285,12 @@ class UpgradeCompound extends Command
                 }
             }
 
-            if (count($wordIndex) % 2 === 0) {
-                //每100个单词上传一次
+            $time = round(microtime(true) - $startAt, 2);
+            $loopTime += $time;
+            $this->info("[{$percent}%][{$key}] {$word->real}  {$time}s total{$loopTime}");
+
+            if ($loopTime > $this->MaxOneLoopTime) {
+                //到时间上传
                 $ok = $this->upload($wordIndex, $result, $this->option('api'));
                 if (!$ok) {
                     Log::error('break on ' . $word->id);
@@ -295,6 +298,7 @@ class UpgradeCompound extends Command
                 }
                 $wordIndex = array();
                 $result = array();
+                $loopTime = 0;
             }
         }
         $this->upload($wordIndex, $result, $this->option('api'));
