@@ -87,7 +87,7 @@ class UpgradeCompound extends Command
         //
         if ($this->option('test')) {
             //调试代码
-            $ts = new TurboSplit();
+            $ts = new TurboSplit(['timeout' => 600]);
             Storage::disk('local')->put("tmp/compound.md", "# Turbo Split");
             //获取需要拆的词
             $list = [
@@ -228,7 +228,7 @@ class UpgradeCompound extends Command
                 }
             }
             if (count($parts) === 0) {
-                $ts = new TurboSplit();
+                $ts = new TurboSplit(['timeout' => 600]);
                 if ($this->option('debug')) {
                     $ts->debug(true);
                 }

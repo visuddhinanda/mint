@@ -18,8 +18,10 @@ class TurboSplit
         "forward" => true,
         "sandhi_advance" => false,
         "lookup_declension" => true,
+        'timeout' => 1000, //超时放弃
         /**快速查字典-不去尾 */
     ];
+    protected $started_at = null;
     protected $node = [];
     protected $path = array();
     protected $isDebug = false;
@@ -289,6 +291,22 @@ class TurboSplit
     }
 
     /**
+     * 判断是否超时
+     * @return boolean
+     */
+    private function isTimeOut()
+    {
+        if ($this->started_at) {
+            $time = time() - $this->started_at;
+            if ($time > $this->options['timeout']) {
+                Log::warning('split timeout');
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * 核心拆分函数
      *
      * @param  string  $strWord word to be look up 要查询的词
@@ -299,7 +317,7 @@ class TurboSplit
      * @param  int  $c_threshhold 信心指数阈值
      * @return void
      */
-    function split(&$node, $deep = 0, $express = false, $adj_len = 0, $c_threshhold = 0.8, $w_threshhold = 0.8, $forward = true, $sandhi_advance = false)
+    private function split(&$node, $deep = 0, $express = false, $adj_len = 0, $c_threshhold = 0.8, $w_threshhold = 0.8, $forward = true, $sandhi_advance = false)
     {
         $strWord = $node["remain"];
         $this->log("spliting word={$strWord} deep={$deep}");
@@ -358,6 +376,10 @@ class TurboSplit
                 #正向切
                 $this->log("正向切");
                 for ($i = $len; $i > 1; $i--) {
+                    if ($this->isTimeOut()) {
+                        Log::warning('line ' . __LINE__);
+                        return;
+                    }
                     //应用连音规则切分单词
                     foreach ($this->sandhi as $key => $row) {
                         if ($sandhi_advance == false && $row["advance"] == true) {
@@ -398,6 +420,10 @@ class TurboSplit
                 #反向切
                 for ($i = 1; $i < $len - 1; $i++) {
                     foreach ($this->sandhi as $key => $row) {
+                        if ($this->isTimeOut()) {
+                            Log::warning('line ' . __LINE__);
+                            return;
+                        }
                         if ($sandhi_advance == false && $row["advance"] == true) {
                             //continue;
                         }
@@ -438,6 +464,10 @@ class TurboSplit
         //print_r($node);
         //遍历children
         foreach ($node['children'] as $key => $child) {
+            if ($this->isTimeOut()) {
+                Log::warning('line ' . __LINE__);
+                return;
+            }
             # code...
             if (isset($child) && !empty($child['remain'])) {
                 $this->split($node['children'][$key], ($deep + 1), $express, $adj_len, $c_threshhold, $w_threshhold, $forward, $sandhi_advance);
@@ -573,8 +603,14 @@ class TurboSplit
         return mb_substr($newWord, 0, -1, "UTF-8");
     }
 
+    /**
+     * 切分函数
+     * @param  string $word 需要切分的单词
+     * @return array
+     */
     public function splitA($word)
     {
+        $this->started_at = time();
         $caseman = new CaseMan();
         $output = array();
         //预处理连音词
