@@ -148,31 +148,21 @@ class UpgradeCompound extends Command
             } else {
                 $to = $max;
             }
-            $words = WordIndex::whereBetween('id', [$from, $to])
-                ->where('len', '>=', $this->option('min'))
-                ->where('len', '<=', $this->option('max'))
-                ->orderBy('id')
+            $table = WordIndex::whereBetween('id', [$from, $to]);
+            if ($this->option('min') > 0) {
+                $table = $table->where('len', '>=', $this->option('min'));
+            }
+            if ($this->option('max') > 0) {
+                $table = $table->where('len', '<=', $this->option('max'));
+            }
+            $total = $table->count();
+            $words = $table->orderBy('id')
                 ->selectRaw('id,word as real')
                 ->cursor();
-            $total = WordIndex::whereBetween('id', [$from, $to])
-                ->where('len', '>=', $this->option('min'))
-                ->where('len', '<=', $this->option('max'))
-                ->count();
         }
 
         $wordIndex = array();
         $result = array();
-
-        /*
-        $dbHas = array();
-        $fDbHas = fopen(__DIR__ . '/compound.csv', 'r');
-        while (! feof($fDbHas)) {
-            $dbHas[] = trim(fgets($fDbHas));
-        }
-        fclose($fDbHas);
-
-        $this->info('load db has ' . count($dbHas));
-*/
 
         $loopTime = 0;
         foreach ($words as $key => $word) {
@@ -187,9 +177,6 @@ class UpgradeCompound extends Command
                 continue;
             }
             //判断数据库里面是否有
-            /*
-            $exists = in_array($word->real, $dbHas)
-            */
             $exists = UserDict::where('dict_id', $dict_id)
                 ->where('word', $word->real)
                 ->exists();
