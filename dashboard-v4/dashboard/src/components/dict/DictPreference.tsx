@@ -7,7 +7,7 @@ import {
   IPreferenceRequest,
   IPreferenceResponse,
 } from "../api/Dict";
-import { Button, Input, Progress, Space, Tag } from "antd";
+import { Button, Input, Space, Tag } from "antd";
 import { get, put } from "../../request";
 import { IWbw } from "../template/Wbw/WbwWord";
 import WbwFactorsEditor from "../template/Wbw/WbwFactorsEditor";
@@ -15,7 +15,22 @@ import { useEffect, useState } from "react";
 import WbwLookup from "../template/Wbw/WbwLookup";
 import Lookup from "./Lookup";
 import WbwParentEditor from "../template/Wbw/WbwParentEditor";
+import User from "../auth/User";
+import DictConfidence from "./DictConfidence";
 
+export const setValue = async (id: string, value: number) => {
+  const url = `/v2/dict-preference/${id}`;
+  const values: IPreferenceRequest = {
+    confidence: value,
+  };
+  console.debug("api request", url, values);
+
+  const result = await put<IPreferenceRequest, IPreferenceResponse>(
+    url,
+    values
+  );
+  return result;
+};
 interface IOkButton {
   data: IApiResponseDictData;
   onChange?: (data: IApiResponseDictData) => void;
@@ -28,16 +43,8 @@ const OkButton = ({ data, onChange }: IOkButton) => {
       icon={<CheckOutlined />}
       loading={loading}
       onClick={async () => {
-        const url = `/v2/dict-preference/${data.id}`;
-        const values: IPreferenceRequest = {
-          confidence: 100,
-        };
-        console.debug("api request", url, values);
         setLoading(true);
-        const result = await put<IPreferenceRequest, IPreferenceResponse>(
-          url,
-          values
-        );
+        const result = await setValue(data.id, 100);
         setLoading(false);
         console.info("api response", result);
         if (result.ok) {
@@ -265,12 +272,26 @@ const DictPreference = ({
             dataIndex: "word",
             title: "用户",
             render(dom, entity, index, action, schema) {
-              return <Lookup search={entity.word}>{entity.word}</Lookup>;
+              return (
+                <Space>
+                  {`[${entity.sn}]`}
+                  <Lookup search={entity.word}>{entity.word}</Lookup>
+                </Space>
+              );
             },
           },
           avatar: {
             dataIndex: "sn",
             search: false,
+            render(dom, entity, index, action, schema) {
+              return (
+                <User
+                  {...entity.editor}
+                  showName={false}
+                  showUserName={false}
+                />
+              );
+            },
           },
           description: {
             dataIndex: "title",
@@ -293,17 +314,23 @@ const DictPreference = ({
                   <Tag color="blue" key={row.count}>
                     {row.count}
                   </Tag>
-                  <div style={{ width: 100 }}>
-                    <Progress
-                      size="small"
-                      percent={Math.round(row.confidence ?? 0)}
-                      status={
-                        row.confidence !== undefined && row.confidence < 50
-                          ? "exception"
-                          : undefined
-                      }
-                    />
-                  </div>
+                  <DictConfidence
+                    value={row.confidence}
+                    onChange={async (value) => {
+                      const result = await setValue(row.id, value);
+                      setData((origin) => {
+                        origin.forEach((value, index, array) => {
+                          if (value.id === result.data.id) {
+                            array[index] = {
+                              ...value,
+                              confidence: result.data.confidence,
+                            };
+                          }
+                        });
+                        return origin;
+                      });
+                    }}
+                  />
                 </Space>
               );
             },
@@ -317,17 +344,14 @@ const DictPreference = ({
                   data={row}
                   onChange={(data) => {
                     setData((origin) => {
-                      origin.forEach(
-                        (
-                          value: IApiResponseDictData,
-                          index: number,
-                          array: IApiResponseDictData[]
-                        ) => {
-                          if (value.id === row.id) {
-                            array[index] = data;
-                          }
+                      origin.forEach((value, index, array) => {
+                        if (value.id === row.id) {
+                          array[index] = {
+                            ...value,
+                            confidence: data.confidence,
+                          };
                         }
-                      );
+                      });
                       return origin;
                     });
                   }}
