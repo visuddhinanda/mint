@@ -59,9 +59,15 @@ export const ArticleCtl = ({
     currMode = mode;
   }
 
-  const orgChannels = channel ? channel.split(",") : [];
+  const channelsToken = channel?.split(",").map((item) => item.split("@"));
+  channelsToken?.forEach((value) =>
+    sessionStorage.setItem(value[0], value[1] ?? "")
+  );
+  const orgChannels = channel
+    ? channel.split(",").map((item) => item.split("@")[0])
+    : [];
   const strUrlChannels = searchParams.get("channel");
-  const urlChannels = strUrlChannels ? strUrlChannels.split(",") : [];
+  const urlChannels = strUrlChannels ? strUrlChannels.split("_") : [];
   const currChannels = [...orgChannels, ...urlChannels];
 
   const showModal = () => {
@@ -85,7 +91,7 @@ export const ArticleCtl = ({
       anthologyId={anthology}
       book={book}
       para={paragraphs}
-      channelId={currChannels.join(",")}
+      channelId={currChannels.join("_")}
       parentChannels={parentChannels}
       focus={focus}
       mode={currMode}
@@ -96,7 +102,7 @@ export const ArticleCtl = ({
   );
   let output = <></>;
   let articleLink = `/article/${type}/${id}?mode=${currMode}`;
-  articleLink += channel ? `&channel=${channel}` : "";
+  articleLink += channel ? `&channel=${currChannels.join("_")}` : "";
 
   const OpenLink = (
     <Link to={articleLink} target="_blank">
@@ -112,9 +118,7 @@ export const ArticleCtl = ({
           <Typography.Link
             onClick={(event: React.MouseEvent<HTMLElement, MouseEvent>) => {
               if (event.ctrlKey || event.metaKey) {
-                let link = `/article/${type}/${id}?mode=read`;
-                link += channel ? `&channel=${channel}` : "";
-                window.open(fullUrl(link), "_blank");
+                window.open(fullUrl(articleLink), "_blank");
               } else {
                 showModal();
               }
@@ -135,11 +139,7 @@ export const ArticleCtl = ({
               >
                 <Text>{aTitle}</Text>
                 <Space>
-                  <Link to={articleLink} target="_blank">
-                    {intl.formatMessage({
-                      id: "buttons.open.in.new.tab",
-                    })}
-                  </Link>
+                  {OpenLink}
                   {modalExtra}
                 </Space>
               </div>
@@ -171,13 +171,7 @@ export const ArticleCtl = ({
       );
       break;
     case "link":
-      let link = `/article/${type}/${id}?mode=read`;
-      link += channel ? `&channel=${channel}` : "";
-      output = (
-        <Link to={link} target="_blank">
-          {aTitle}
-        </Link>
-      );
+      output = OpenLink;
       break;
     case "window":
       output = <div style={{ width: "100%" }}>{article}</div>;
