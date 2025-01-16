@@ -15,6 +15,7 @@ const items = {
   "message.get.token.fail": "获取token失败",
   "message.confirm-password.validate.fail": "两次密码不一致",
   "message.delete.success": "成功删除{count}条数据",
+  "message.task.status.change": "将任务状态修改为{status}吗？",
 };
 
 export default items;

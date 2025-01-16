@@ -32,6 +32,7 @@ const PrAcceptButtonWidget = ({ data, onAccept }: IWidget) => {
       prId: data.id,
       prUuid: data.uid,
       prEditAt: data.updateAt,
+      token: sessionStorage.getItem(data.channel.id),
     };
     console.debug("pr accept url", url, prData);
     put<ISentenceRequest, ISentenceResponse>(url, prData)

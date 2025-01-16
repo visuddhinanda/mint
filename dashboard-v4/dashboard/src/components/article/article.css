@@ -1,9 +1,9 @@
 .pcd_article h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+.pcd_article h2,
+.pcd_article h3,
+.pcd_article h4,
+.pcd_article h5,
+.pcd_article h6 {
   font-weight: 700;
 }
 
@@ -19,11 +19,11 @@ h6 {
 
 /*统一文章导航容器的字体*/
 .article_anchor h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+.article_anchor h2,
+.article_anchor h3,
+.article_anchor h4,
+.article_anchor h5,
+.article_anchor h6 {
   font-size: 14px !important;
   font-weight: 500 !important;
 }

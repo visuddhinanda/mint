@@ -28,15 +28,17 @@ const PaliTextTocWidget = ({
   const [expandedKeys, setExpandedKeys] = useState<Key[]>();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    let url = `/v2/palitext?view=book-toc&book=${book}&para=${para}`;
+    let url = `/v2/palitext?view=book-toc`;
     if (series) {
-      url = `/v2/palitext?view=book-toc&series=${series}`;
+      url += `&series=${series}`;
     } else {
-      url = `/v2/palitext?view=book-toc&book=${book}&para=${para}`;
+      url += `&book=${book}&para=${para}`;
     }
     setLoading(true);
+    console.info("api request", url);
     get<IPaliTocListResponse>(url)
       .then((json) => {
+        console.info("api response", json);
         const toc = json.data.rows.map((item, id) => {
           return {
             key: `${item.book}-${item.paragraph}`,

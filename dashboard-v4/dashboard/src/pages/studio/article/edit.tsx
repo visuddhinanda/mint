@@ -6,7 +6,6 @@ import GoBack from "../../../components/studio/GoBack";
 import ReadonlyLabel from "../../../components/general/ReadonlyLabel";
 
 import ArticleEdit from "../../../components/article/ArticleEdit";
-import ArticleEditTools from "../../../components/article/ArticleEditTools";
 import Article from "../../../components/article/Article";
 
 const Widget = () => {

@@ -90,6 +90,12 @@ const items = {
   "forms.status.cancel.label": "已经撤回",
   "forms.fields.sign-up-message.label": "报名消息",
   "forms.fields.color.label": "颜色",
+  "forms.fields.executors.label": "执行者们",
+  "forms.fields.executor.label": "执行者",
+  "forms.fields.milestone.label": "里程碑",
+  "forms.fields.started-at.label": "开始时间",
+  "forms.fields.finished-at.label": "完成时间",
+  "forms.fields.assignees.label": "指派给",
 };
 
 export default items;

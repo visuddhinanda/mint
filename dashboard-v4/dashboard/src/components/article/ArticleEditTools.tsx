@@ -49,7 +49,7 @@ const ArticleEditToolsWidget = ({
       <ArticleTplModal
         title={title}
         type="article"
-        id={articleId}
+        articleId={articleId}
         trigger={<Button type="link">获取模版</Button>}
       />
     </Space>

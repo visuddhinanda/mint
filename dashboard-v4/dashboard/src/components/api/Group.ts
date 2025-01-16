@@ -19,6 +19,7 @@ export interface IGroupDataRequest {
   created_at: string;
   updated_at: string;
 }
+
 export interface IGroupResponse {
   ok: boolean;
   message: string;
@@ -44,6 +45,7 @@ export interface IGroupMemberData {
   id?: number;
   user_id: string;
   group_id: string;
+  group: IStudio;
   power?: number;
   level?: number;
   status?: number;

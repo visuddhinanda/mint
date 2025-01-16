@@ -289,7 +289,7 @@ const ArticleListWidget = ({
                           <ArticleTplModal
                             title={row.title}
                             type="article"
-                            id={row.id}
+                            articleId={row.id}
                             trigger={<>模版</>}
                           />
                         ),

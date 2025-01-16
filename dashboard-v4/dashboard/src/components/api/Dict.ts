@@ -39,6 +39,7 @@ export interface IDictInfo {
 }
 export interface IApiResponseDictData {
   id: string;
+  sn?: number;
   word: string;
   type?: string | null;
   grammar?: string | null;
@@ -60,6 +61,8 @@ export interface IApiResponseDictData {
   exp?: number;
   editor?: IUser;
   status?: number;
+  count?: number;
+  created_at?: string;
 }
 export interface IApiResponseDict {
   ok: boolean;
@@ -117,4 +120,22 @@ export interface IDictFirstMeaningResponse {
   ok: boolean;
   message: string;
   data: IFirstMeaning[];
+}
+
+export interface IPreferenceListResponse {
+  ok: boolean;
+  message: string;
+  data: { rows: IApiResponseDictData[]; count: number };
+}
+export interface IPreferenceRequest {
+  id?: string;
+  word?: string;
+  factors?: string | null;
+  parent?: string | null;
+  confidence?: number;
+}
+export interface IPreferenceResponse {
+  ok: boolean;
+  message: string;
+  data: IApiResponseDictData;
 }

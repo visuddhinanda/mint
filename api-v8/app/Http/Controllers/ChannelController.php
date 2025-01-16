@@ -541,6 +541,9 @@ class ChannelController extends Controller
         //
         $indexCol = ['uid','name','summary','type','owner_uid','lang','is_system','status','updated_at','created_at'];
 		$channel = Channel::where("uid",$id)->select($indexCol)->first();
+        if(!$channel){
+            return $this->error('no res');
+        }
         $studio = StudioApi::getById($channel->owner_uid);
         $channel->studio = $studio;
         $channel->owner_info = ['nickname'=>$studio['nickName'],'username'=>$studio['realName']];

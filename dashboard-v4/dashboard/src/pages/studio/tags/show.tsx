@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
 
-import TagList from "../../../components/tag/TagList";
 import { ITagData } from "../../../components/api/Tag";
 import TagShow from "../../../components/tag/TagShow";
 

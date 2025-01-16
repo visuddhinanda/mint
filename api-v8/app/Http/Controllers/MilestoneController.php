@@ -43,42 +43,7 @@ class MilestoneController extends Controller
     public function show($studioName)
     {
         //
-        $user_uid = StudioApi::getIdByName($studioName);
 
-        $milestone = [];
-        $milestone[] = ['date'=>UserInfo::where('userid',$user_uid)->value('created_at'),'event'=>'sign-in'] ;
-        if(Wbw::where('creator_uid',$user_uid)->exists()){
-            $milestone[] = ['date'=>Wbw::where('creator_uid',$user_uid)
-                                       ->orderBy('created_at')
-                                       ->value('created_at'),
-                                       'event'=>'first-wbw'
-                           ] ;
-        }
-        if(Sentence::where('editor_uid',$user_uid)->exists()){
-            $milestone[] = ['date'=>Sentence::where('editor_uid',$user_uid)
-                                            ->orderBy('created_at')
-                                            ->value('created_at'),
-                                            'event'=>'first-translation'
-                            ] ;
-        }
-        if(DhammaTerm::where('owner',$user_uid)->exists()){
-            $milestone[] = ['date'=>DhammaTerm::where('owner',$user_uid)
-                                              ->orderBy('created_at')
-                                              ->value('created_at'),
-                                              'event'=>'first-term'
-                        ] ;
-
-        }
-        if(Course::where('studio_id',$user_uid)->exists()){
-            $milestone[] = ['date'=>Course::where('studio_id',$user_uid)
-                                           ->orderBy('created_at')
-                                           ->value('created_at'),
-                                           'event'=>'first-course'
-                                           ] ;
-        }
-
-
-        return $this->ok($milestone);
     }
 
     /**

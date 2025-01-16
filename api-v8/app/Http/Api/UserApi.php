@@ -42,24 +42,7 @@ class UserApi{
     public static function getByUuid($id){
         $user = UserInfo::where('userid',$id)->first();
         if($user){
-            $data = [
-                'id'=>$id,
-                'nickName'=>$user['nickname'],
-                'userName'=>$user['username'],
-                'realName'=>$user['username'],
-            ];
-            if(!empty($user->role)){
-                $data['roles'] = json_decode($user->role);
-            }
-            if($user->avatar){
-                $img = str_replace('.jpg','_s.jpg',$user->avatar);
-                if (App::environment('local')) {
-                    $data['avatar'] = Storage::url($img);
-                }else{
-                    $data['avatar'] = Storage::temporaryUrl($img, now()->addDays(6));
-                }
-            }
-            return $data;
+            return UserApi::userInfo($user);
         }else{
             Log::error('$user=null;$id='.$id);
             return [
@@ -70,6 +53,41 @@ class UserApi{
                 'avatar'=>'',
             ];
         }
-
+    }
+    public static function getListByUuid($uuid){
+        if(!$uuid || !is_array($uuid)){
+            return null;
+        };
+        $users = UserInfo::whereIn('userid',$uuid)->get();
+        $output = array();
+        foreach ($uuid as $key => $id) {
+            foreach ($users as $user) {
+                if($user->userid === $id){
+                    $output[] = UserApi::userInfo($user);
+                    continue;
+                };
+            }
+        }
+        return $output;
+    }
+    public static function userInfo($user){
+        $data = [
+            'id' => $user->userid,
+            'nickName'=>$user->nickname,
+            'userName'=>$user->username,
+            'realName'=>$user->username,
+        ];
+        if(!empty($user->role)){
+            $data['roles'] = json_decode($user->role);
+        }
+        if($user->avatar){
+            $img = str_replace('.jpg','_s.jpg',$user->avatar);
+            if (App::environment('local')) {
+                $data['avatar'] = Storage::url($img);
+            }else{
+                $data['avatar'] = Storage::temporaryUrl($img, now()->addDays(6));
+            }
+        }
+        return $data;
     }
 }

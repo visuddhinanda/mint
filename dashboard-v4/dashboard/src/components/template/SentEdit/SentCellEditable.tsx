@@ -33,6 +33,7 @@ export const sentSave = (
     channel: data.channel.id,
     content: data.content,
     channels: data.translationChannels?.join(),
+    token: sessionStorage.getItem(data.channel.id),
   };
   console.log("save url", url, body);
   put<ISentenceRequest, ISentenceResponse>(url, body)
@@ -150,6 +151,7 @@ const SentCellEditableWidget = ({
       channel: data.channel.id,
       content: value,
       channels: data.translationChannels?.join(),
+      token: sessionStorage.getItem(data.channel.id),
     };
     console.debug("save url", url, body);
     put<ISentenceRequest, ISentenceResponse>(url, body)

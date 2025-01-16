@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Divider, message, Space, Tag } from "antd";
-
+import { Button, Divider, message, Space, Tag } from "antd";
+import { Dropdown } from "antd";
+import { MoreOutlined } from "@ant-design/icons";
 import { get, post } from "../../request";
 import {
   IArticleDataResponse,
@@ -20,6 +21,10 @@ import store from "../../store";
 import { refresh } from "../../reducers/focus";
 import Navigate from "./Navigate";
 import { ISearchParams } from "../../pages/library/article/show";
+import { TaskBuilderChapterModal } from "../task/TaskBuilderChapter";
+import { useAppSelector } from "../../hooks";
+import { currentUser } from "../../reducers/current-user";
+import { ArticleTplModal } from "../template/Builder/ArticleTpl";
 
 interface IWidget {
   type?: ArticleType;
@@ -61,9 +66,10 @@ const TypePaliWidget = ({
   const [toc, setToc] = useState<IChapterToc[]>();
   const [loading, setLoading] = useState(false);
   const [errorCode, setErrorCode] = useState<number>();
-
   const [remains, setRemains] = useState(false);
-
+  const [taskBuilderModalOpen, setTaskBuilderModalOpen] = useState(false);
+  const [tplOpen, setTplOpen] = useState(false);
+  const user = useAppSelector(currentUser);
   const channels = channelId?.split("_");
 
   const srcDataMode = mode === "edit" || mode === "wbw" ? "edit" : "read";
@@ -214,14 +220,15 @@ const TypePaliWidget = ({
       title = id ? (id.length > 1 ? id[1] : "unknown") : "unknown";
     }
   }
-
+  let mBook = "",
+    mPara = "";
   let fullPath: ITocPathNode[] = [];
   if (articleData && articleData.path && articleData.path.length > 0) {
     if (typeof articleId === "string") {
-      const [book, para] = articleId.split("-");
+      [mBook, mPara] = articleId.split("-");
       const currNode: ITocPathNode = {
-        book: parseInt(book),
-        paragraph: parseInt(para),
+        book: parseInt(mBook),
+        paragraph: parseInt(mPara),
         title: title ?? "",
         level: articleData.path[articleData.path.length - 1].level + 1,
       };
@@ -237,6 +244,55 @@ const TypePaliWidget = ({
         <ErrorResult code={errorCode} />
       ) : (
         <>
+          <TaskBuilderChapterModal
+            studioName={user?.realName}
+            book={parseInt(mBook ?? "0")}
+            para={parseInt(mPara ?? "0")}
+            channels={channels}
+            open={taskBuilderModalOpen}
+            onClose={() => setTaskBuilderModalOpen(false)}
+          />
+          <ArticleTplModal
+            title={title}
+            type="chapter"
+            articleId={articleId}
+            channelsId={channelId}
+            open={tplOpen}
+            onClose={() => setTplOpen(false)}
+          />
+          <div>
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: "tpl",
+                    label: "获取模板",
+                  },
+                  {
+                    key: "task",
+                    label: "生成任务",
+                  },
+                ],
+                onClick: ({ key }) => {
+                  switch (key) {
+                    case "task":
+                      setTaskBuilderModalOpen(true);
+                      break;
+                    case "tpl":
+                      setTplOpen(true);
+                      break;
+                  }
+                },
+              }}
+              placement="bottomRight"
+            >
+              <Button
+                shape="circle"
+                size="small"
+                icon={<MoreOutlined />}
+              ></Button>
+            </Dropdown>
+          </div>
           <ArticleView
             id={articleData?.uid}
             title={title}

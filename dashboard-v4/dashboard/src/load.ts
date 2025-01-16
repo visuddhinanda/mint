@@ -1,7 +1,13 @@
 //import { Empty } from "google-protobuf/google/protobuf/empty_pb";
 //import { Duration } from "google-protobuf/google/protobuf/duration_pb";
 
-import { get as getToken, guest, IUser, signIn } from "./reducers/current-user";
+import {
+  get as getToken,
+  guest,
+  IUser,
+  signIn,
+  studioSignIn,
+} from "./reducers/current-user";
 //import { DURATION } from "./reducers/current-user";
 import { ISite, refresh as refreshLayout } from "./reducers/layout";
 import { ISettingItem, refresh as refreshSetting } from "./reducers/setting";
@@ -14,6 +20,8 @@ import { grammar, ITerm, update } from "./reducers/term-vocabulary";
 import { push as nissayaEndingPush } from "./reducers/nissaya-ending-vocabulary";
 import { IRelation, IRelationListResponse } from "./pages/admin/relation/list";
 import { pushRelation } from "./reducers/relation";
+import { IGroupMemberListResponse } from "./components/api/Group";
+import { IStudio } from "./components/auth/Studio";
 
 export interface ISiteInfoResponse {
   title: string;
@@ -65,7 +73,7 @@ export const grammarTermFetch = () => {
 };
 
 const init = () => {
-  get<ISiteInfoResponse | IErrorResponse>("/v2/siteinfo/en").then(
+  get<ISiteInfoResponse | IErrorResponse>("/v2/site-info/en").then(
     (response) => {
       if ("title" in response) {
         const it: ISite = {
@@ -100,6 +108,18 @@ const init = () => {
         store.dispatch(guest(true));
       }
     });
+
+    get<IGroupMemberListResponse>("/v2/group-member?view=user").then(
+      (response) => {
+        console.log("auth", response);
+        if (response.ok) {
+          const it: IStudio[] = response.data.rows.map((item) => {
+            return item.group;
+          });
+          store.dispatch(studioSignIn(it));
+        }
+      }
+    );
   } else {
     console.log("no token");
     store.dispatch(guest(true));

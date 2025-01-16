@@ -20,52 +20,57 @@ class OfflineIndexController extends Controller
     public function index(Request $request)
     {
         //
-        $key = '/offline/index/wikipali-offline';
-        if($request->has('file')){
-            $key .= '-'.$request->get('file');
-        }
+        $key = '/offline/index';
 
-        if(RedisClusters::has($key)){
-            $fileInfo = RedisClusters::get($key);
-            foreach ($fileInfo as $key => $file) {
-                $zipFile = $file['filename'];
-                $bucket = config('mint.attachments.bucket_name.temporary');
-                $tmpFile =  $bucket.'/'. $zipFile ;
-                $url = array();
-                foreach (config('mint.server.cdn_urls') as $key => $cdn) {
-                    $url[] = [
-                            'link' => $cdn . '/' . $zipFile,
-                            'hostname' =>'cdn-' . $key,
-                        ];
-                }
-                if (App::environment('local')) {
-                    $s3Link = Storage::url($tmpFile);
-                }else{
-                    try{
-                        $s3Link = Storage::temporaryUrl($tmpFile, now()->addDays(2));
-                    }catch(\Exception $e){
-                        Log::error('offline-index {Exception}',['exception'=>$e]);
-                        continue;
-                    }
-                }
-                Log::info('offline-index: link='.$s3Link);
-                $url[] = [
-                    'link'=>$s3Link,
-                    'hostname'=>'Amazon cloud storage(Hongkong)',
-                ];
-                $fileInfo[$key]['url'] = $url;
-            }
-            return response()->json($fileInfo,
-                                    200,
-                                    [
-                                        'Content-Type' => 'application/json;charset=UTF-8',
-                                        'Charset' => 'utf-8'
-                                    ],
-                                    JSON_UNESCAPED_UNICODE
-                                );
-        }else{
+        if (!RedisClusters::has($key)) {
             return [];
         }
+        $fileInfo = RedisClusters::get($key);
+        $output = [];
+        foreach ($fileInfo as $key => $file) {
+            if ($request->has('file')) {
+                if ($file['id'] !== $request->get('file')) {
+                    continue;
+                }
+            }
+            $zipFile = $file['filename'];
+            $bucket = config('mint.attachments.bucket_name.temporary');
+            $tmpFile =  $bucket . '/' . $zipFile;
+            $url = array();
+            foreach (config('mint.server.cdn_urls') as $key => $cdn) {
+                $url[] = [
+                    'link' => $cdn . '/' . $zipFile,
+                    'hostname' => 'cdn-' . $key,
+                ];
+            }
+            if (App::environment('local')) {
+                $s3Link = Storage::url($tmpFile);
+            } else {
+                try {
+                    $s3Link = Storage::temporaryUrl($tmpFile, now()->addDays(2));
+                } catch (\Exception $e) {
+                    Log::error('offline-index {Exception}', ['exception' => $e]);
+                    continue;
+                }
+            }
+            //Log::info('offline-index: link=' . $s3Link);
+            $url[] = [
+                'link' => $s3Link,
+                'hostname' => 'Amazon cloud storage(Hongkong)',
+            ];
+            $file['url'] = $url;
+            Log::debug('offline-index: file info=', ['data' => $file]);
+            $output[] = $file;
+        }
+        return response()->json(
+            $output,
+            200,
+            [
+                'Content-Type' => 'application/json;charset=UTF-8',
+                'Charset' => 'utf-8'
+            ],
+            JSON_UNESCAPED_UNICODE
+        );
     }
 
     /**
@@ -85,10 +90,7 @@ class OfflineIndexController extends Controller
      * @param  string  $filename
      * @return \Illuminate\Http\Response
      */
-    public function show($filename)
-    {
-
-    }
+    public function show($filename) {}
 
     /**
      * Update the specified resource in storage.

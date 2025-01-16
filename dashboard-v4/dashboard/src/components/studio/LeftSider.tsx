@@ -96,6 +96,44 @@ const LeftSiderWidget = ({ selectedKeys = "" }: IWidgetHeadBar) => {
       icon: <AppstoreOutlined />,
       children: [
         {
+          label: intl.formatMessage({
+            id: "labels.task",
+          }),
+          key: "task",
+          children: [
+            {
+              label: (
+                <Link to={`/studio/${studioname}/task/hall`}>
+                  {intl.formatMessage({
+                    id: "labels.task.hall",
+                  })}
+                </Link>
+              ),
+              key: "task_hall",
+            },
+            {
+              label: (
+                <Link to={`/studio/${studioname}/task/list`}>
+                  {intl.formatMessage({
+                    id: "labels.task.mine",
+                  })}
+                </Link>
+              ),
+              key: "task_mine",
+            },
+            {
+              label: (
+                <Link to={`/studio/${studioname}/task/projects`}>
+                  {intl.formatMessage({
+                    id: "labels.task.my.project",
+                  })}
+                </Link>
+              ),
+              key: "task_projects",
+            },
+          ],
+        },
+        {
           label: (
             <Link to={linkCourse}>
               {intl.formatMessage({

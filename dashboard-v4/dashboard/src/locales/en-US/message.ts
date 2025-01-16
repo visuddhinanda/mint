@@ -15,6 +15,7 @@ const items = {
   "message.get.token.fail": "get token fail",
   "message.confirm-password.validate.fail": "password validate fail",
   "message.delete.success": "delete record {count}",
+  "message.task.status.change": "Do you want change statue to {status}?",
 };
 
 export default items;

@@ -4,7 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+
 use App\Models\UserOperationLog;
 use App\Models\UserOperationFrame;
 use App\Models\UserOperationDaily;
@@ -41,17 +42,19 @@ class UserOperation
      */
     public function handle(Request $request, Closure $next)
     {
+        //Log::debug('path', ['path' => $request->path()]);
         $response = $next($request);
         $user = AuthApi::current($request);
-        if(!$user){
+        if (!$user) {
             return $response;
         }
 
 
-        $api = explode('/',$request->path());
-        if(count($api)<3){
+        $api = explode('/', $request->path());
+        if (count($api) < 3) {
             return $response;
-        }if($api[0] !== 'api' || $api[1] !=='v2'){
+        }
+        if ($api[0] !== 'api' || $api[1] !== 'v2') {
             return $response;
         }
         $method = $request->method();
@@ -60,16 +63,16 @@ class UserOperation
                 switch ($method) {
                     case 'POST':
                         $newLog = [
-                            "op_type_id"=>11,
-                            "op_type"=>"channel_create",
-                            "content"=>$request->get('studio').'/'.$request->get('name'),
+                            "op_type_id" => 11,
+                            "op_type" => "channel_create",
+                            "content" => $request->get('studio') . '/' . $request->get('name'),
                         ];
                         break;
                     case 'PUT':
                         $newLog = [
-                            "op_type_id"=>10,
-                            "op_type"=>"channel_update",
-                            "content"=>$request->get('name'),
+                            "op_type_id" => 10,
+                            "op_type" => "channel_update",
+                            "content" => $request->get('name'),
                         ];
                         break;
                 }
@@ -78,41 +81,41 @@ class UserOperation
                 switch ($method) {
                     case 'POST':
                         $newLog = [
-                            "op_type_id"=>21,
-                            "op_type"=>"article_create",
-                            "content"=>$request->get('studio').'/'.$request->get('title'),
+                            "op_type_id" => 21,
+                            "op_type" => "article_create",
+                            "content" => $request->get('studio') . '/' . $request->get('title'),
                         ];
                         break;
                     case 'PUT':
                         $newLog = [
-                            "op_type_id"=>20,
-                            "op_type"=>"article_update",
-                            "content"=>$request->get('title'),
+                            "op_type_id" => 20,
+                            "op_type" => "article_update",
+                            "content" => $request->get('title'),
                         ];
                         break;
                 }
                 break;
             case 'dict':
                 $newLog = [
-                    "op_type_id"=>30,
-                    "op_type"=>"dict_lookup",
-                    "content"=>$request->get("word")
+                    "op_type_id" => 30,
+                    "op_type" => "dict_lookup",
+                    "content" => $request->get("word")
                 ];
                 break;
             case 'terms':
                 switch ($method) {
                     case 'POST':
                         $newLog = [
-                            "op_type_id"=>42,
-                            "op_type"=>"term_create",
-                            "content"=>$request->get('word'),
+                            "op_type_id" => 42,
+                            "op_type" => "term_create",
+                            "content" => $request->get('word'),
                         ];
                         break;
                     case 'PUT':
                         $newLog = [
-                            "op_type_id"=>40,
-                            "op_type"=>"term_update",
-                            "content"=>$request->get('word'),
+                            "op_type_id" => 40,
+                            "op_type" => "term_update",
+                            "content" => $request->get('word'),
                         ];
                         break;
                 }
@@ -121,19 +124,19 @@ class UserOperation
                 switch ($method) {
                     case 'POST':
                         $newLog = [
-                            "op_type_id"=>71,
-                            "op_type"=>"sent_create",
-                            "content"=>$request->get('channel'),
+                            "op_type_id" => 71,
+                            "op_type" => "sent_create",
+                            "content" => $request->get('channel'),
                         ];
                         break;
                     case 'PUT':
                         $newLog = [
-                            "op_type_id"=>70,
-                            "op_type"=>"sent_update",
-                            "content"=>$request->get('channel'),
+                            "op_type_id" => 70,
+                            "op_type" => "sent_update",
+                            "content" => $request->get('channel'),
                         ];
                         break;
-                    /*
+                        /*
                     case 'GET':
                         if($request->get('view')==='sent-can-read' && $request->has('type')){
                             $newLog = [
@@ -169,21 +172,21 @@ class UserOperation
                 switch ($method) {
                     case 'POST':
                         $newLog = [
-                            "op_type_id"=>81,
-                            "op_type"=>"collection_create",
-                            "content"=>$request->get('title'),
+                            "op_type_id" => 81,
+                            "op_type" => "collection_create",
+                            "content" => $request->get('title'),
                         ];
                         break;
                     case 'PUT':
                         $newLog = [
-                            "op_type_id"=>80,
-                            "op_type"=>"collection_update",
-                            "content"=>$request->get('title'),
+                            "op_type_id" => 80,
+                            "op_type" => "collection_update",
+                            "content" => $request->get('title'),
                         ];
                         break;
                 }
                 break;
-            /*
+                /*
             case 'article-map':
                 switch ($method) {
                     case 'POST':
@@ -209,16 +212,16 @@ class UserOperation
                 switch ($method) {
                     case 'POST':
                         $newLog = [
-                            "op_type_id"=>60,
-                            "op_type"=>"wbw_update",
-                            "content"=>$request->get('book')."_".$request->get('para')."_".$request->get('channel_id'),
+                            "op_type_id" => 60,
+                            "op_type" => "wbw_update",
+                            "content" => $request->get('book') . "_" . $request->get('para') . "_" . $request->get('channel_id'),
                         ];
                         break;
                 }
                 break;
         }
-        if(isset($newLog)){
-            $currTime = round((microtime(true))*1000,0);
+        if (isset($newLog)) {
+            $currTime = round((microtime(true)) * 1000, 0);
             #获取客户端时区偏移 beijing = +8
             if (isset($_COOKIE["timezone"])) {
                 $client_timezone = (0 - (int) $_COOKIE["timezone"]) * 60 * 1000;
@@ -238,8 +241,8 @@ class UserOperation
 
             //frame
             // 查询上次编辑活跃结束时间
-            $last = UserOperationFrame::where("user_id",$user['user_id'])->orderBy("updated_at","desc")->first();
-            if($last){
+            $last = UserOperationFrame::where("user_id", $user['user_id'])->orderBy("updated_at", "desc")->first();
+            if ($last) {
                 //找到，判断是否超时，超时新建，未超时修改
                 $id = (int) $last["id"];
                 $start_time = (int) $last["op_start"];
@@ -252,7 +255,7 @@ class UserOperation
                     //未超时修改
                     $new_record = false;
                 }
-            }else{
+            } else {
                 //没找到，新建
                 $new_record = true;
             }
@@ -286,7 +289,7 @@ class UserOperation
             $client_date = strtotime(gmdate("Y-m-d", $client_currtime / 1000)) * 1000;
 
             #查询是否存在
-            $daily = UserOperationDaily::where("user_id",$user['user_id'])->where("date_int",$client_date)->first();
+            $daily = UserOperationDaily::where("user_id", $user['user_id'])->where("date_int", $client_date)->first();
             if ($daily) {
                 #更新
                 $daily->duration = $daily->duration + $this_active_time;

@@ -1,7 +1,6 @@
-import { Button, Card, Typography } from "antd";
+import { Button, Card, Space, Typography } from "antd";
 
 import { useEffect, useState } from "react";
-import { GithubOutlined } from "@ant-design/icons";
 
 import bg_png from "../../../assets/library/images/download_bg.png";
 import Marked from "../../../components/general/Marked";
@@ -9,9 +8,15 @@ import { get } from "../../../request";
 
 const { Paragraph } = Typography;
 
+interface IUrl {
+  link: string;
+  hostname: string;
+}
+
 interface IOfflineIndex {
+  title: string;
   filename: string;
-  url: string;
+  url: IUrl[];
   create_at: string;
   chapter: number;
   filesize: number;
@@ -76,28 +81,38 @@ const ChapterNewWidget = () => {
         </Paragraph>
       </Card>
       <Card title={"离线数据包"} style={{ margin: 10, borderRadius: 8 }}>
-        <Paragraph>
-          {"点链接下载离线数据包"}
+        <Space direction="vertical">
           {offlineIndex?.map((item, id) => {
             return (
-              <ul key={id}>
-                <li>
-                  {"文件名:"}
-                  {item.filename}
-                </li>
-                <li>
-                  {"文件大小:"}
-                  {item.filesize}
-                </li>
-                <li>
-                  <Button type="primary">
-                    <a href={item.url}>下载</a>
-                  </Button>
-                </li>
-              </ul>
+              <Card title={item.title} size="small" key={id}>
+                <ul key={id}>
+                  <li>
+                    {"文件名:"}
+                    {item.filename}
+                  </li>
+                  <li>
+                    {"文件大小:"}
+                    {item.filesize}
+                  </li>
+                  <li>
+                    <ul>
+                      {item.url.map((url, id) => {
+                        return (
+                          <li key={id}>
+                            {`镜像${id + 1}:`}
+                            <a href={url.link} target="_blank" rel="noreferrer">
+                              {url.hostname}
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </li>
+                </ul>
+              </Card>
             );
           })}
-        </Paragraph>
+        </Space>
       </Card>
     </Paragraph>
   );

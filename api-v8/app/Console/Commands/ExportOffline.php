@@ -42,27 +42,30 @@ class ExportOffline extends Command
      */
     public function handle()
     {
-        if(\App\Tools\Tools::isStop()){
+        if (\App\Tools\Tools::isStop()) {
             return 0;
         }
         $exportDir = storage_path('app/public/export/offline');
-        if(!is_dir($exportDir)){
-            $res = mkdir($exportDir,0755,true);
-            if(!$res){
-                Log::error('mkdir fail path='.$exportDir);
+        if (!is_dir($exportDir)) {
+            $res = mkdir($exportDir, 0755, true);
+            if (!$res) {
+                Log::error('mkdir fail path=' . $exportDir);
                 return 1;
             }
         }
 
+        //清空redis
+        RedisClusters::put('/offline/index', []);
+
         //删除全部的旧文件
         foreach (scandir($exportDir) as $key => $file) {
-            if(is_file($exportDir.'/'.$file)){
-                unlink($exportDir.'/'.$file);
+            if (is_file($exportDir . '/' . $file)) {
+                unlink($exportDir . '/' . $file);
             }
         }
         //添加 .stop
-        $exportStop = $exportDir.'/.stop';
-        $file = fopen($exportStop,'w');
+        $exportStop = $exportDir . '/.stop';
+        $file = fopen($exportStop, 'w');
         fclose($file);
 
         //建表
@@ -75,42 +78,48 @@ class ExportOffline extends Command
 
         //导出channel
         $this->info('export channel start');
-        $this->call('export:channel',['db'=>'wikipali-offline']);
-        $this->call('export:channel',['db'=>'wikipali-offline-index']);
+        $this->call('export:channel', ['db' => 'wikipali-offline']);
+        $this->call('export:channel', ['db' => 'wikipali-offline-index']);
 
-        if(!$this->option('shortcut')){
+        if (!$this->option('shortcut')) {
             //tag
             $this->info('export tag start');
-            $this->call('export:tag',['db'=>'wikipali-offline']);
-            $this->call('export:tag.map',['db'=>'wikipali-offline']);
+            $this->call('export:tag', ['db' => 'wikipali-offline']);
+            $this->call('export:tag.map', ['db' => 'wikipali-offline']);
             //
             $this->info('export pali text start');
             $this->call('export:pali.text');
             //导出章节索引
             $this->info('export chapter start');
-            $this->call('export:chapter.index',['db'=>'wikipali-offline']);
-            $this->call('export:chapter.index',['db'=>'wikipali-offline-index']);
+            $this->call('export:chapter.index', ['db' => 'wikipali-offline']);
+            $this->call('export:chapter.index', ['db' => 'wikipali-offline-index']);
             //导出译文
             $this->info('export sentence start');
-            $this->call('export:sentence',['--type'=>'translation','--driver'=>$this->option('driver')]);
-            $this->call('export:sentence',['--type'=>'nissaya','--driver'=>$this->option('driver')]);
+            $this->call('export:sentence', ['--type' => 'translation', '--driver' => $this->option('driver')]);
+            $this->call('export:sentence', ['--type' => 'nissaya', '--driver' => $this->option('driver')]);
             //导出原文
-            $this->call('export:sentence',['--type'=>'original','--driver'=>$this->option('driver')]);
+            $this->call('export:sentence', ['--type' => 'original', '--driver' => $this->option('driver')]);
         }
 
         $this->info('zip');
         Log::info('export offline: db写入完毕 开始压缩');
 
         sleep(5);
-        $this->call('export:zip',[
-            'db'=>'wikipali-offline-index',
-            'format'=>$this->argument('format'),
+        $this->call('export:zip', [
+            'id' => 'index',
+            'filename' => 'wikipali-offline-index' . '-' . date("Y-m-d") . '.db3',
+            'title' => 'wikipali 离线包索引',
+            'format' => $this->argument('format'),
         ]);
-        $this->call('export:zip',[
-            'db'=>'wikipali-offline',
-            'format'=>$this->argument('format'),
+        $this->call('export:zip', [
+            'id' => 'date-package',
+            'filename' => 'wikipali-offline' . '-' . date("Y-m-d") . '.db3',
+            'title' => 'wikipali 离线包',
+            'format' => $this->argument('format'),
         ]);
 
+        $this->call('export:ai.training.data');
+        $this->call('export:ai.pali.word.token');
         unlink($exportStop);
         return 0;
     }
