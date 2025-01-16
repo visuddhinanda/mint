@@ -2,10 +2,7 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Http\Client\Response;
-use Illuminate\Http\Client\RequestException;
 use Exception;
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use App\Models\WordIndex;
@@ -19,7 +16,6 @@ use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
-use Symfony\Component\Process\Exception\RuntimeException;
 
 class UpgradeCompound extends Command
 {
