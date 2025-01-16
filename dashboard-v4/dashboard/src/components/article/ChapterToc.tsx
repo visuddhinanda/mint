@@ -18,7 +18,6 @@ const ChapterTocWidget = ({ book, para, onSelect, onData }: IWidget) => {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     let url = `/v2/chapter?view=toc&book=${book}&para=${para}`;
-
     setLoading(true);
     console.info("api request", url);
     get<IChapterTocListResponse>(url)
