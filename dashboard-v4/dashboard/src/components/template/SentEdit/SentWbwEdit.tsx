@@ -30,6 +30,7 @@ export const sentSave = async (
     channel: sent.channel.id,
     content: sent.content,
     contentType: sent.contentType,
+    token: sessionStorage.getItem(sent.channel.id),
   });
   if (res.ok) {
     store.dispatch(

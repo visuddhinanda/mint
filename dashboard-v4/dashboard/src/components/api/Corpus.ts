@@ -156,6 +156,7 @@ export interface ISentenceRequest {
   prEditAt?: string;
   channels?: string;
   html?: boolean;
+  token?: string | null;
 }
 
 export interface ISentenceData {
@@ -212,7 +213,9 @@ export interface IChapterToc {
   book: number;
   paragraph: number;
   level: string;
-  text: string;
+  text: string | null;
+  chapter_len: number;
+  chapter_strlen: number;
   parent: number;
 }
 
