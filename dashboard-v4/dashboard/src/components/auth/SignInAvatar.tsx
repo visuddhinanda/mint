@@ -24,7 +24,7 @@ import User from "./User";
 import { fullUrl } from "../../utils";
 import Studio from "./Studio";
 
-const { Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
 interface IWidget {
   placement?: TooltipPlacement;
@@ -56,8 +56,9 @@ const SignInAvatarWidget = ({ style, placement = "bottomRight" }: IWidget) => {
     const welcome = (
       <Paragraph>
         <Title level={3} style={{ fontSize: 22 }}>
-          {user.nickName}@{user.realName}
+          {user.nickName}
         </Title>
+        <Text type="secondary">账户名 {user.realName}</Text>
         <Paragraph style={{ textAlign: "right", paddingTop: 30 }}>
           {intl.formatMessage({
             id: "buttons.welcome",
