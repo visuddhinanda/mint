@@ -35,6 +35,7 @@ class TaskResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'type' => $this->type,
+            'category' => $this->category,
             'parent_id' => $this->parent_id,
             'parent' => TaskApi::getById($this->parent_id),
             'roles' => $this->roles,

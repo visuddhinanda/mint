@@ -100,6 +100,7 @@ const TaskReader = ({ taskId, onChange, onEdit }: IWidget) => {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Space>
+          <Category task={task} />
           <TaskStatus task={task} />
           <Milestone task={task} />
           <PreTask

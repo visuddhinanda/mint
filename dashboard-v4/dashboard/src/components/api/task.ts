@@ -32,10 +32,18 @@ export interface IProject {
   title: string;
   description: string | null;
 }
+
+export type TTaskCategory = "translate" | "vocabulary" | "team";
+export const ATaskCategory: TTaskCategory[] = [
+  "translate",
+  "vocabulary",
+  "team",
+];
 export interface ITaskData {
   id: string;
   title: string;
   description?: string | null;
+  category?: TTaskCategory | null;
   html?: string | null;
   type: TTaskType;
   order?: number;
@@ -72,6 +80,7 @@ export interface ITaskUpdateRequest {
   studio_name: string;
   title?: string;
   description?: string | null;
+  category?: TTaskCategory | null;
   type?: TTaskType;
   assignees_id?: string[] | null;
   parent_id?: string | null;

@@ -222,6 +222,9 @@ class TaskController extends Controller
         if ($request->has('description')) {
             $task->description = $request->get('description');
         }
+        if ($request->has('category')) {
+            $task->category = $request->get('category');
+        }
         if ($request->has('assignees_id')) {
             $delete = TaskAssignee::where('task_id', $task->id)->delete();
             $assigneesData = [];

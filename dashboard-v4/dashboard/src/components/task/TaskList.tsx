@@ -26,6 +26,7 @@ import { WorkflowModal } from "./Workflow";
 import Assignees from "./Assignees";
 import TaskStatusButton from "./TaskStatusButton";
 import Executors from "./Executors";
+import Category from "./Category";
 
 const { Text } = Typography;
 
@@ -219,7 +220,7 @@ const TaskList = ({
             {entity.type === "group" ? (
               <Text type="secondary">{entity.order}</Text>
             ) : (
-              <></>
+              <>{entity.category ? <Category task={entity} /> : ""}</>
             )}
             <TaskStatusButton type="tag" task={entity} onChange={changeData} />
             <Milestone task={entity} />

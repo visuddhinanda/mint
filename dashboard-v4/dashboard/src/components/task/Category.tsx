@@ -1,21 +1,78 @@
-import { Select } from "antd";
+import { Dropdown, MenuProps, message, Tag, Typography } from "antd";
+import {
+  ATaskCategory,
+  ITaskData,
+  ITaskResponse,
+  ITaskUpdateRequest,
+  TTaskCategory,
+} from "../api/task";
+import { useIntl } from "react-intl";
+import { patch } from "../../request";
 
-const Category = () => {
+const { Text } = Typography;
+
+interface IWidget {
+  task?: ITaskData;
+  onChange?: (data: ITaskData[]) => void;
+}
+const Category = ({ task, onChange }: IWidget) => {
+  const intl = useIntl();
+
+  const placeholder = intl.formatMessage({ id: "labels.task.category" });
+
+  interface IMenu {
+    key: TTaskCategory;
+    label: string;
+  }
+  const items: MenuProps["items"] = ATaskCategory.map((item) => {
+    const value: IMenu = {
+      key: item,
+      label: intl.formatMessage({
+        id: `labels.task.category.${item}`,
+      }),
+    };
+    return value;
+  });
+
+  const onClick: MenuProps["onClick"] = (e) => {
+    if (!task) {
+      return;
+    }
+    switch (e.key) {
+      case "json":
+        break;
+
+      default:
+        break;
+    }
+    let setting: ITaskUpdateRequest = {
+      id: task.id,
+      studio_name: "",
+      category: e.key as TTaskCategory,
+    };
+    const url = `/v2/task/${task.id}`;
+    console.info("api request", url, setting);
+    patch<ITaskUpdateRequest, ITaskResponse>(url, setting).then((json) => {
+      console.info("api response", json);
+      if (json.ok) {
+        message.success("Success");
+        onChange && onChange([json.data]);
+      } else {
+        message.error(json.message);
+      }
+    });
+  };
   return (
-    <Select
-      clearIcon={true}
-      style={{ width: 180 }}
-      bordered={false}
-      placeholder={"任务类别"}
-      onChange={(value: string) => {
-        console.log(`selected ${value}`);
-      }}
-      options={[
-        { value: "pedia", label: "百科" },
-        { value: "vocabulary", label: "词汇表" },
-        { value: "translate", label: "翻译" },
-      ]}
-    />
+    <Dropdown menu={{ items, onClick }}>
+      <Tag>
+        <Text type={task?.category ? "success" : "secondary"}>
+          {intl.formatMessage({
+            id: `labels.task.category.${task?.category}`,
+            defaultMessage: placeholder,
+          })}
+        </Text>
+      </Tag>
+    </Dropdown>
   );
 };
 
