@@ -9,6 +9,7 @@ use App\Models\UserDict;
 use App\Models\WordIndex;
 use App\Http\Resources\DictPreferenceResource;
 use App\Http\Api\DictApi;
+use App\Http\Api\AuthApi;
 
 class DictPreferenceController extends Controller
 {
@@ -34,6 +35,7 @@ class DictPreferenceController extends Controller
                 'user_dicts.parent',
                 'user_dicts.note',
                 'user_dicts.confidence',
+                'user_dicts.editor_id',
             ]);
         //处理搜索
         if (!empty($request->get("keyword"))) {
@@ -89,7 +91,10 @@ class DictPreferenceController extends Controller
      */
     public function update(Request $request,  $id)
     {
-        //
+        $user = AuthApi::current($request);
+        if (!$user) {
+            return $this->error(__('auth.failed'), [], 401);
+        }
         $newData = $request->all();
         $word = UserDict::findOrFail($id);
         if (isset($newData['factors'])) {
@@ -101,7 +106,7 @@ class DictPreferenceController extends Controller
         if (isset($newData['confidence'])) {
             $word->confidence = $newData['confidence'];
         }
-
+        $word->editor_id = $user['user_uid'];
         $word->save();
         return $this->ok(new DictPreferenceResource($word));
     }
