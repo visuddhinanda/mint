@@ -309,7 +309,7 @@ class TurboSplit
     /**
      * 核心拆分函数
      *
-     * @param  string  $strWord word to be look up 要查询的词
+     * @param  array  $node word to be look up 要查询的词
      * @param  int  $deep  当前递归深度
      * @param  boolean  $forward 搜索方向 true 正向  false 反向
      * @param  boolean  $express=true, 快速查询
