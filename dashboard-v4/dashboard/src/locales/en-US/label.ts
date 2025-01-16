@@ -69,6 +69,10 @@ const items = {
   "labels.task.status.expired": "expired",
   "labels.filter": "filter",
   "labels.participants": "participants",
+  "labels.task.category": "task category",
+  "labels.task.category.translate": "translate",
+  "labels.task.category.vocabulary": "vocabulary",
+  "labels.task.category.team": "team",
 };
 
 export default items;

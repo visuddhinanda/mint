@@ -77,6 +77,10 @@ const items = {
   "labels.task.status.expired": "已过期",
   "labels.filter": "过滤器",
   "labels.participants": "参与者",
+  "labels.task.category": "任务类型",
+  "labels.task.category.translate": "翻译",
+  "labels.task.category.vocabulary": "词汇表",
+  "labels.task.category.team": "术语",
 };
 
 export default items;
