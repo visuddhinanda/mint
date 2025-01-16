@@ -26,7 +26,7 @@ class ChapterController extends Controller
                 $table = PaliText::where('book', $request->get('book'))
                     ->whereBetween('paragraph', [$start, $end])
                     ->where('level', '<', 100)
-                    ->select(['book', 'paragraph', 'level', 'text', 'chapter_strlen', 'parent']);
+                    ->select(['book', 'paragraph', 'level', 'text', 'chapter_len', 'chapter_strlen', 'parent']);
                 break;
         }
         //获取记录总条数
