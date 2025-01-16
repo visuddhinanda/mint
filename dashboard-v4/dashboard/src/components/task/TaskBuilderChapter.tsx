@@ -100,6 +100,7 @@ const TaskBuilderChapter = ({
                   res_type: "channel",
                   book: chapter.book,
                   para_start: chapter.paragraph,
+                  para_end: chapter.paragraph + chapter.chapter_len,
                 });
               });
             });
@@ -193,7 +194,7 @@ const TaskBuilderChapter = ({
                 data: chapter.map((item, id) => {
                   return {
                     id: item.paragraph.toString(),
-                    title: item.text,
+                    title: item.text ?? "",
                     type: "instance",
                     parent_id: item.parent.toString(),
                     res_id: `${item.book}-${item.paragraph}`,
