@@ -21,14 +21,7 @@ interface IFtsResponse {
     count: number;
   };
 }
-interface IFtsItem {
-  book: number;
-  paragraph: number;
-  title?: string;
-  paliTitle?: string;
-  pcdBookId: number;
-  count: number;
-}
+
 interface IWidget {
   keyWord?: string;
   keyWords?: string[];
