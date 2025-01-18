@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
-import { ITagCount } from "../../reducers/fts-books-tag";
 import BookTree from "./BookTree";
 import { get } from "../../request";
 import { IFtsResponse } from "../fts/FtsBookList";
 import { ISearchView } from "../fts/FullTextSearchResult";
+
+export interface ITagCount {
+  name: string;
+  count: number;
+}
 
 interface IWidget {
   keyWord?: string;
