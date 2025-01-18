@@ -1,7 +1,7 @@
 import { useIntl } from "react-intl";
 import { useState, useEffect, Key } from "react";
 import { DownOutlined } from "@ant-design/icons";
-import { Button, Space, Switch, Tree } from "antd";
+import { Badge, Button, Space, Switch, Tree } from "antd";
 import { Typography } from "antd";
 
 import { get } from "../../request";
@@ -10,6 +10,7 @@ import { IPaliBookListResponse } from "../api/Corpus";
 import { ITocTree } from "./BookTreeList";
 import { PaliToEn } from "../../utils";
 import PaliText from "../template/Wbw/PaliText";
+import { ITagCount } from "../../reducers/fts-books-tag";
 
 const { Text } = Typography;
 
@@ -18,6 +19,7 @@ interface IWidgetBookTree {
   path?: string[];
   multiSelect?: boolean;
   multiSelectable?: boolean;
+  tags?: ITagCount[];
   onChange?: Function;
   onSelect?: Function;
   onRootChange?: Function;
@@ -27,6 +29,7 @@ const BookTreeWidget = ({
   path,
   multiSelect = false,
   multiSelectable = true,
+  tags,
   onChange,
   onSelect,
   onRootChange,
@@ -157,7 +160,20 @@ const BookTreeWidget = ({
         }}
         treeData={treeData}
         titleRender={(node: ITocTree) => {
-          return <PaliText text={node.title} />;
+          //标签数量
+          const tagName = node.tag?.slice(-1)[0];
+          const count = tags?.find((value) => value.name === tagName)?.count;
+          return (
+            <Space>
+              <PaliText text={node.title} />
+              <Badge
+                size="small"
+                color="gray"
+                count={count ?? 0}
+                showZero={false}
+              />
+            </Space>
+          );
         }}
       />
     </Space>
