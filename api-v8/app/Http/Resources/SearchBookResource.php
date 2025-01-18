@@ -5,6 +5,8 @@ namespace App\Http\Resources;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Models\BookTitle;
 use App\Models\PaliText;
+use App\Models\TagMap;
+
 use Illuminate\Support\Facades\Log;
 
 class SearchBookResource extends JsonResource
@@ -29,12 +31,28 @@ class SearchBookResource extends JsonResource
             $data["book"] = $book->book;
             $data["paragraph"] = $book->paragraph;
             $data["paliTitle"] = $toc;
+            //tags
+            $data["tags"] = $this->getTags($book->book, $book->paragraph);
         } else {
             Log::error('book title is null pcd_book_id=' . $this->pcd_book_id);
             $data["book"] = 0;
             $data["paragraph"] = 0;
             $data["paliTitle"] = '';
         }
+
         return $data;
+    }
+
+    private function getTags(string $book, string $para)
+    {
+        $uid = PaliText::where('book', $book)->where('paragraph', $para)->first()->uid;
+        $tagsName = TagMap::where('table_name', 'pali_texts')
+            ->where('anchor_id', $uid)
+            ->join('tags', 'tag_maps.tag_id', '=', 'tags.id')
+            ->select('tags.name')
+            ->get();
+
+        Log::info('tag name', ['data' => $tagsName]);
+        return $tagsName;
     }
 }
