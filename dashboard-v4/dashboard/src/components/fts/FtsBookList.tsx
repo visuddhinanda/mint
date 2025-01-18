@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { get } from "../../request";
 import { Key } from "antd/es/table/interface";
 import { DataNode } from "antd/es/tree";
+import { ISearchView } from "./FullTextSearchResult";
+import { ITag } from "../api/Tag";
+
 const { Text } = Typography;
 interface IFtsData {
   book: number;
@@ -12,8 +15,9 @@ interface IFtsData {
   paliTitle: string;
   pcdBookId: number;
   count: number;
+  tags?: ITag[];
 }
-interface IFtsResponse {
+export interface IFtsResponse {
   ok: boolean;
   string: string;
   data: {
@@ -32,7 +36,7 @@ interface IWidget {
   para?: number;
   match?: string | null;
   keyWord2?: string;
-  view?: string;
+  view?: ISearchView;
   onSelect?: Function;
 }
 
@@ -92,8 +96,9 @@ const FtsBookListWidget = ({
     if (match) {
       url += `&match=${match}`;
     }
-    console.log("url", url);
+    console.info("api request", url);
     get<IFtsResponse>(url).then((json) => {
+      console.info("api response", json);
       if (json.ok) {
         console.log("data", json.data.rows);
         let totalResult = 0;
