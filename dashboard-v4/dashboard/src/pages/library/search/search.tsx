@@ -2,7 +2,6 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Row, Col, Breadcrumb, Space, Tabs, Select } from "antd";
 import FullSearchInput from "../../../components/fts/FullSearchInput";
-import BookTree from "../../../components/corpus/BookTree";
 import FullTextSearchResult, {
   ISearchView,
 } from "../../../components/fts/FullTextSearchResult";
@@ -11,6 +10,8 @@ import FtsSetting from "../../../components/fts/FtsSetting";
 import CaseList from "../../../components/dict/CaseList";
 import PageNumberList from "../../../components/fts/PageNumberList";
 import { Key } from "antd/es/table/interface";
+
+import BookTreeWithTags from "../../../components/corpus/BookTreeWithTags";
 
 const Widget = () => {
   const { key } = useParams();
@@ -44,12 +45,15 @@ const Widget = () => {
         <Col flex="1440px">
           <Row>
             <Col xs={0} sm={6} md={5}>
-              <BookTree
+              <BookTreeWithTags
+                view={view}
+                keyWord={key}
+                keyWords={caseWord}
                 multiSelect={false}
                 root={bookRoot}
                 path={bookPath}
                 onChange={(key: string[], path: string[]) => {
-                  console.log("key", key);
+                  console.debug("key", key);
                   if (key.length === 0) {
                     searchParams.delete("tags");
                   } else {
