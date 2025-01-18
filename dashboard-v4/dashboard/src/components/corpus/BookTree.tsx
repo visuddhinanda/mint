@@ -10,7 +10,7 @@ import { IPaliBookListResponse } from "../api/Corpus";
 import { ITocTree } from "./BookTreeList";
 import { PaliToEn } from "../../utils";
 import PaliText from "../template/Wbw/PaliText";
-import { ITagCount } from "../../reducers/fts-books-tag";
+import { ITagCount } from "./BookTreeWithTags";
 
 const { Text } = Typography;
 
