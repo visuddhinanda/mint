@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import BookTree from "./BookTree";
 import { get } from "../../request";
-import { IFtsResponse } from "../fts/FtsBookList";
+import { IFtsData, IFtsResponse } from "../fts/FtsBookList";
 import { ISearchView } from "../fts/FullTextSearchResult";
 
 export interface ITagCount {
@@ -29,7 +29,7 @@ const BookTreeWithTags = ({
   multiSelectable = true,
   onChange,
 }: IWidget) => {
-  const [tags, setTags] = useState<ITagCount[]>();
+  const [books, setBooks] = useState<IFtsData[]>();
   useEffect(() => {
     let words;
     let api = "";
@@ -46,21 +46,7 @@ const BookTreeWithTags = ({
     get<IFtsResponse>(url).then((json) => {
       console.info("api response", json);
       if (json.ok) {
-        let tagsMap = new Map<string, number>();
-        json.data.rows.forEach((value) => {
-          value.tags?.forEach((tag) => {
-            if (tag.name) {
-              const old = tagsMap.get(tag.name);
-              tagsMap.set(tag.name, old ? old + 1 : 1);
-            }
-          });
-        });
-        let _tags: ITagCount[] = [];
-        tagsMap.forEach((value, key) => {
-          _tags.push({ name: key, count: value });
-        });
-        console.log("_tags", _tags);
-        setTags(_tags);
+        setBooks(json.data.rows);
       }
     });
   }, [keyWord, keyWords, view]);
@@ -70,7 +56,7 @@ const BookTreeWithTags = ({
       multiSelectable={multiSelectable}
       root={root}
       path={path}
-      tags={tags}
+      books={books}
       onChange={onChange}
     />
   );

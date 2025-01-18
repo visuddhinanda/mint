@@ -8,7 +8,7 @@ import { ISearchView } from "./FullTextSearchResult";
 import { ITag } from "../api/Tag";
 
 const { Text } = Typography;
-interface IFtsData {
+export interface IFtsData {
   book: number;
   paragraph: number;
   title?: string;
