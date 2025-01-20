@@ -16,7 +16,15 @@ export interface ITagRequest {
   created_at?: string;
   updated_at?: string;
 }
-
+export interface ITag {
+  id?: string;
+  name?: string;
+  description?: string | null;
+  color?: number;
+  owner?: IStudio;
+  created_at?: string;
+  updated_at?: string;
+}
 export interface ITagData {
   id: string;
   name: string;
