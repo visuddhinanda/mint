@@ -23,10 +23,11 @@ const DictSearchWidget = ({ word, compact = false }: IWidget) => {
 
   const fetchDict = (word: string) => {
     const url = `/v2/dict?word=${word}`;
-    console.info("url", url);
+    console.info("api request", url);
     setLoading(true);
     get<IApiDictContentData>(url)
       .then((json) => {
+        console.info("api response", json);
         setTableData(json.data);
       })
       .finally(() => setLoading(false))
