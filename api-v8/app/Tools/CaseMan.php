@@ -166,7 +166,7 @@ class CaseMan
     /**
      * 从词干到单词的变化
      *
-     * @return void
+     * @return array
      */
     public function BaseToWord($base, $confidence = 0.5)
     {
@@ -229,6 +229,9 @@ class CaseMan
     /**
      * 从单词到词干的变化
      * 小蝌蚪找妈妈
+     * @param  string  $word 输入
+     * @param  int  $deep 搜索深度
+     * @param  boolean  $verify 是否验证单词存在
      * @return array
      */
     public function WordToBase($word, $deep = 1, $verify = true)
