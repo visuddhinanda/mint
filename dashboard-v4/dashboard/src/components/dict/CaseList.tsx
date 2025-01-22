@@ -16,14 +16,14 @@ export interface ICaseListData {
 interface IWidget {
   word?: string;
   lines?: number;
-  onChange?: Function;
+  onChange?: (checkedList: string[]) => void;
 }
 const CaseListWidget = ({ word, lines, onChange }: IWidget) => {
   const [caseData, setCaseData] = useState<ICaseListData[]>();
   const [showAll, setShowAll] = useState(lines ? false : true);
   const [words, setWords] = useState<ICaseItem[]>();
   const [currWord, setCurrWord] = useState<string>();
-  const [checkedList, setCheckedList] = useState<CheckboxValueType[]>([]);
+  const [checkedList, setCheckedList] = useState<string[]>([]);
 
   useEffect(() => {
     setCaseData(
@@ -79,7 +79,7 @@ const CaseListWidget = ({ word, lines, onChange }: IWidget) => {
   }
 
   const onWordChange = (list: CheckboxValueType[]) => {
-    setCheckedList(list);
+    setCheckedList(list.map((item) => item.toString()));
   };
 
   const onCheckAllChange = (e: CheckboxChangeEvent) => {
