@@ -20,7 +20,7 @@ export interface IWordByDict {
 export interface IDictInfo {
   author: string;
   publisher: string;
-  published_at?: string;
+  published?: string;
   url: string;
 }
 interface IWidgetWordCardByDict {
@@ -60,7 +60,7 @@ const WordCardByDictWidget = ({ data, children }: IWidgetWordCardByDict) => {
                         </div>
                         <div>
                           <Text type="secondary">At:</Text>
-                          <Text>{data.meta?.published_at}</Text>
+                          <Text>{data.meta?.published}</Text>
                         </div>
                         <Marked text={data.description} />
                       </div>

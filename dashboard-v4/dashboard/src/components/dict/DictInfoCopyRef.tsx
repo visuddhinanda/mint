@@ -10,8 +10,8 @@ interface IWidget {
   data: IWordByDict;
 }
 const DictInfoCopyRef = ({ data }: IWidget) => {
-  const apaStr = `${data.meta?.author}. (${data.meta?.published_at}). ${data.dictname}. ${data.meta?.publisher}.`;
-  const mlaStr = `${data.meta?.author}. ${data.dictname}.  ${data.meta?.publisher}, ${data.meta?.published_at}.`;
+  const apaStr = `${data.meta?.author}. (${data.meta?.published}). ${data.dictname}. ${data.meta?.publisher}.`;
+  const mlaStr = `${data.meta?.author}. ${data.dictname}.  ${data.meta?.publisher}, ${data.meta?.published}.`;
   const [text, setText] = useState(apaStr);
   const intl = useIntl();
 
