@@ -104,17 +104,17 @@ return [
         'accounts' => [
             [
                 'name' => 'kimi',
-                'summary' => 'Moonshot AI 月之暗面',
+                'description' => 'Moonshot AI 月之暗面',
                 'api_url' => 'https://api.moonshot.cn/v1/chat/completions',
                 'model' => ['moonshot-v1-8k'],
-                'token' => 'sk-kwjHIMh3PoWwUwQyKdT3KHvNe8Es19SUiujGrxtH09uDQCui',
+                'token' => env('AI_API_TOKEN_MOONSHOT'),
             ],
             [
                 'name' => 'volcengine',
-                'summary' => '字节跳动AI引擎',
+                'description' => '字节跳动AI引擎',
                 'api_url' => 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
                 'model' => ['Doubao-lite-4k', 'Doubao-pro-4k'],
-                'token' => '647a23fe-60cd-4c07-b2a4-b11b57109f79',
+                'token' => env('AI_API_TOKEN_VOLCENGIN'),
             ],
         ],
     ]
