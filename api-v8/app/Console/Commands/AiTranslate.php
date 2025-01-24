@@ -14,7 +14,7 @@ class AiTranslate extends Command
 {
     /**
      * The name and signature of the console command.
-     *
+     * php artisan ai:sentence.translate --type=chapter --api=deepseek --model=deepseek-chat --sid=107-2357
      * @var string
      */
     protected $signature = <<<command
