@@ -116,6 +116,13 @@ return [
                 'model' => ['Doubao-lite-4k', 'Doubao-pro-4k'],
                 'token' => env('AI_API_TOKEN_VOLCENGIN'),
             ],
+            [
+                'name' => 'deepseek',
+                'description' => 'deepseek',
+                'api_url' => 'https://api.deepseek.com/chat/completions',
+                'model' => ['deepseek-chat'],
+                'token' => env('AI_API_TOKEN_DEEPSEEK'),
+            ],
         ],
     ]
 ];
