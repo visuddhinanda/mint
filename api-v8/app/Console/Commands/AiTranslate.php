@@ -15,6 +15,7 @@ class AiTranslate extends Command
     /**
      * The name and signature of the console command.
      * php artisan ai:sentence.translate --type=chapter --api=deepseek --model=deepseek-chat --sid=107-2357
+     * php artisan ai:sentence.translate --type=sentence --api=kimi --model=moonshot-v1-8k --sid=107-2357-9-47
      * @var string
      */
     protected $signature = <<<command
@@ -109,7 +110,8 @@ class AiTranslate extends Command
                 return 1;
             }
             $json = $this->fetch($api, $this->option('model'), $pali, $nissaya);
-            $this->info('ai translate', ['json' => $json]);
+            Log::info('ai translate', ['json' => $json]);
+            $this->info($json['choices'][0]['message']['content']);
             //写入
         }
         return 0;
