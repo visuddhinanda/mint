@@ -151,6 +151,10 @@ import StudioTaskList from "./pages/studio/task/tasks";
 import StudioTaskProjects from "./pages/studio/task/projects";
 import StudioTaskProject from "./pages/studio/task/project";
 
+import StudioAi from "./pages/studio/ai";
+import StudioAiModes from "./pages/studio/ai/models";
+import StudioAiModeEdit from "./pages/studio/ai/model_edit";
+
 import { ConfigProvider } from "antd";
 import { useAppSelector } from "./hooks";
 import { currTheme } from "./reducers/theme";
@@ -367,6 +371,12 @@ const Widget = () => {
               path=":anthology_id/edit"
               element={<StudioAnthologyEdit />}
             />
+          </Route>
+          <Route path="ai" element={<StudioAi />}>
+            <Route path="models">
+              <Route path="list" element={<StudioAiModes />} />
+              <Route path=":modelId/edit" element={<StudioAiModeEdit />} />
+            </Route>
           </Route>
           <Route path="setting" element={<StudioSetting />} />
 
