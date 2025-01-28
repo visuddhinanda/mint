@@ -20,8 +20,9 @@ const onClick: MenuProps["onClick"] = (e) => {
 
 type IWidgetHeadBar = {
   selectedKeys?: string;
+  openKeys?: string[];
 };
-const LeftSiderWidget = ({ selectedKeys = "" }: IWidgetHeadBar) => {
+const LeftSiderWidget = ({ selectedKeys = "", openKeys }: IWidgetHeadBar) => {
   //Library head bar
   const user = useAppSelector(currentUser);
 
@@ -36,6 +37,8 @@ const LeftSiderWidget = ({ selectedKeys = "" }: IWidgetHeadBar) => {
   const linkAnalysis = "/studio/" + studioname + "/exp/list";
   const linkCourse = "/studio/" + studioname + "/course/list";
   const linkSetting = "/studio/" + studioname + "/setting";
+
+  const urlBase = `/studio/${studioname}`;
 
   const items: MenuProps["items"] = [
     {
@@ -103,7 +106,7 @@ const LeftSiderWidget = ({ selectedKeys = "" }: IWidgetHeadBar) => {
           children: [
             {
               label: (
-                <Link to={`/studio/${studioname}/task/hall`}>
+                <Link to={`${urlBase}/task/hall`}>
                   {intl.formatMessage({
                     id: "labels.task.hall",
                   })}
@@ -113,7 +116,7 @@ const LeftSiderWidget = ({ selectedKeys = "" }: IWidgetHeadBar) => {
             },
             {
               label: (
-                <Link to={`/studio/${studioname}/task/list`}>
+                <Link to={`${urlBase}/task/list`}>
                   {intl.formatMessage({
                     id: "labels.task.mine",
                   })}
@@ -123,13 +126,23 @@ const LeftSiderWidget = ({ selectedKeys = "" }: IWidgetHeadBar) => {
             },
             {
               label: (
-                <Link to={`/studio/${studioname}/task/projects`}>
+                <Link to={`${urlBase}/task/projects`}>
                   {intl.formatMessage({
                     id: "labels.task.my.project",
                   })}
                 </Link>
               ),
               key: "task_projects",
+            },
+          ],
+        },
+        {
+          label: "AI",
+          key: "ai",
+          children: [
+            {
+              label: <Link to={`${urlBase}/ai/models/list`}>{"models"}</Link>,
+              key: "models",
             },
           ],
         },
@@ -270,7 +283,9 @@ const LeftSiderWidget = ({ selectedKeys = "" }: IWidgetHeadBar) => {
             theme="light"
             onClick={onClick}
             defaultSelectedKeys={[selectedKeys]}
-            defaultOpenKeys={["basic", "advance", "collaboration"]}
+            defaultOpenKeys={["basic", "advance", "collaboration"].concat(
+              openKeys ?? ""
+            )}
             mode="inline"
             items={items}
           />
