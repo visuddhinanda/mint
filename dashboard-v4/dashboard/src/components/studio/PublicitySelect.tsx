@@ -11,9 +11,15 @@ export type TPublicity =
 interface IWidget {
   width?: number | "md" | "sm" | "xl" | "xs" | "lg";
   disable?: TPublicity[];
+  name?: string;
   readonly?: boolean;
 }
-const PublicitySelectWidget = ({ width, disable = [], readonly }: IWidget) => {
+const PublicitySelectWidget = ({
+  width,
+  disable = [],
+  name = "status",
+  readonly,
+}: IWidget) => {
   const intl = useIntl();
 
   const options = [
@@ -60,7 +66,7 @@ const PublicitySelectWidget = ({ width, disable = [], readonly }: IWidget) => {
       options={options.filter((value) => value.disable === false)}
       readonly={readonly}
       width={width}
-      name="status"
+      name={name}
       allowClear={false}
       label={intl.formatMessage({ id: "forms.fields.publicity.label" })}
     />
