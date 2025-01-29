@@ -9,7 +9,6 @@ import { message } from "antd";
 import { get, put } from "../../request";
 import { useRef } from "react";
 import { IAiModelRequest, IAiModelResponse } from "../api/ai";
-import PublicitySelect from "../studio/PublicitySelect";
 import Publicity from "../studio/Publicity";
 
 interface IWidget {
