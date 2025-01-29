@@ -7,7 +7,13 @@ export type TPublicity =
   | "private"
   | "public_no_list"
   | "public";
-
+export const publicityList: TPublicity[] = [
+  "disable",
+  "blocked",
+  "private",
+  "public_no_list",
+  "public",
+];
 interface IWidget {
   width?: number | "md" | "sm" | "xl" | "xs" | "lg";
   disable?: TPublicity[];
