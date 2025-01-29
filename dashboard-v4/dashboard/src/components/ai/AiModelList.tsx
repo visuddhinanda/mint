@@ -1,6 +1,14 @@
 import { Link } from "react-router-dom";
 import { useIntl } from "react-intl";
-import { Button, Popover, Typography, Dropdown, Modal, message } from "antd";
+import {
+  Button,
+  Popover,
+  Typography,
+  Dropdown,
+  Modal,
+  message,
+  Tag,
+} from "antd";
 import { ActionType, ProList } from "@ant-design/pro-components";
 import {
   PlusOutlined,
@@ -191,6 +199,14 @@ const AiModelList = ({ studioName }: IWidget) => {
                   {entity.name}
                 </Link>
               );
+            },
+          },
+          description: {
+            dataIndex: "url",
+          },
+          subTitle: {
+            render(dom, entity, index, action, schema) {
+              return <Tag>{entity.model}</Tag>;
             },
           },
         }}
