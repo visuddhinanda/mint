@@ -10,6 +10,7 @@ import { get, put } from "../../request";
 import { useRef } from "react";
 import { IAiModelRequest, IAiModelResponse } from "../api/ai";
 import PublicitySelect from "../studio/PublicitySelect";
+import Publicity from "../studio/Publicity";
 
 interface IWidget {
   studioName?: string;
@@ -91,7 +92,10 @@ const AiModelEdit = ({ studioName, modelId, onChange }: IWidget) => {
         />
       </ProForm.Group>
       <ProForm.Group>
-        <PublicitySelect name="privacy" disable={["public_no_list"]} />
+        <Publicity
+          name="privacy"
+          disable={["disable", "public_no_list", "blocked"]}
+        />
       </ProForm.Group>
       <ProForm.Group>
         <ProFormTextArea
