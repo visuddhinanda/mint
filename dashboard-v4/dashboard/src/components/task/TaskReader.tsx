@@ -184,7 +184,13 @@ const TaskReader = ({ taskId, onChange, onEdit }: IWidget) => {
         </Space>
         <Space>
           <Text type="secondary">类别</Text>
-          <Category />
+          <Category
+            task={task}
+            onChange={(data) => {
+              setTask(data[0]);
+              onChange && onChange(data);
+            }}
+          />
         </Space>
       </div>
       <Divider />
