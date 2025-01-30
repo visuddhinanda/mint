@@ -25,6 +25,7 @@ import { useRef, useState } from "react";
 import { getSorterUrl } from "../../utils";
 import { IAiModel, IAiModelListResponse } from "../api/ai";
 import AiModelCreate from "./AiModelCreate";
+import PublicityIcon from "../studio/PublicityIcon";
 
 const { Text } = Typography;
 
@@ -207,6 +208,16 @@ const AiModelList = ({ studioName }: IWidget) => {
           subTitle: {
             render(dom, entity, index, action, schema) {
               return <Tag>{entity.model}</Tag>;
+            },
+          },
+          content: {
+            render(dom, entity, index, action, schema) {
+              return entity.description;
+            },
+          },
+          avatar: {
+            render(dom, entity, index, action, schema) {
+              return <PublicityIcon value={entity.privacy} />;
             },
           },
         }}
