@@ -36,15 +36,10 @@ const Category = ({ task, onChange }: IWidget) => {
 
   const onClick: MenuProps["onClick"] = (e) => {
     if (!task) {
+      console.error("no task");
       return;
     }
-    switch (e.key) {
-      case "json":
-        break;
 
-      default:
-        break;
-    }
     let setting: ITaskUpdateRequest = {
       id: task.id,
       studio_name: "",
