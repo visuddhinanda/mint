@@ -100,6 +100,7 @@ return [
     ],
 
     'ai' => [
+        'assistant' => 'test161',
         'default' => 'kimi',
         'accounts' => [
             [
