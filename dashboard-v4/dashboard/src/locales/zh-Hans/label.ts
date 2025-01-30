@@ -81,6 +81,8 @@ const items = {
   "labels.task.category.translate": "翻译",
   "labels.task.category.vocabulary": "词汇表",
   "labels.task.category.team": "术语",
+  "labels.task.category.review": "审稿",
+  "labels.task.category.proofread": "proofread",
 };
 
 export default items;
