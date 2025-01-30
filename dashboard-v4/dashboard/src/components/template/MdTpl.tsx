@@ -1,4 +1,5 @@
 import { GrammarPopShell } from "../dict/GrammarPop";
+import Ai from "./Ai";
 import Article from "./Article";
 import DictPreferenceEditor from "./DictPreferenceEditor";
 import Exercise from "./Exercise";
@@ -69,6 +70,8 @@ const Widget = ({ tpl, props, children }: IWidgetMdTpl) => {
       return <Reference props={props ? props : ""} />;
     case "dict-pref":
       return props ? <DictPreferenceEditor props={props} /> : <>无效的参数</>;
+    case "ai":
+      return <Ai props={props ? props : ""} />;
     default:
       return <>未定义模版({tpl})</>;
   }
