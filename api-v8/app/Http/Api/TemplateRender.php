@@ -1004,6 +1004,14 @@ class TemplateRender
                     }
                 }
                 break;
+            case 'prompt':
+                $output = '';
+                if (isset($props['origin']) && is_array($props['origin'])) {
+                    foreach ($props['origin'] as $key => $value) {
+                        $output .= $value['html'];
+                    }
+                }
+                break;
             case 'html':
                 $output = '';
                 $output .= '<span class="sentence">';
