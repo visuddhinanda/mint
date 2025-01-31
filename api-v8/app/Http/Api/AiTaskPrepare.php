@@ -5,6 +5,10 @@ namespace App\Http\Api;
 use App\Models\Task;
 use App\Models\PaliText;
 use App\Models\PaliSentence;
+use App\Models\AiModel;
+use App\Http\Api\Mq;
+
+use Illuminate\Support\Facades\Log;
 
 class AiTaskPrepare
 {
@@ -16,37 +20,51 @@ class AiTaskPrepare
         $params = [];
         foreach ($rows as $key => $row) {
             if (strpos($row, '=') !== false) {
-                $param = explode('=', $row);
+                $param = explode('=', trim($row, '|'));
                 $params[$param[0]] = $param[1];
             }
         }
-        if (!isset($param['type']) || !isset($param['book']) || !isset($param['para'])) {
+        if (!isset($params['type']) || !isset($params['book']) || !isset($params['para'])) {
             return false;
         }
 
         //get sentences in article
         $sentences = array();
         $totalLen = 0;
-        switch ($param['type']) {
+        switch ($params['type']) {
             case 'sentence':
-                $sentences[] = explode('-', $param['id']);
+                $sentences[] = explode('-', $params['id']);
                 break;
             case 'paragraph':
-                $sent = PaliSentence::where('book', $param['book'])
-                    ->where('paragraph', $param['para'])->orderBy('word_begin')->get();
+                $sent = PaliSentence::where('book', $params['book'])
+                    ->where('paragraph', $params['para'])->orderBy('word_begin')->get();
                 foreach ($sent as $key => $value) {
-                    $sentences[] = [$param['book'], $param['para'], $value->word_begin, $value->word_end];
+                    $sentences[] = [
+                        $value->book,
+                        $value->paragraph,
+                        $value->word_begin,
+                        $value->word_end,
+                        $value->length
+                    ];
+                    $totalLen += $value->length;
                 }
                 break;
             case 'chapter':
-                $chapterLen = PaliText::where('book', $param['book'])
-                    ->where('paragraph', $param['para'])->value('chapter_len');
-                $sent = PaliSentence::where('book', $param['book'])
-                    ->whereBetween('paragraph', [$param['para'], $param['para'] + $chapterLen - 1])
+                $chapterLen = PaliText::where('book', $params['book'])
+                    ->where('paragraph', $params['para'])->value('chapter_len');
+                $sent = PaliSentence::where('book', $params['book'])
+                    ->whereBetween('paragraph', [$params['para'], $params['para'] + $chapterLen - 1])
                     ->orderBy('paragraph')
                     ->orderBy('word_begin')->get();
                 foreach ($sent as $key => $value) {
-                    $sentences[] = [$param['book'], $param['para'], $value->word_begin, $value->word_end];
+                    $sentences[] = [
+                        $value->book,
+                        $value->paragraph,
+                        $value->word_begin,
+                        $value->word_end,
+                        $value->length
+                    ];
+                    $totalLen += $value->length;
                 }
                 break;
             default:
@@ -67,19 +85,46 @@ class AiTaskPrepare
             }
         ));
 
-        $params = [];
+        # ai model
+        if (!isset($params['{{ai|model'])) {
+            return false;
+        }
+        $modelId = trim($params['{{ai|model'], '}');
+        $aiModel = AiModel::findOne($modelId);
+        $aiPrompts = [];
+        $sumLen = 0;
         foreach ($sentences as $key => $sentence) {
+            $sumLen += $sentence[4];
             $sid = implode('-', $sentence);
+            Log::debug($sid);
             $data['pali'] = '{{' . $sid . '}}';
-            if (isset($param['nissaya'])) {
-                $data['nissaya'] = '{{' . $sid . '@' . $param['nissaya'] . '}}';
+            if (isset($params['nissaya'])) {
+                $data['nissaya'] = '{{' . $sid . '@' . $params['nissaya'] . '}}';
             }
             $content = $m->render($description, $data);
             $prompt = $mdRender->convert($content, []);
-            $params[] = $prompt;
+            $aiPrompts[] = $prompt;
             //gen mq
+            $aiMqData = [
+                'model' => $aiModel,
+                'task' => [
+                    'task_id' => $taskId,
+                    'progress' => (int)($sumLen * 100 / $totalLen),
+                ],
+                'sentence' => [
+                    'book_id' => $sentence[0],
+                    'paragraph' => $sentence[1],
+                    'word_start' => $sentence[2],
+                    'word_end' => $sentence[3],
+                    'channel_uid' => $params['channel'],
+                    'content' => $prompt,
+                    'content_type' => 'markdown',
+                    'access_token' => $params['token'],
+                ],
+            ];
+            Mq::publish('ai_translate', $aiMqData);
         }
 
-        return $params;
+        return $aiPrompts;
     }
 }
