@@ -608,7 +608,6 @@ class TemplateRender
     }
     private  function render_article()
     {
-
         $type = $this->get_param($this->param, "type", 1);
         $id = $this->get_param($this->param, "id", 2);
         $title = $this->get_param($this->param, "title", 3);
