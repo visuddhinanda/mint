@@ -12,6 +12,12 @@ use Illuminate\Support\Facades\Log;
 
 class AiTaskPrepare
 {
+    /**
+     * 读取task信息，将任务拆解为单句小任务
+     *
+     * @param  string  $taskId 任务uuid
+     * @return array 拆解后的提示词数组
+     */
     public static function translate(string $taskId)
     {
         $task = Task::findOrFail($taskId);
@@ -24,7 +30,7 @@ class AiTaskPrepare
                 $params[$param[0]] = $param[1];
             }
         }
-        if (!isset($params['type']) || !isset($params['book']) || !isset($params['para'])) {
+        if (!isset($params['type'])) {
             return false;
         }
 
@@ -33,23 +39,34 @@ class AiTaskPrepare
         $totalLen = 0;
         switch ($params['type']) {
             case 'sentence':
+                if (!isset($params['id'])) {
+                    return false;
+                }
                 $sentences[] = explode('-', $params['id']);
                 break;
-            case 'paragraph':
+            case 'para':
+                if (!isset($params['book']) || !isset($params['paragraphs'])) {
+                    return false;
+                }
                 $sent = PaliSentence::where('book', $params['book'])
-                    ->where('paragraph', $params['para'])->orderBy('word_begin')->get();
+                    ->where('paragraph', $params['paragraphs'])->orderBy('word_begin')->get();
                 foreach ($sent as $key => $value) {
                     $sentences[] = [
-                        $value->book,
-                        $value->paragraph,
-                        $value->word_begin,
-                        $value->word_end,
-                        $value->length
+                        'id' => [
+                            $value->book,
+                            $value->paragraph,
+                            $value->word_begin,
+                            $value->word_end,
+                        ],
+                        'strlen' => $value->length
                     ];
                     $totalLen += $value->length;
                 }
                 break;
             case 'chapter':
+                if (!isset($params['book']) || !isset($params['para'])) {
+                    return false;
+                }
                 $chapterLen = PaliText::where('book', $params['book'])
                     ->where('paragraph', $params['para'])->value('chapter_len');
                 $sent = PaliSentence::where('book', $params['book'])
@@ -58,11 +75,13 @@ class AiTaskPrepare
                     ->orderBy('word_begin')->get();
                 foreach ($sent as $key => $value) {
                     $sentences[] = [
-                        $value->book,
-                        $value->paragraph,
-                        $value->word_begin,
-                        $value->word_end,
-                        $value->length
+                        'id' => [
+                            $value->book,
+                            $value->paragraph,
+                            $value->word_begin,
+                            $value->word_end,
+                        ],
+                        'strlen' => $value->length
                     ];
                     $totalLen += $value->length;
                 }
@@ -86,16 +105,13 @@ class AiTaskPrepare
         ));
 
         # ai model
-        if (!isset($params['{{ai|model'])) {
-            return false;
-        }
-        $modelId = trim($params['{{ai|model'], '}');
-        $aiModel = AiModel::findOne($modelId);
+        $aiModel = AiModel::findOrFail($task->executor_id);
+
         $aiPrompts = [];
         $sumLen = 0;
         foreach ($sentences as $key => $sentence) {
-            $sumLen += $sentence[4];
-            $sid = implode('-', $sentence);
+            $sumLen += $sentence['strlen'];
+            $sid = implode('-', $sentence['id']);
             Log::debug($sid);
             $data['pali'] = '{{' . $sid . '}}';
             if (isset($params['nissaya'])) {
@@ -109,13 +125,17 @@ class AiTaskPrepare
                 'model' => $aiModel,
                 'task' => [
                     'task_id' => $taskId,
-                    'progress' => (int)($sumLen * 100 / $totalLen),
+                    'progress' => [
+                        'current' => $sumLen,
+                        'total' => $totalLen
+                    ],
                 ],
+                'prompt' => $prompt,
                 'sentence' => [
-                    'book_id' => $sentence[0],
-                    'paragraph' => $sentence[1],
-                    'word_start' => $sentence[2],
-                    'word_end' => $sentence[3],
+                    'book_id' => $sentence['id'][0],
+                    'paragraph' => $sentence['id'][1],
+                    'word_start' => $sentence['id'][2],
+                    'word_end' => $sentence['id'][3],
                     'channel_uid' => $params['channel'],
                     'content' => $prompt,
                     'content_type' => 'markdown',
