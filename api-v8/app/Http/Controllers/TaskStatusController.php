@@ -62,7 +62,7 @@ class TaskStatusController extends Controller
         if (!$user) {
             return $this->error(__('auth.failed'), 401, 401);
         }
-        if (!$this->canEdit($user['user_uid'], $task)) {
+        if (!TaskController::canUpdate($user['user_uid'], $task)) {
             return $this->error(__('auth.failed'), 403, 403);
         }
 
@@ -119,10 +119,12 @@ class TaskStatusController extends Controller
                 }
                 //开启后置任务
                 $nextTasks = TaskRelation::whereIn('task_id', $preTask)
-                    ->where('status', 'pending')
                     ->select('next_task_id')->get();
                 foreach ($nextTasks as $key => $value) {
-                    $publishTask[] = $value->next_task_id;
+                    $nextTask = Task::find($value->next_task_id);
+                    if ($nextTask->status === 'pending') {
+                        $publishTask[] = $value->next_task_id;
+                    }
                 }
                 //开启后置任务的子任务
                 $nextTasksChildren = Task::whereIn('parent_id', $publishTask)
@@ -139,10 +141,12 @@ class TaskStatusController extends Controller
                     ]);
 
                 $nextTasks = TaskRelation::whereIn('task_id', $preTask)
-                    ->where('status', 'requested_restart')
                     ->select('next_task_id')->get();
                 foreach ($nextTasks as $key => $value) {
-                    $runningTask[] = $value->next_task_id;
+                    $nextTask = Task::find($value->next_task_id);
+                    if ($nextTask->status === 'requested_restart') {
+                        $runningTask[] = $value->next_task_id;
+                    }
                 }
                 Task::whereIn('id', $runningTask)
                     ->update([
