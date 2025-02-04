@@ -57,6 +57,7 @@ export interface IAiModel {
 export interface IAiModelRequest {
   name: string;
   description?: string | null;
+  system_prompt?: string | null;
   url?: string | null;
   model?: string;
   key?: string;
@@ -74,4 +75,24 @@ export interface IAiModelResponse {
   ok: boolean;
   message: string;
   data: IAiModel;
+}
+
+export interface IAiModelLogData {
+  id: string;
+  uid: string;
+  model_id: string;
+  request_url: string;
+  request_data: string;
+  response_data?: string | null;
+  status: number;
+  success: boolean;
+  request_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IAiModelLogListResponse {
+  ok: boolean;
+  message: string;
+  data: { rows: IAiModelLogData[]; total: number };
 }
