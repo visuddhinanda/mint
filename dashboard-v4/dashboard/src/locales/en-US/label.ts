@@ -75,6 +75,7 @@ const items = {
   "labels.task.category.team": "team",
   "labels.task.category.review": "review",
   "labels.task.category.proofread": "proofread",
+  "labels.ai-assistant": "AI Assistant",
 };
 
 export default items;
