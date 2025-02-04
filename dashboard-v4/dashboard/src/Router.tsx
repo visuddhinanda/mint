@@ -154,6 +154,7 @@ import StudioTaskProject from "./pages/studio/task/project";
 import StudioAi from "./pages/studio/ai";
 import StudioAiModes from "./pages/studio/ai/models";
 import StudioAiModeEdit from "./pages/studio/ai/model_edit";
+import StudioAiModeLog from "./pages/studio/ai/model_logs";
 
 import { ConfigProvider } from "antd";
 import { useAppSelector } from "./hooks";
@@ -376,6 +377,7 @@ const Widget = () => {
             <Route path="models">
               <Route path="list" element={<StudioAiModes />} />
               <Route path=":modelId/edit" element={<StudioAiModeEdit />} />
+              <Route path=":modelId/logs" element={<StudioAiModeLog />} />
             </Route>
           </Route>
           <Route path="setting" element={<StudioSetting />} />
