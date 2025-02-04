@@ -73,6 +73,8 @@ const items = {
   "labels.task.category.translate": "translate",
   "labels.task.category.vocabulary": "vocabulary",
   "labels.task.category.team": "team",
+  "labels.task.category.review": "review",
+  "labels.task.category.proofread": "proofread",
 };
 
 export default items;

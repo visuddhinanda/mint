@@ -111,6 +111,7 @@ use App\Http\Controllers\SiteInfoController;
 use App\Http\Controllers\PaliBookCategoryController;
 use App\Http\Controllers\AccessTokenController;
 use App\Http\Controllers\SearchWordSliceController;
+use App\Http\Controllers\AiModelController;
 
 
 
@@ -279,4 +280,5 @@ Route::group(['prefix' => 'v2'], function () {
     Route::apiResource('pali-book-category', PaliBookCategoryController::class);
     Route::apiResource('access-token', AccessTokenController::class);
     Route::apiResource('search-word-slice', SearchWordSliceController::class);
+    Route::apiResource('ai-model', AiModelController::class);
 });

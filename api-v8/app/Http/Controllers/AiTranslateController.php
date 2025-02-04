@@ -47,7 +47,7 @@ class AiTranslateController extends Controller
             ],
             "temperature" => 0.3,
         ];
-        $response = Http::withToken('sk-kwjHIMh3PoWwUwQyKdT3KHvNe8Es19SUiujGrxtH09uDQCui')
+        $response = Http::withToken($selected[0]['token'])
             ->post($url, $param);
         if ($response->failed()) {
             $this->error('http request error' . $response->json('message'));

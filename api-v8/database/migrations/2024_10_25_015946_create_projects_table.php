@@ -20,6 +20,7 @@ class CreateProjectsTable extends Migration
             $table->string('type', 32)->index()->default('normal');
             $table->text('description')->nullable();
             $table->integer('weight')->index()->default(0)->comment('权重');
+            $table->integer('progress')->index()->default(0)->comment('进度0-100');
             $table->jsonb('executors_id')->index()->nullable();
             $table->uuid('parent_id')->index()->nullable();
             $table->jsonb('path')->index()->nullable();

@@ -33,11 +33,18 @@ export interface IProject {
   description: string | null;
 }
 
-export type TTaskCategory = "translate" | "vocabulary" | "team";
+export type TTaskCategory =
+  | "translate"
+  | "vocabulary"
+  | "team"
+  | "review"
+  | "proofread";
 export const ATaskCategory: TTaskCategory[] = [
   "translate",
   "vocabulary",
   "team",
+  "review",
+  "proofread",
 ];
 export interface ITaskData {
   id: string;

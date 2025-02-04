@@ -96,6 +96,8 @@ const items = {
   "forms.fields.started-at.label": "started at",
   "forms.fields.finished-at.label": "finished at",
   "forms.fields.assignees.label": "assignees",
+  "forms.fields.model.label": "model",
+  "forms.fields.key.label": "key",
 };
 
 export default items;

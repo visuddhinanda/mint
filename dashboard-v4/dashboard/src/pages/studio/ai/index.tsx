@@ -9,10 +9,12 @@ const { Content } = Layout;
 const Widget = () => {
   return (
     <Layout>
-      <LeftSider openKeys={["task"]} />
-      <Content style={{ ...styleStudioContent }}>
-        <Outlet />
-      </Content>
+      <Layout>
+        <LeftSider openKeys={["ai"]} />
+        <Content style={styleStudioContent}>
+          <Outlet />
+        </Content>
+      </Layout>
     </Layout>
   );
 };

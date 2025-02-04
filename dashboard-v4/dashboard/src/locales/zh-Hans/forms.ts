@@ -96,6 +96,8 @@ const items = {
   "forms.fields.started-at.label": "开始时间",
   "forms.fields.finished-at.label": "完成时间",
   "forms.fields.assignees.label": "指派给",
+  "forms.fields.model.label": "模型",
+  "forms.fields.key.label": "密钥",
 };
 
 export default items;

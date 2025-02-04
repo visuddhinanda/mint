@@ -14,7 +14,6 @@ use App\Http\Resources\TaskResource;
 use App\Http\Api\AuthApi;
 use App\Http\Api\StudioApi;
 use App\Http\Api\TaskApi;
-use App\Http\Api\WatchApi;
 
 
 class TaskController extends Controller
@@ -27,7 +26,6 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         //
-        Log::debug('task controller start');
         $user = AuthApi::current($request);
         if (!$user) {
             Log::error('notification auth failed {request}', ['request' => $request]);

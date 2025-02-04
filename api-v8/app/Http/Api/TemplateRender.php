@@ -154,6 +154,9 @@ class TemplateRender
             case 'dict-pref':
                 $result = $this->render_dict_pref();
                 break;
+            case 'ai':
+                $result = $this->render_ai();
+                break;
             default:
                 # code...
                 $result = [
@@ -1001,6 +1004,14 @@ class TemplateRender
                     }
                 }
                 break;
+            case 'prompt':
+                $output = '';
+                if (isset($props['origin']) && is_array($props['origin'])) {
+                    foreach ($props['origin'] as $key => $value) {
+                        $output .= $value['html'];
+                    }
+                }
+                break;
             case 'html':
                 $output = '';
                 $output .= '<span class="sentence">';
@@ -1355,6 +1366,43 @@ class TemplateRender
                 break;
             default:
                 $output = 'dict-pref';
+                break;
+        }
+        return $output;
+    }
+
+    private function render_ai()
+    {
+        $model = $this->get_param($this->param, "model", 1, 1);
+
+        $props = [
+            "model" => $model,
+        ];
+
+        switch ($this->format) {
+            case 'react':
+                $output = [
+                    'props' => base64_encode(\json_encode($props)),
+                    'html' => "",
+                    'text' => '',
+                    'tag' => 'div',
+                    'tpl' => 'ai',
+                ];
+                break;
+            case 'unity':
+                $output = [
+                    'props' => base64_encode(\json_encode($props)),
+                    'tpl' => 'ai',
+                ];
+                break;
+            case 'text':
+                $output = 'ai';
+                break;
+            case 'prompt':
+                $output = '';
+                break;
+            default:
+                $output = 'ai';
                 break;
         }
         return $output;
