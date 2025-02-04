@@ -42,7 +42,7 @@ export const toIComment = (value: ICommentApiData): IComment => {
 };
 interface IWidget {
   resId?: string;
-  resType?: string;
+  resType?: string; //TODO change
   parent?: string;
   topicId?: string;
   type?: TDiscussionType;
