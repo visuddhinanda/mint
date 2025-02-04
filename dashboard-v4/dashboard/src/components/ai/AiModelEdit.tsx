@@ -103,6 +103,13 @@ const AiModelEdit = ({ studioName, modelId, onChange }: IWidget) => {
           label={intl.formatMessage({ id: "forms.fields.description.label" })}
         />
       </ProForm.Group>
+      <ProForm.Group>
+        <ProFormTextArea
+          width="md"
+          name="system_prompt"
+          label={"system_prompt"}
+        />
+      </ProForm.Group>
     </ProForm>
   );
 };
