@@ -2,6 +2,8 @@
 
 namespace App\Http\Api;
 
+use App\Http\Resources\AiAssistant;
+use App\Models\AiModel;
 use App\Models\UserInfo;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -35,6 +37,9 @@ class UserApi
     public static function getByUuid($id)
     {
         $user = UserInfo::where('userid', $id)->first();
+        if (!$user) {
+            return AiAssistantApi::getByUuid($id);
+        }
         return UserApi::userInfo($user);
     }
     public static function getListByUuid($uuid)
@@ -43,11 +48,18 @@ class UserApi
             return null;
         };
         $users = UserInfo::whereIn('userid', $uuid)->get();
+        $assistants = AiModel::whereIn('uid', $uuid)->get();
         $output = array();
         foreach ($uuid as $key => $id) {
             foreach ($users as $user) {
                 if ($user->userid === $id) {
                     $output[] = UserApi::userInfo($user);
+                    continue;
+                };
+            }
+            foreach ($assistants as $assistant) {
+                if ($assistant->uid === $id) {
+                    $output[] = AiAssistantApi::userInfo($assistant);
                     continue;
                 };
             }
