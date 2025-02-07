@@ -12,9 +12,12 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Resources\TaskResource;
 use App\Http\Api\AuthApi;
 use App\Http\Api\WatchApi;
+use App\Models\AiModel;
+use App\Http\Api\AiTaskPrepare;
 
 class TaskStatusController extends Controller
 {
+    protected $changeTasks = array();
     /**
      * Display a listing of the resource.
      *
@@ -48,6 +51,27 @@ class TaskStatusController extends Controller
     }
 
     /**
+     *
+     *
+     * @param  string  $status
+     * @param  string  $id
+     * @return void
+     */
+    private function pushChange(string $status, string $id)
+    {
+        if (!isset($this->changeTasks[$status])) {
+            $this->changeTasks[$status] = array();
+        }
+        $this->changeTasks[$status][] = $id;
+    }
+    private function getChange(string $status)
+    {
+        if (!isset($this->changeTasks[$status])) {
+            $this->changeTasks[$status] = array();
+        }
+        return $this->changeTasks[$status];
+    }
+    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -69,33 +93,25 @@ class TaskStatusController extends Controller
         if (!$request->has('status')) {
             return $this->error('no status', 400, 400);
         }
-        $doneTask = [];
-        $publishTask = [];
-        $restartTask = [];
-        $runningTask = [];
+
         switch ($request->get('status')) {
-            case 'publish':
-                $publishTask[] = $id;
+            case 'published':
+                $this->pushChange('published', $id);
                 # 开启子任务
-                $children = Task::whereIn('parent_id', $id)
+                $children = Task::where('parent_id', $id)
                     ->where('status', 'pending')
                     ->select('id')->get();
                 foreach ($children as $key => $child) {
-                    $publishTask[] = $child->id;
+                    $this->pushChange('published', $child->id);
                 }
-                Task::whereIn('id', $publishTask)->update([
-                    'status' => 'published',
-                    'editor_id' => $user['user_uid'],
-                    'updated_at' => now()
-                ]);
                 break;
             case 'running':
                 $task->started_at = now();
                 $task->executor_id = $user['user_uid'];
-                $runningTask[] = $task->id;
+                $this->pushChange('running', $task->id);
                 break;
             case 'done':
-                $doneTask[] = $task->id;
+                $this->pushChange('done', $task->id);
                 $task->finished_at = now();
                 $preTask = [$task->id];
                 //开启父任务
@@ -106,15 +122,8 @@ class TaskStatusController extends Controller
                         ->count();
                     if ($notCompleted === 0) {
                         //父任务已经完成
-                        Task::where('id', $task->parent_id)
-                            ->update([
-                                'status' => 'done',
-                                'editor_id' => $user['user_uid'],
-                                'updated_at' => now(),
-                                'finished_at' => now()
-                            ]);
-                        $doneTask[] = $task->parent_id;
                         $preTask[] = $task->parent_id;
+                        $this->pushChange('done', $task->parent_id);
                     }
                 }
                 //开启后置任务
@@ -123,90 +132,90 @@ class TaskStatusController extends Controller
                 foreach ($nextTasks as $key => $value) {
                     $nextTask = Task::find($value->next_task_id);
                     if ($nextTask->status === 'pending') {
-                        $publishTask[] = $value->next_task_id;
+                        $this->pushChange('published', $value->next_task_id);
                     }
                 }
                 //开启后置任务的子任务
-                $nextTasksChildren = Task::whereIn('parent_id', $publishTask)
+                $nextTasksChildren = Task::whereIn('parent_id', $this->getChange('published'))
                     ->where('status', 'pending')
                     ->select('id')->get();
                 foreach ($nextTasksChildren as $child) {
-                    $publishTask[] = $child->id;
+                    $this->pushChange('published', $child->id);
                 }
-                Task::whereIn('id', $publishTask)
-                    ->update([
-                        'status' => 'published',
-                        'editor_id' => $user['user_uid'],
-                        'updated_at' => now()
-                    ]);
 
                 $nextTasks = TaskRelation::whereIn('task_id', $preTask)
                     ->select('next_task_id')->get();
                 foreach ($nextTasks as $key => $value) {
                     $nextTask = Task::find($value->next_task_id);
                     if ($nextTask->status === 'requested_restart') {
-                        $runningTask[] = $value->next_task_id;
+                        //$runningTask[] = $value->next_task_id;
+                        $this->pushChange('running', $value->next_task_id);
                     }
                 }
-                Task::whereIn('id', $runningTask)
-                    ->update([
-                        'status' => 'running',
-                        'editor_id' => $user['user_uid'],
-                        'updated_at' => now()
-                    ]);
                 break;
             case 'requested_restart':
+                $this->pushChange('requested_restart', $task->id);
                 //从新开启前置任务
                 $preTasks = TaskRelation::where('next_task_id', $task->id)
                     ->select('task_id')->get();
                 foreach ($preTasks as $key => $value) {
-                    $restartTask[] = $value->task_id;
+                    //$restartTask[] = $value->task_id;
+                    $this->pushChange('restart', $value->task_id);
                 }
-                Task::whereIn('id', $restartTask)
-                    ->update([
-                        'status' => 'restarted',
-                        'editor_id' => $user['user_uid'],
-                        'updated_at' => now()
-                    ]);
                 break;
         }
         $task->status = $request->get('status');
-        //发送站内信
-        $doneTask[] = $task->id;
-        $doneSend = WatchApi::change(
-            resId: $doneTask,
-            from: $user['user_uid'],
-            message: "任务状态变为 已经完成",
-        );
-
-        $pubSend = WatchApi::change(
-            resId: $publishTask,
-            from: $user['user_uid'],
-            message: "任务状态变为 已经发布",
-        );
-
-        $restartSend = WatchApi::change(
-            resId: $restartTask,
-            from: $user['user_uid'],
-            message: "任务状态变为 已经重启",
-        );
-        $runningSend = WatchApi::change(
-            resId: $runningTask,
-            from: $user['user_uid'],
-            message: "任务状态变为 运行中",
-        );
-
-        Log::debug('watch message', [
-            'done' => $doneSend,
-            'published' => $pubSend,
-            'restarted' => $restartSend,
-            'running' => $runningSend,
-        ]);
-
         $task->editor_id = $user['user_uid'];
         $task->save();
+        # auto start with ai assistant
+        foreach ($this->getChange('published') as $taskId) {
+            $taskAssignee = TaskAssignee::where('task_id', $taskId)
+                ->select('assignee_id')->get();
+            $aiAssistant = AiModel::whereIn('uid', $taskAssignee)->first();
+            if ($aiAssistant) {
+                $aiTask = Task::find($taskId);
+                $aiTask->executor_id = $aiAssistant->uid;
+                $aiTask->status = 'running';
+                $aiTask->save();
+                $this->pushChange('running', $taskId);
+                $params = AiTaskPrepare::translate($taskId);
+                Log::debug('ai running', ['params' => $params]);
+            }
+        }
 
-        $result = Task::whereIn('id', array_merge($doneTask, $publishTask, $restartTask, $runningTask))
+        $allChanged = [];
+        foreach ($this->changeTasks as $key => $tasksId) {
+            $allChanged = array_merge($allChanged, $tasksId);
+            #change status in related
+            $data = [
+                'status' => $key,
+                'editor_id' => $user['user_uid'],
+                'updated_at' => now(),
+            ];
+            if ($key === 'done') {
+                $data['finished_at'] = now();
+            }
+            if ($key === 'running') {
+                $data['started_at'] = now();
+            }
+            if ($key === 'restart') {
+                $data['finished_at'] = null;
+            }
+            Task::whereIn('id', $tasksId)
+                ->update($data);
+            //发送站内信
+            $send = WatchApi::change(
+                resId: $tasksId,
+                from: $user['user_uid'],
+                message: "任务状态变为 {$key}",
+            );
+            Log::debug('watch message', [
+                'send-to' => $send,
+            ]);
+        }
+
+        //changed tasks
+        $result = Task::whereIn('id', $allChanged)
             ->get();
         return $this->ok(
             [
