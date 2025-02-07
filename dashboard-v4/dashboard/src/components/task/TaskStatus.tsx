@@ -1,9 +1,32 @@
-import { Tag } from "antd";
-import { ITaskData } from "../api/task";
+import { Progress, Tag } from "antd";
+import { ITaskData, ITaskResponse } from "../api/task";
 import { useIntl } from "react-intl";
+import { useEffect, useState } from "react";
+import { get } from "../../request";
 
 const TaskStatus = ({ task }: { task?: ITaskData }) => {
   const intl = useIntl();
+  const [progress, setProgress] = useState(task?.progress);
+
+  useEffect(() => {
+    if (!task?.id) {
+      return;
+    }
+    const query = () => {
+      const url = `/v2/task/${task?.id}`;
+      console.info("api request", url);
+      get<ITaskResponse>(url).then((json) => {
+        console.log("api response", json);
+        if (json.ok) {
+          setProgress(json.data.progress);
+        }
+      });
+    };
+    let timer = setInterval(query, 1000 * (60 + Math.random() * 10));
+    return () => {
+      clearInterval(timer);
+    };
+  }, [task?.id]);
 
   let color = "";
   switch (task?.status) {
@@ -27,12 +50,21 @@ const TaskStatus = ({ task }: { task?: ITaskData }) => {
       break;
   }
   return (
-    <Tag color={color}>
-      {intl.formatMessage({
-        id: `labels.task.status.${task?.status}`,
-        defaultMessage: "unknown",
-      })}
-    </Tag>
+    <>
+      <Tag color={color}>
+        {intl.formatMessage({
+          id: `labels.task.status.${task?.status}`,
+          defaultMessage: "unknown",
+        })}
+      </Tag>
+      {task?.status === "running" ? (
+        <div style={{ display: "inline-block", width: 80 }}>
+          <Progress percent={progress} size="small" showInfo={false} />
+        </div>
+      ) : (
+        <></>
+      )}
+    </>
   );
 };
 
