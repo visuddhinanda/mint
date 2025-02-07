@@ -21,13 +21,6 @@ const AiModelLogList = ({ modelId }: IWidget) => {
     <ProList<IAiModelLogData>
       rowKey="title"
       headerTitle="logs"
-      toolBarRender={() => {
-        return [
-          <Button key="3" type="primary">
-            新建
-          </Button>,
-        ];
-      }}
       expandable={{ expandedRowKeys, onExpandedRowsChange: setExpandedRowKeys }}
       metas={{
         title: {},
@@ -42,6 +35,15 @@ const AiModelLogList = ({ modelId }: IWidget) => {
         },
         description: {
           render: (dom, entity, index, action, schema) => {
+            const jsonView = (text?: string | null) => {
+              return (
+                <div>
+                  <pre>
+                    {text ? JSON.stringify(JSON.parse(text), null, 2) : ""}
+                  </pre>
+                </div>
+              );
+            };
             return (
               <>
                 <Tabs
@@ -49,12 +51,12 @@ const AiModelLogList = ({ modelId }: IWidget) => {
                     {
                       label: "request",
                       key: "request",
-                      children: <div>{entity.request_data}</div>,
+                      children: jsonView(entity.request_data),
                     },
                     {
                       label: "response",
                       key: "response",
-                      children: <div>{entity.response_data}</div>,
+                      children: jsonView(entity.response_data),
                     },
                   ]}
                 />
