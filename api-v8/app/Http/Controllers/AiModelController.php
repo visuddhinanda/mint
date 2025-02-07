@@ -34,9 +34,11 @@ class AiModelController extends Controller
                 break;
             case 'studio':
                 $studioId = StudioApi::getIdByName($request->get('name'));
-
                 $table = AiModel::where('owner_id', $studioId);
-
+                break;
+            case 'usable':
+                $table = AiModel::where('owner_id', $request->get('user_id'))
+                    ->orWhere('privacy', 'public');
                 break;
         }
         if ($request->has('keyword')) {
@@ -121,7 +123,7 @@ class AiModelController extends Controller
         }
         $aiModel->name = $request->get('name');
         $aiModel->description = $request->get('description');
-        $aiModel->message_content = $request->get('message_content');
+        $aiModel->system_prompt = $request->get('system_prompt');
         $aiModel->url = $request->get('url');
         $aiModel->model = $request->get('model');
         $aiModel->key = $request->get('key');
