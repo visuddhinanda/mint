@@ -113,7 +113,10 @@ class AiTaskPrepare
             $sumLen += $sentence['strlen'];
             $sid = implode('-', $sentence['id']);
             Log::debug($sid);
-            $data['pali'] = '{{' . $sid . '}}';
+            $data['origin'] = '{{' . $sid . '}}';
+            $data['translation'] = '{{sent|id=' . $sid;
+            $data['translation'] .= '|channel=' . $params['channel'];
+            $data['translation'] .= '|text=translation}}';
             if (isset($params['nissaya'])) {
                 $data['nissaya'] = '{{' . $sid . '@' . $params['nissaya'] . '}}';
             }
@@ -125,6 +128,7 @@ class AiTaskPrepare
                 'model' => $aiModel,
                 'task' => [
                     'task_id' => $taskId,
+                    'category' => $task->category,
                     'progress' => [
                         'current' => $sumLen,
                         'total' => $totalLen
