@@ -1005,9 +1005,18 @@ class TemplateRender
                 break;
             case 'prompt':
                 $output = '';
-                if (isset($props['origin']) && is_array($props['origin'])) {
-                    foreach ($props['origin'] as $key => $value) {
-                        $output .= $value['html'];
+                if ($text === 'both' || $text === 'origin') {
+                    if (isset($props['origin']) && is_array($props['origin'])) {
+                        foreach ($props['origin'] as $key => $value) {
+                            $output .= $value['html'];
+                        }
+                    }
+                }
+                if ($text === 'both' || $text === 'translation') {
+                    if (isset($props['translation']) && is_array($props['translation'])) {
+                        foreach ($props['translation'] as $key => $value) {
+                            $output .= $value['html'];
+                        }
                     }
                 }
                 break;
