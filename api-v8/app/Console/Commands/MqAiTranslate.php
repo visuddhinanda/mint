@@ -61,7 +61,7 @@ class MqAiTranslate extends Command
             $param = [
                 "model" => $message->model->model,
                 "messages" => [
-                    ["role" => "system", "content" => "你是翻译人工智能助手."],
+                    ["role" => "system", "content" => $message->model->system_prompt],
                     ["role" => "user", "content" => $message->prompt],
                 ],
                 "temperature" => 0.7,
@@ -77,7 +77,7 @@ class MqAiTranslate extends Command
             $modelLog->request_at = now();
             $modelLog->request_data = json_encode($param, JSON_UNESCAPED_UNICODE);
             $response = Http::withToken($message->model->key)
-                ->retry(1, 2000)
+                ->retry(1, 62000)
                 ->post($message->model->url, $param);
             $modelLog->status = $response->status();
             $modelLog->response_data = json_encode($response->json(), JSON_UNESCAPED_UNICODE);
@@ -100,23 +100,26 @@ class MqAiTranslate extends Command
             $token = AuthController::getUserToken($message->model->uid);
             Log::debug('ai assistant token', ['token' => $token]);
 
-            //写入句子库
-            $url = config('app.url') . '/api/v2/sentence';
-            $sentData = [];
-            $message->sentence->content = $responseContent;
-            $sentData[] = $message->sentence;
-            $this->info("upload to {$url}");
-            Log::debug('sentence update http request', ['data' => $sentData]);
-            $response = Http::withToken($token)->post($url, [
-                'sentences' => $sentData,
-            ]);
-            Log::debug('sentence update http response', ['data' => $response->json()]);
-            if ($response->failed()) {
-                $this->error('upload error' . $response->json('message'));
-                Log::error('upload error', ['data' => $response->json()]);
-            } else {
-                $this->info('upload successful');
+            if ($message->task->category === 'translate') {
+                //写入句子库
+                $url = config('app.url') . '/api/v2/sentence';
+                $sentData = [];
+                $message->sentence->content = $responseContent;
+                $sentData[] = $message->sentence;
+                $this->info("upload to {$url}");
+                Log::debug('sentence update http request', ['data' => $sentData]);
+                $response = Http::withToken($token)->post($url, [
+                    'sentences' => $sentData,
+                ]);
+                Log::debug('sentence update http response', ['data' => $response->json()]);
+                if ($response->failed()) {
+                    $this->error('upload error' . $response->json('message'));
+                    Log::error('upload error', ['data' => $response->json()]);
+                } else {
+                    $this->info('upload successful');
+                }
             }
+
             //写入discussion
             #获取句子id
             $sUid = Sentence::where('book_id', $message->sentence->book_id)
@@ -129,7 +132,7 @@ class MqAiTranslate extends Command
             $data = [
                 'res_id' => $sUid,
                 'res_type' => 'sentence',
-                'title' => 'ai 译文',
+                'title' => 'AI ' . $message->task->category,
                 'content' => $responseContent,
                 'content_type' => 'markdown',
                 'type' => 'discussion',
@@ -173,9 +176,6 @@ class MqAiTranslate extends Command
                     $this->info('task status successful ');
                 }
             }
-
-
-            sleep(2);
             return 0;
         });
         return 0;
