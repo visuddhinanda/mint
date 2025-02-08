@@ -64,21 +64,25 @@ class MqAiTranslate extends Command
                     ["role" => "system", "content" => $message->model->system_prompt],
                     ["role" => "user", "content" => $message->prompt],
                 ],
+                'prompt' => $message->prompt,
                 "temperature" => 0.7,
                 "stream" => false
             ];
             $this->info('ai request' . $message->model->url);
+            $this->info('model:' . $param['model']);
             Log::debug('ai api request', [
                 'url' => $message->model->url,
                 'data' => $param
             ]);
             $modelLog->model_id = $message->model->uid;
-            $modelLog->request_url = $message->model->url;
             $modelLog->request_at = now();
             $modelLog->request_data = json_encode($param, JSON_UNESCAPED_UNICODE);
+
             $response = Http::withToken($message->model->key)
-                ->retry(1, 62000)
+                ->retry(0, 120000)
                 ->post($message->model->url, $param);
+            $modelLog->request_headers = json_encode($response->handlerStats(), JSON_UNESCAPED_UNICODE);
+            $modelLog->response_headers = json_encode($response->headers(), JSON_UNESCAPED_UNICODE);
             $modelLog->status = $response->status();
             $modelLog->response_data = json_encode($response->json(), JSON_UNESCAPED_UNICODE);
             if ($response->failed()) {
@@ -93,7 +97,16 @@ class MqAiTranslate extends Command
             $aiData = $response->json();
             Log::debug('http response', ['data' => $response->json()]);
             $responseContent = $aiData['choices'][0]['message']['content'];
-            $this->info('ai content' . $responseContent);
+            if (isset($aiData['choices'][0]['message']['reasoning_content'])) {
+                $reasoningContent = $aiData['choices'][0]['message']['reasoning_content'];
+            }
+
+            $this->info('ai content=' . $responseContent);
+            if (empty($reasoningContent)) {
+                $this->info('no reasoningContent');
+            } else {
+                $this->info('reasoning=' . $reasoningContent);
+            }
 
             //获取model token
             Log::debug('ai assistant token', ['user' => $message->model->uid]);
@@ -133,7 +146,7 @@ class MqAiTranslate extends Command
                 'res_id' => $sUid,
                 'res_type' => 'sentence',
                 'title' => 'AI ' . $message->task->category,
-                'content' => $responseContent,
+                'content' => 'AI ' . $message->task->category,
                 'content_type' => 'markdown',
                 'type' => 'discussion',
             ];
@@ -142,7 +155,30 @@ class MqAiTranslate extends Command
                 $this->error('discussion error' . $response->json('message'));
                 Log::error('discussion error', ['data' => $response->json()]);
             } else {
-                $this->info('discussion successful');
+                $this->info('discussion topic successful');
+            }
+            $data['parent'] = $response->json()['data']['id'];
+            $data['content'] = $responseContent;
+            unset($data['title']);
+            Log::debug('discussion child request', ['url' => $url, 'data' => $data]);
+            $response = Http::withToken($token)->post($url, $data);
+            if ($response->failed()) {
+                $this->error('discussion error' . $response->json('message'));
+                Log::error('discussion error', ['data' => $response->json()]);
+            } else {
+                $this->info('discussion child successful');
+            }
+            //推理过程写入discussion
+            if (isset($reasoningContent) && !empty($reasoningContent)) {
+                $data['content'] = $reasoningContent;
+                Log::debug('discussion child reasoning request', ['url' => $url, 'data' => $data]);
+                $response = Http::withToken($token)->post($url, $data);
+                if ($response->failed()) {
+                    $this->error('discussion child error' . $response->json('message'));
+                    Log::error('discussion child error', ['data' => $response->json()]);
+                } else {
+                    $this->info('discussion child successful');
+                }
             }
             //修改task 完成度
             $taskProgress = $message->task->progress;
