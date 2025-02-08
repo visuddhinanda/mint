@@ -44,6 +44,32 @@ const AiModelLogList = ({ modelId }: IWidget) => {
                 </div>
               );
             };
+            const info = (headers: string, data: string) => {
+              return (
+                <div>
+                  <Text strong>Headers</Text>
+                  <div
+                    style={{
+                      backgroundColor: "rgb(246, 248, 250)",
+                      border: "1px solid gray",
+                      padding: 6,
+                    }}
+                  >
+                    {jsonView(headers)}
+                  </div>
+                  <Text strong>Payload</Text>
+                  <div
+                    style={{
+                      backgroundColor: "rgb(246, 248, 250)",
+                      border: "1px solid gray",
+                      padding: 6,
+                    }}
+                  >
+                    {jsonView(data)}
+                  </div>
+                </div>
+              );
+            };
             return (
               <>
                 <Tabs
@@ -51,12 +77,23 @@ const AiModelLogList = ({ modelId }: IWidget) => {
                     {
                       label: "request",
                       key: "request",
-                      children: jsonView(entity.request_data),
+                      children: (
+                        <div>
+                          {info(entity.request_headers, entity.request_data)}
+                        </div>
+                      ),
                     },
                     {
                       label: "response",
                       key: "response",
-                      children: jsonView(entity.response_data),
+                      children: (
+                        <div>
+                          {info(
+                            entity.response_headers ?? "",
+                            entity.response_data ?? ""
+                          )}
+                        </div>
+                      ),
                     },
                   ]}
                 />

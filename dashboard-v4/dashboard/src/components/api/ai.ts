@@ -81,8 +81,9 @@ export interface IAiModelLogData {
   id: string;
   uid: string;
   model_id: string;
-  request_url: string;
+  request_headers: string;
   request_data: string;
+  response_headers?: string | null;
   response_data?: string | null;
   status: number;
   success: boolean;

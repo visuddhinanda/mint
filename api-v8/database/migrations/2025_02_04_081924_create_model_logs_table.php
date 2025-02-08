@@ -17,8 +17,9 @@ class CreateModelLogsTable extends Migration
             $table->id();
             $table->uuid('uid')->unique();
             $table->uuid('model_id')->index();
-            $table->text('request_url');
+            $table->json('request_headers');
             $table->json('request_data');
+            $table->json('response_headers')->nullable();
             $table->json('response_data')->nullable();
             $table->integer('status')->index();
             $table->boolean('success')->default(true);
