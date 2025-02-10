@@ -79,7 +79,7 @@ class MqAiTranslate extends Command
             $modelLog->request_data = json_encode($param, JSON_UNESCAPED_UNICODE);
 
             $response = Http::withToken($message->model->key)
-                ->retry(0, 120000)
+                ->retry(2, 120000)
                 ->post($message->model->url, $param);
             $modelLog->request_headers = json_encode($response->handlerStats(), JSON_UNESCAPED_UNICODE);
             $modelLog->response_headers = json_encode($response->headers(), JSON_UNESCAPED_UNICODE);
@@ -113,7 +113,7 @@ class MqAiTranslate extends Command
             $token = AuthController::getUserToken($message->model->uid);
             Log::debug('ai assistant token', ['token' => $token]);
 
-            if ($message->task->category === 'translate') {
+            if ($message->task->info->category === 'translate') {
                 //写入句子库
                 $url = config('app.url') . '/api/v2/sentence';
                 $sentData = [];
@@ -145,8 +145,8 @@ class MqAiTranslate extends Command
             $data = [
                 'res_id' => $sUid,
                 'res_type' => 'sentence',
-                'title' => 'AI ' . $message->task->category,
-                'content' => 'AI ' . $message->task->category,
+                'title' => 'AI ' . $message->task->info->title,
+                'content' => 'AI ' . $message->task->info->category,
                 'content_type' => 'markdown',
                 'type' => 'discussion',
             ];
@@ -158,32 +158,32 @@ class MqAiTranslate extends Command
                 $this->info('discussion topic successful');
             }
             $data['parent'] = $response->json()['data']['id'];
-            $data['content'] = $responseContent;
             unset($data['title']);
-            Log::debug('discussion child request', ['url' => $url, 'data' => $data]);
-            $response = Http::withToken($token)->post($url, $data);
-            if ($response->failed()) {
-                $this->error('discussion error' . $response->json('message'));
-                Log::error('discussion error', ['data' => $response->json()]);
-            } else {
-                $this->info('discussion child successful');
-            }
+            $topicChildren = [];
+            //提示词
+            $topicChildren[] = $message->prompt;
+            //任务结果
+            $topicChildren[] = $responseContent;
             //推理过程写入discussion
             if (isset($reasoningContent) && !empty($reasoningContent)) {
-                $data['content'] = $reasoningContent;
-                Log::debug('discussion child reasoning request', ['url' => $url, 'data' => $data]);
+                $topicChildren[] = $reasoningContent;
+            }
+            foreach ($topicChildren as  $content) {
+                $data['content'] = $content;
+                Log::debug('discussion child request', ['url' => $url, 'data' => $data]);
                 $response = Http::withToken($token)->post($url, $data);
                 if ($response->failed()) {
-                    $this->error('discussion child error' . $response->json('message'));
-                    Log::error('discussion child error', ['data' => $response->json()]);
+                    $this->error('discussion error' . $response->json('message'));
+                    Log::error('discussion error', ['data' => $response->json()]);
                 } else {
                     $this->info('discussion child successful');
                 }
             }
+
             //修改task 完成度
             $taskProgress = $message->task->progress;
             $progress = (int)($taskProgress->current * 100 / $taskProgress->total);
-            $url = config('app.url') . '/api/v2/task/' . $message->task->task_id;
+            $url = config('app.url') . '/api/v2/task/' . $message->task->info->id;
             $data = [
                 'progress' => $progress,
             ];
@@ -198,7 +198,7 @@ class MqAiTranslate extends Command
 
             //完成 修改状态
             if ($taskProgress->current === $taskProgress->total) {
-                $url = config('app.url') . '/api/v2/task-status/' . $message->task->task_id;
+                $url = config('app.url') . '/api/v2/task-status/' . $message->task->info->id;
                 $data = [
                     'status' => 'done',
                 ];

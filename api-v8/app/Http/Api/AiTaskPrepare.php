@@ -127,8 +127,7 @@ class AiTaskPrepare
             $aiMqData = [
                 'model' => $aiModel,
                 'task' => [
-                    'task_id' => $taskId,
-                    'category' => $task->category,
+                    'info' => $task,
                     'progress' => [
                         'current' => $sumLen,
                         'total' => $totalLen
