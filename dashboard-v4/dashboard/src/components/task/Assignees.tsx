@@ -18,6 +18,34 @@ const Assignees = ({ task, onChange }: IWidget) => {
     <>
       <EditableAvatarGroup
         users={data ?? undefined}
+        onDelete={async (user: IUser) => {
+          if (!task) {
+            console.error("no task");
+            return;
+          }
+          let users: string[] = [];
+          if (task.assignees_id) {
+            users = task.assignees_id.filter((value) => value !== user.id);
+          }
+          let setting: ITaskUpdateRequest = {
+            id: task.id,
+            studio_name: "",
+            assignees_id: users,
+          };
+          const url = `/v2/task/${setting.id}`;
+          console.info("api request", url, setting);
+          patch<ITaskUpdateRequest, ITaskResponse>(url, setting).then(
+            (json) => {
+              console.info("api response", json);
+              if (json.ok) {
+                message.success("Success");
+                onChange && onChange([json.data]);
+              } else {
+                message.error(json.message);
+              }
+            }
+          );
+        }}
         onFinish={async (values: IDataType) => {
           if (!task) {
             console.error("no task");

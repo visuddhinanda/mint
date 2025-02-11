@@ -22,19 +22,20 @@ export interface IDataType {
 interface IWidget {
   data?: IUser[];
   onFinish?: ((formData: IDataType) => Promise<boolean | void>) | undefined;
+  onDelete?: ((user: IUser) => Promise<boolean | void>) | undefined;
 }
 
-export const WatchAddButton = ({ data, onFinish }: IWidget) => {
+export const WatchAddButton = ({ data, onFinish, onDelete }: IWidget) => {
   return (
     <Popover
       trigger={"click"}
-      content={<WatchAdd data={data} onFinish={onFinish} />}
+      content={<WatchAdd data={data} onFinish={onFinish} onDelete={onDelete} />}
     >
       <Button type="text" icon={<PlusOutlined />} />
     </Popover>
   );
 };
-const WatchAdd = ({ data, onFinish }: IWidget) => {
+const WatchAdd = ({ data, onFinish, onDelete }: IWidget) => {
   const intl = useIntl();
   const formRef = useRef<ProFormInstance>();
   return (
@@ -65,7 +66,7 @@ const WatchAdd = ({ data, onFinish }: IWidget) => {
         </ProForm.Group>
       </ProForm>
       <Divider />
-      <WatchList data={data} />
+      <WatchList data={data} onDelete={onDelete} />
     </div>
   );
 };
