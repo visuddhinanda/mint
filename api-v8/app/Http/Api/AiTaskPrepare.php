@@ -6,7 +6,10 @@ use App\Models\Task;
 use App\Models\PaliText;
 use App\Models\PaliSentence;
 use App\Models\AiModel;
+use App\Models\Sentence;
+
 use App\Http\Api\Mq;
+use App\Http\Api\ChannelApi;
 
 use Illuminate\Support\Facades\Log;
 
@@ -18,7 +21,7 @@ class AiTaskPrepare
      * @param  string  $taskId 任务uuid
      * @return array 拆解后的提示词数组
      */
-    public static function translate(string $taskId)
+    public static function translate(string $taskId, bool $send = true)
     {
         $task = Task::findOrFail($taskId);
         $description = $task->description;
@@ -106,9 +109,8 @@ class AiTaskPrepare
 
         # ai model
         $aiModel = AiModel::findOrFail($task->executor_id);
-
-        $aiPrompts = [];
         $sumLen = 0;
+        $mqData = [];
         foreach ($sentences as $key => $sentence) {
             $sumLen += $sentence['strlen'];
             $sid = implode('-', $sentence['id']);
@@ -118,11 +120,35 @@ class AiTaskPrepare
             $data['translation'] .= '|channel=' . $params['channel'];
             $data['translation'] .= '|text=translation}}';
             if (isset($params['nissaya'])) {
-                $data['nissaya'] = '{{' . $sid . '@' . $params['nissaya'] . '}}';
+                $data['nissaya'] = [];
+                $nissayaChannels = explode(',', $params['nissaya']);
+                foreach ($nissayaChannels as $key => $channel) {
+                    $channelInfo = ChannelApi::getById($channel);
+                    if (!$channelInfo) {
+                        continue;
+                    }
+                    //查看句子是否存在
+                    $nissayaSent = Sentence::where('book_id', $sentence['id'][0])
+                        ->where('paragraph', $sentence['id'][1])
+                        ->where('word_start', $sentence['id'][2])
+                        ->where('word_end', $sentence['id'][3])
+                        ->where('channel_uid', $channel)->first();
+                    if (!$nissayaSent) {
+                        continue;
+                    }
+                    if (empty($nissayaSent->content)) {
+                        continue;
+                    }
+                    $nissayaData = [];
+                    $nissayaData['channel'] = $channelInfo;
+                    $nissayaData['data'] = '{{sent|id=' . $sid;
+                    $nissayaData['data'] .= '|channel=' . $channel;
+                    $nissayaData['data'] .= '|text=translation}}';
+                    $data['nissaya'][] = $nissayaData;
+                }
             }
             $content = $m->render($description, $data);
             $prompt = $mdRender->convert($content, []);
-            $aiPrompts[] = $prompt;
             //gen mq
             $aiMqData = [
                 'model' => $aiModel,
@@ -145,9 +171,11 @@ class AiTaskPrepare
                     'access_token' => $params['token'],
                 ],
             ];
-            Mq::publish('ai_translate', $aiMqData);
+            array_push($mqData, $aiMqData);
+            if ($send) {
+                Mq::publish('ai_translate', $aiMqData);
+            }
         }
-
-        return $aiPrompts;
+        return $mqData;
     }
 }
