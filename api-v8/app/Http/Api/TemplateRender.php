@@ -21,6 +21,8 @@ use App\Http\Api\ChannelApi;
 use App\Http\Api\MdRender;
 use App\Http\Api\PaliTextApi;
 
+use App\Tools\Tools;
+
 class TemplateRender
 {
     protected $param = [];
@@ -559,6 +561,9 @@ class TemplateRender
                 break;
             case 'simple':
                 $output = $pali . '၊' . $meaning;
+                break;
+            case 'prompt':
+                $output = Tools::MyToRm($pali) . ':' . $meaning;
                 break;
             default:
                 $output = $pali . '၊' . $meaning;
