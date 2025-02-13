@@ -62,7 +62,7 @@ RUN echo 'source $HOME/local/python3/bin/activate' >> $HOME/.zshrc
 ADD launch.sh /mint.sh
 RUN echo "$(date -u +%4Y%m%d%H%M%S)" | tee /VERSION
 
-VOLUME /workspace
-WORKDIR /workspace
+VOLUME /srv
+WORKDIR /srv
 
 CMD ["/bin/bash", "-l"]
