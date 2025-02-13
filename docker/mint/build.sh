@@ -9,13 +9,14 @@ if [ "$#" -ne 1 ]; then
 fi
 
 export VERSION=$(date "+%4Y%m%d%H%M%S")
-export CODE="mint-$(uname -m)-$1"
+export CODE="mint-php$1"
+export TAR="$CODE-$(uname -m)"
 
 podman pull ubuntu:latest
 podman build --build-arg PHP_VERSION=$1 -t $CODE .
-podman save --format=oci-archive -o $CODE-$VERSION.tar $CODE
-md5sum $CODE-$VERSION.tar >$CODE-$VERSION.md5
+podman save --format=oci-archive -o $TAR.tar $CODE
+md5sum $TAR.tar >$TAR.md5
 
-echo "done($CODE-$VERSION.tar)."
+echo "done($TAR.tar)."
 
 exit 0
