@@ -2,15 +2,17 @@
 
 set -e
 
-export USAGE="USAGE: $0 fpm"
+export USAGE="USAGE: $0 MINT_VERSION TASK"
 
-if [ "$#" -ne 1 ]; then
+if [ "$#" -ne 2 ]; then
     echo $USAGE
-    exit 1
+    exit 2
 fi
 
-if [ "$1" == "fpm" ]; then
-    echo "start fpm server"
+if [ "$2" == "fpm" ]; then
+    echo "start fpm server($1)"
+elif [ "$1" == "shell" ]; then
+    echo "start $2 for $1"
 else
     echo $USAGE
     exit 1
