@@ -12,6 +12,7 @@ import SentAdd from "./SentAdd";
 import { useAppSelector } from "../../../hooks";
 import { currentUser as _currentUser } from "../../../reducers/current-user";
 import { IChannel } from "../../channel/Channel";
+import { IWbw } from "../Wbw/WbwWord";
 
 export const toISentence = (item: ISentenceData, channelsId?: string[]) => {
   return {
@@ -40,7 +41,7 @@ interface IWidget {
   wordEnd: number;
   type: TChannelType;
   channelsId?: string[];
-  reload?: boolean;
+  origin?: ISentence[];
   onReload?: Function;
   onCreate?: Function;
 }
@@ -51,7 +52,7 @@ const SentCanReadWidget = ({
   wordEnd,
   type,
   channelsId,
-  reload = false,
+  origin,
   onReload,
   onCreate,
 }: IWidget) => {
@@ -66,7 +67,7 @@ const SentCanReadWidget = ({
     if (type === "commentary" || type === "similar") {
       url += channelsId ? `&channels=${channelsId.join()}` : "";
     }
-    console.log("url", url);
+    console.info("ai request", url);
     get<ISentenceListResponse>(url)
       .then((json) => {
         if (json.ok) {
@@ -85,21 +86,13 @@ const SentCanReadWidget = ({
         }
       })
       .finally(() => {
-        if (reload && typeof onReload !== "undefined") {
-          onReload();
-        }
+        onReload && onReload();
       });
   };
 
   useEffect(() => {
     load();
   }, []);
-
-  useEffect(() => {
-    if (reload) {
-      load();
-    }
-  }, [reload]);
 
   return (
     <div>
@@ -158,11 +151,30 @@ const SentCanReadWidget = ({
       />
 
       {sentData.map((item, id) => {
+        let diffText: string | null = null;
+        if (origin) {
+          diffText = origin[0].html;
+          if (origin[0].contentType === "json" && origin[0].content) {
+            const wbw = JSON.parse(origin[0].content) as IWbw[];
+            diffText = wbw
+              .map(
+                (item) =>
+                  `${item.word.value
+                    .replaceAll("{", "**")
+                    .replaceAll("}", "**")}`
+              )
+              .join(" ");
+          }
+          console.debug("origin", origin);
+        }
+
         return (
           <SentCell
             value={item}
             key={id}
             isPr={false}
+            diffText={diffText}
+            showDiff={origin ? true : false}
             editMode={item.openInEditMode}
             onChange={(value: ISentence) => {
               console.debug("onChange", value);
