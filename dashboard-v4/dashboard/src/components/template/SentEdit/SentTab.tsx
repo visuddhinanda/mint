@@ -15,7 +15,7 @@ import { IWbw } from "../Wbw/WbwWord";
 import RelaGraphic from "../Wbw/RelaGraphic";
 import SentMenu from "./SentMenu";
 import { ArticleMode } from "../../article/Article";
-import { IResNumber } from "../SentEdit";
+import { IResNumber, ISentence } from "../SentEdit";
 import SentTabCopy from "./SentTabCopy";
 import { fullUrl } from "../../../utils";
 import SentWbw from "./SentWbw";
@@ -42,6 +42,7 @@ interface IWidget {
   compact?: boolean;
   mode?: ArticleMode;
   loadedRes?: IResNumber;
+  origin?: ISentence[];
   onMagicDict?: Function;
   onCompact?: Function;
   onModeChange?: Function;
@@ -65,6 +66,7 @@ const SentTabWidget = ({
   compact = false,
   mode,
   loadedRes,
+  origin,
   onMagicDict,
   onCompact,
   onModeChange,
@@ -148,7 +150,7 @@ const SentTabWidget = ({
             }}
             onMenuClick={(key: string) => {
               switch (key) {
-                case "compact" || "normal":
+                case "compact":
                   if (typeof onCompact !== "undefined") {
                     setIsCompact(true);
                     onCompact(true);
@@ -304,29 +306,30 @@ const SentTabWidget = ({
             />
           ),
         },
-        /*{
-            label: (
-              <SentTabButton
-                icon={<BlockOutlined />}
-                type="original"
-                sentId={id}
-                count={originNum}
-                title={intl.formatMessage({
-                  id: "channel.type.original.label",
-                })}
-              />
-            ),
-            key: "original",
-            children: (
-              <SentCanRead
-                book={parseInt(sId[0])}
-                para={parseInt(sId[1])}
-                wordStart={parseInt(sId[2])}
-                wordEnd={parseInt(sId[3])}
-                type="original"
-              />
-            ),
-          },*/
+        {
+          label: (
+            <SentTabButton
+              icon={<BlockOutlined />}
+              type="original"
+              sentId={id}
+              count={originNum}
+              title={intl.formatMessage({
+                id: "channel.type.original.label",
+              })}
+            />
+          ),
+          key: "original",
+          children: (
+            <SentCanRead
+              book={parseInt(sId[0])}
+              para={parseInt(sId[1])}
+              wordStart={parseInt(sId[2])}
+              wordEnd={parseInt(sId[3])}
+              type="original"
+              origin={origin}
+            />
+          ),
+        },
         {
           label: (
             <SentTabButton
