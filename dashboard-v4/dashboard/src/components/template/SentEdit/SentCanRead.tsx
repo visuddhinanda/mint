@@ -156,7 +156,17 @@ const SentCanReadWidget = ({
           diffText = origin[0].html;
           if (origin[0].contentType === "json" && origin[0].content) {
             const wbw = JSON.parse(origin[0].content) as IWbw[];
+            console.debug("wbw data", wbw);
             diffText = wbw
+              .filter((value) => {
+                if (value.style && value.style.value === "note") {
+                  return false;
+                } else if (value.type && value.type.value === ".ctl.") {
+                  return false;
+                } else {
+                  return true;
+                }
+              })
               .map(
                 (item) =>
                   `${item.word.value
