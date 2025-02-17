@@ -114,6 +114,7 @@ use App\Http\Controllers\SearchWordSliceController;
 use App\Http\Controllers\AiModelController;
 use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\ModelLogController;
+use App\Http\Controllers\SentenceAttachmentController;
 
 
 
@@ -285,4 +286,5 @@ Route::group(['prefix' => 'v2'], function () {
     Route::apiResource('ai-model', AiModelController::class);
     Route::apiResource('ai-assistant', AiAssistantController::class);
     Route::apiResource('model-log', ModelLogController::class);
+    Route::apiResource('sentence-attachment', SentenceAttachmentController::class);
 });
