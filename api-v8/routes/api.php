@@ -112,6 +112,9 @@ use App\Http\Controllers\PaliBookCategoryController;
 use App\Http\Controllers\AccessTokenController;
 use App\Http\Controllers\SearchWordSliceController;
 use App\Http\Controllers\AiModelController;
+use App\Http\Controllers\AiAssistantController;
+use App\Http\Controllers\ModelLogController;
+use App\Http\Controllers\EmailCertificationController;
 
 
 
@@ -281,4 +284,7 @@ Route::group(['prefix' => 'v2'], function () {
     Route::apiResource('access-token', AccessTokenController::class);
     Route::apiResource('search-word-slice', SearchWordSliceController::class);
     Route::apiResource('ai-model', AiModelController::class);
+    Route::apiResource('ai-assistant', AiAssistantController::class);
+    Route::apiResource('model-log', ModelLogController::class);
+    Route::apiResource('email-certification', EmailCertificationController::class);
 });

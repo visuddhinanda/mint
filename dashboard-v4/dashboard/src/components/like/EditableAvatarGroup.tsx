@@ -6,11 +6,15 @@ import { IDataType, WatchAddButton } from "./WatchAdd";
 interface IWidget {
   users?: IUser[];
   onFinish?: ((formData: IDataType) => Promise<boolean | void>) | undefined;
+  onDelete?: ((user: IUser) => Promise<boolean | void>) | undefined;
 }
-const EditableAvatarGroup = ({ users, onFinish }: IWidget) => {
+const EditableAvatarGroup = ({ users, onFinish, onDelete }: IWidget) => {
   return (
     <Space>
-      <Popover trigger={"click"} content={<WatchList data={users} />}>
+      <Popover
+        trigger={"click"}
+        content={<WatchList data={users} onDelete={onDelete} />}
+      >
         <div>
           {users?.map((item, id) => {
             return (
@@ -24,7 +28,7 @@ const EditableAvatarGroup = ({ users, onFinish }: IWidget) => {
           })}
         </div>
       </Popover>
-      <WatchAddButton data={users} onFinish={onFinish} />
+      <WatchAddButton data={users} onFinish={onFinish} onDelete={onDelete} />
     </Space>
   );
 };

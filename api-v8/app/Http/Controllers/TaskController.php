@@ -211,7 +211,7 @@ class TaskController extends Controller
         if (!$user) {
             return $this->error(__('auth.failed'), 401, 401);
         }
-        if (!self::canEdit($user['user_uid'], $task->owner_id)) {
+        if (!self::canUpdate($user['user_uid'], $task)) {
             return $this->error(__('auth.failed'), 403, 403);
         }
         if ($request->has('title')) {
@@ -222,6 +222,9 @@ class TaskController extends Controller
         }
         if ($request->has('category')) {
             $task->category = $request->get('category');
+        }
+        if ($request->has('progress')) {
+            $task->progress = $request->get('progress');
         }
         if ($request->has('assignees_id')) {
             $delete = TaskAssignee::where('task_id', $task->id)->delete();
@@ -304,5 +307,30 @@ class TaskController extends Controller
     public static function canEdit($user_uid, $owner_uid)
     {
         return $user_uid === $owner_uid;
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  string  $user_uid
+     * @param  Task $task
+     * @return boolean
+     */
+    public static function canUpdate($user_uid, $task)
+    {
+        if ($user_uid === $task->owner_id) {
+            return true;
+        }
+        if ($user_uid === $task->executor_id) {
+            return true;
+        }
+        if (TaskAssignee::where('task_id', $task->id)
+            ->where('assignee_id', $user_uid)
+            ->exists()
+        ) {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -83,6 +83,7 @@ const items = {
   "labels.task.category.team": "术语",
   "labels.task.category.review": "审稿",
   "labels.task.category.proofread": "proofread",
+  "labels.ai-assistant": "人工智能助手",
 };
 
 export default items;

@@ -21,6 +21,8 @@ use App\Http\Api\ChannelApi;
 use App\Http\Api\MdRender;
 use App\Http\Api\PaliTextApi;
 
+use App\Tools\Tools;
+
 class TemplateRender
 {
     protected $param = [];
@@ -560,6 +562,9 @@ class TemplateRender
             case 'simple':
                 $output = $pali . '၊' . $meaning;
                 break;
+            case 'prompt':
+                $output = Tools::MyToRm($pali) . ':' . $meaning;
+                break;
             default:
                 $output = $pali . '၊' . $meaning;
                 break;
@@ -608,7 +613,6 @@ class TemplateRender
     }
     private  function render_article()
     {
-
         $type = $this->get_param($this->param, "type", 1);
         $id = $this->get_param($this->param, "id", 2);
         $title = $this->get_param($this->param, "title", 3);
@@ -1006,9 +1010,18 @@ class TemplateRender
                 break;
             case 'prompt':
                 $output = '';
-                if (isset($props['origin']) && is_array($props['origin'])) {
-                    foreach ($props['origin'] as $key => $value) {
-                        $output .= $value['html'];
+                if ($text === 'both' || $text === 'origin') {
+                    if (isset($props['origin']) && is_array($props['origin'])) {
+                        foreach ($props['origin'] as $key => $value) {
+                            $output .= $value['html'];
+                        }
+                    }
+                }
+                if ($text === 'both' || $text === 'translation') {
+                    if (isset($props['translation']) && is_array($props['translation'])) {
+                        foreach ($props['translation'] as $key => $value) {
+                            $output .= $value['html'];
+                        }
                     }
                 }
                 break;

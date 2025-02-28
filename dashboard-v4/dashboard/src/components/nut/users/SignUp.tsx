@@ -19,7 +19,7 @@ import {
   ISignUpRequest,
 } from "../../api/Auth";
 
-interface IFormData {
+export interface IAccountForm {
   email: string;
   username: string;
   nickname: string;
@@ -27,88 +27,31 @@ interface IFormData {
   password2: string;
   lang: string;
 }
-
-interface IWidget {
-  token?: string;
+interface IAccountInfo {
+  email?: boolean;
 }
-const SignUpWidget = ({ token }: IWidget) => {
+export const AccountInfo = ({ email = true }: IAccountInfo) => {
   const intl = useIntl();
-  const navigate = useNavigate();
-  const [success, setSuccess] = useState(false);
   const [nickname, setNickname] = useState<string>();
-  const formRef = useRef<ProFormInstance>();
-  return success ? (
-    <Result
-      status="success"
-      title="注册成功"
-      subTitle={
-        <Button
-          type="primary"
-          onClick={() => navigate("/anonymous/users/sign-in")}
-        >
-          {intl.formatMessage({
-            id: "nut.users.sign-up.title",
-          })}
-        </Button>
-      }
-    />
-  ) : (
-    <ProForm<IFormData>
-      formRef={formRef}
-      onFinish={async (values: IFormData) => {
-        if (typeof token === "undefined") {
-          return;
-        }
-        if (values.password !== values.password2) {
-          Modal.error({ title: "两次密码不同" });
-          return;
-        }
-        const user = {
-          token: token,
-          username: values.username,
-          nickname: values.nickname ? values.nickname : values.username,
-          email: values.email,
-          password: values.password,
-          lang: values.lang,
-        };
-        const signUp = await post<ISignUpRequest, ISignInResponse>(
-          "/v2/sign-up",
-          user
-        );
-        if (signUp.ok) {
-          setSuccess(true);
-        } else {
-          message.error(signUp.message);
-        }
-      }}
-      request={async () => {
-        const url = `/v2/invite/${token}`;
-        console.info("api request", url);
-        const res = await get<IInviteResponse>(url);
-        console.debug("api response", res.data);
-        return {
-          id: res.data.id,
-          username: "",
-          nickname: "",
-          password: "",
-          password2: "",
-          email: res.data.email,
-          lang: "zh-Hans",
-        };
-      }}
-    >
-      <ProForm.Group>
-        <ProFormText
-          width="md"
-          name="email"
-          required
-          label={intl.formatMessage({
-            id: "forms.fields.email.label",
-          })}
-          rules={[{ required: true, max: 255, min: 4 }]}
-          disabled
-        />
-      </ProForm.Group>
+
+  return (
+    <>
+      {email ? (
+        <ProForm.Group>
+          <ProFormText
+            width="md"
+            name="email"
+            required
+            label={intl.formatMessage({
+              id: "forms.fields.email.label",
+            })}
+            rules={[{ required: true, max: 255, min: 4 }]}
+            disabled
+          />
+        </ProForm.Group>
+      ) : (
+        <></>
+      )}
       <ProForm.Group>
         <ProFormText
           width="md"
@@ -188,10 +131,99 @@ const SignUpWidget = ({ token }: IWidget) => {
           }}
         </ProFormDependency>
       </ProForm.Group>
-
       <ProForm.Group>
         <LangSelect label="常用的译文语言" />
       </ProForm.Group>
+    </>
+  );
+};
+
+export const SignUpSuccess = () => {
+  const intl = useIntl();
+  const navigate = useNavigate();
+  return (
+    <Result
+      status="success"
+      title="注册成功"
+      subTitle={
+        <Button
+          type="primary"
+          onClick={() => navigate("/anonymous/users/sign-in")}
+        >
+          {intl.formatMessage({
+            id: "nut.users.sign-in.title",
+          })}
+        </Button>
+      }
+    />
+  );
+};
+export const onSignIn = async (token: string, values: IAccountForm) => {
+  if (values.password !== values.password2) {
+    Modal.error({ title: "两次密码不同" });
+    return false;
+  }
+  const url = "/v2/sign-up";
+  const data = {
+    token: token,
+    username: values.username,
+    nickname:
+      values.nickname && values.nickname.trim() !== ""
+        ? values.nickname
+        : values.username,
+    email: values.email,
+    password: values.password,
+    lang: values.lang,
+  };
+  console.info("api request", url, data);
+  const signUp = await post<ISignUpRequest, ISignInResponse>(
+    "/v2/sign-up",
+    data
+  );
+  console.info("api response", signUp);
+  return signUp;
+};
+interface IWidget {
+  token?: string;
+}
+const SignUpWidget = ({ token }: IWidget) => {
+  const [success, setSuccess] = useState(false);
+  const formRef = useRef<ProFormInstance>();
+  return success ? (
+    <SignUpSuccess />
+  ) : (
+    <ProForm<IAccountForm>
+      formRef={formRef}
+      onFinish={async (values: IAccountForm) => {
+        if (typeof token === "undefined") {
+          return;
+        }
+        const signUp = await onSignIn(token, values);
+        if (signUp) {
+          if (signUp.ok) {
+            setSuccess(true);
+          } else {
+            message.error(signUp.message);
+          }
+        }
+      }}
+      request={async () => {
+        const url = `/v2/invite/${token}`;
+        console.info("api request", url);
+        const res = await get<IInviteResponse>(url);
+        console.debug("api response", res.data);
+        return {
+          id: res.data.id,
+          username: "",
+          nickname: "",
+          password: "",
+          password2: "",
+          email: res.data.email,
+          lang: "zh-Hans",
+        };
+      }}
+    >
+      <AccountInfo />
     </ProForm>
   );
 };

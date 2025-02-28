@@ -6,9 +6,11 @@ use Illuminate\Console\Command;
 use App\Http\Api\Mq;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
-use App\Http\Api\UserApi;
-use App\Http\Controllers\AuthController;
+use Illuminate\Support\Str;
 
+use App\Http\Controllers\AuthController;
+use App\Models\Sentence;
+use App\Models\ModelLog;
 
 class MqAiTranslate extends Command
 {
@@ -51,46 +53,165 @@ class MqAiTranslate extends Command
         $this->info(" [*] Waiting for {$queue}. To exit press CTRL+C");
         Log::debug("mq:progress start.");
         Mq::worker($exchange, $queue, function ($message) {
+            Log::debug('start', ['message' => $message]);
+            //写入 model log
+            $modelLog = new ModelLog();
+            $modelLog->uid = Str::uuid();
 
             $param = [
                 "model" => $message->model->model,
                 "messages" => [
-                    ["role" => "system", "content" => "你是翻译人工智能助手.bhikkhu 为专有名词，不可翻译成其他语言。"],
-                    ["role" => "user", "content" => $message->content],
+                    ["role" => "system", "content" => $message->model->system_prompt],
+                    ["role" => "user", "content" => $message->prompt],
                 ],
-                "temperature" => 0.3,
+                'prompt' => $message->prompt,
+                "temperature" => 0.7,
                 "stream" => false
             ];
-            $response = Http::withToken($message->model->token)
-                ->retry(2, 1000)
+            $this->info('ai request' . $message->model->url);
+            $this->info('model:' . $param['model']);
+            Log::debug('ai api request', [
+                'url' => $message->model->url,
+                'data' => $param
+            ]);
+            $modelLog->model_id = $message->model->uid;
+            $modelLog->request_at = now();
+            $modelLog->request_data = json_encode($param, JSON_UNESCAPED_UNICODE);
+
+            $response = Http::withToken($message->model->key)
+                ->retry(2, 120000)
                 ->post($message->model->url, $param);
+            $modelLog->request_headers = json_encode($response->handlerStats(), JSON_UNESCAPED_UNICODE);
+            $modelLog->response_headers = json_encode($response->headers(), JSON_UNESCAPED_UNICODE);
+            $modelLog->status = $response->status();
+            $modelLog->response_data = json_encode($response->json(), JSON_UNESCAPED_UNICODE);
             if ($response->failed()) {
+                $modelLog->success = false;
+                $modelLog->save();
                 $this->error('http response error' . $response->json('message'));
                 Log::error('http response error', ['data' => $response->json()]);
                 return 1;
             }
+            $modelLog->save();
+            $this->info('log saved');
             $aiData = $response->json();
             Log::debug('http response', ['data' => $response->json()]);
+            $responseContent = $aiData['choices'][0]['message']['content'];
+            if (isset($aiData['choices'][0]['message']['reasoning_content'])) {
+                $reasoningContent = $aiData['choices'][0]['message']['reasoning_content'];
+            }
 
-            //获取ai帐号的用户token
-            $user = UserApi::getByName(config('mint.ai.assistant'));
-            $token = AuthController::getUserToken($user['id']);
-            Log::debug('ai assistant token', [
-                'user' => $user,
-                'token' => $token
-            ]);
+            $this->info('ai content=' . $responseContent);
+            if (empty($reasoningContent)) {
+                $this->info('no reasoningContent');
+            } else {
+                $this->info('reasoning=' . $reasoningContent);
+            }
 
-            //写入句子库
-            $url = '/v2/sentence';
-            $sentData = [];
-            $sentData[] = $message->sentence;
-            $response = Http::withToken($token)->post($url, [
-                'sentences' => $sentData,
-            ]);
-            Log::debug('sentence update http response', ['data' => $response->json()]);
-            //写入task log
+            //获取model token
+            Log::debug('ai assistant token', ['user' => $message->model->uid]);
+            $token = AuthController::getUserToken($message->model->uid);
+            Log::debug('ai assistant token', ['token' => $token]);
+
+            if ($message->task->info->category === 'translate') {
+                //写入句子库
+                $url = config('app.url') . '/api/v2/sentence';
+                $sentData = [];
+                $message->sentence->content = $responseContent;
+                $sentData[] = $message->sentence;
+                $this->info("upload to {$url}");
+                Log::debug('sentence update http request', ['data' => $sentData]);
+                $response = Http::withToken($token)->post($url, [
+                    'sentences' => $sentData,
+                ]);
+                Log::debug('sentence update http response', ['data' => $response->json()]);
+                if ($response->failed()) {
+                    $this->error('upload error' . $response->json('message'));
+                    Log::error('upload error', ['data' => $response->json()]);
+                } else {
+                    $this->info('upload successful');
+                }
+            }
+
+            //写入discussion
+            #获取句子id
+            $sUid = Sentence::where('book_id', $message->sentence->book_id)
+                ->where('paragraph', $message->sentence->paragraph)
+                ->where('word_start', $message->sentence->word_start)
+                ->where('word_end', $message->sentence->word_end)
+                ->where('channel_uid', $message->sentence->channel_uid)
+                ->value('uid');
+            $url = config('app.url') . '/api/v2/discussion';
+            $data = [
+                'res_id' => $sUid,
+                'res_type' => 'sentence',
+                'title' => 'AI ' . $message->task->info->title,
+                'content' => 'AI ' . $message->task->info->category,
+                'content_type' => 'markdown',
+                'type' => 'discussion',
+            ];
+            $response = Http::withToken($token)->post($url, $data);
+            if ($response->failed()) {
+                $this->error('discussion error' . $response->json('message'));
+                Log::error('discussion error', ['data' => $response->json()]);
+            } else {
+                $this->info('discussion topic successful');
+            }
+            $data['parent'] = $response->json()['data']['id'];
+            unset($data['title']);
+            $topicChildren = [];
+            //提示词
+            $topicChildren[] = $message->prompt;
+            //任务结果
+            $topicChildren[] = $responseContent;
+            //推理过程写入discussion
+            if (isset($reasoningContent) && !empty($reasoningContent)) {
+                $topicChildren[] = $reasoningContent;
+            }
+            foreach ($topicChildren as  $content) {
+                $data['content'] = $content;
+                Log::debug('discussion child request', ['url' => $url, 'data' => $data]);
+                $response = Http::withToken($token)->post($url, $data);
+                if ($response->failed()) {
+                    $this->error('discussion error' . $response->json('message'));
+                    Log::error('discussion error', ['data' => $response->json()]);
+                } else {
+                    $this->info('discussion child successful');
+                }
+            }
+
             //修改task 完成度
+            $taskProgress = $message->task->progress;
+            $progress = (int)($taskProgress->current * 100 / $taskProgress->total);
+            $url = config('app.url') . '/api/v2/task/' . $message->task->info->id;
+            $data = [
+                'progress' => $progress,
+            ];
+            Log::debug('task progress request', ['url' => $url, 'data' => $data]);
+            $response = Http::withToken($token)->patch($url, $data);
+            if ($response->failed()) {
+                $this->error('task progress error' . $response->json('message'));
+                Log::error('task progress error', ['data' => $response->json()]);
+            } else {
+                $this->info('task progress successful progress=' . $response->json()['data']['progress']);
+            }
 
+            //完成 修改状态
+            if ($taskProgress->current === $taskProgress->total) {
+                $url = config('app.url') . '/api/v2/task-status/' . $message->task->info->id;
+                $data = [
+                    'status' => 'done',
+                ];
+                Log::debug('task status request', ['url' => $url, 'data' => $data]);
+                $response = Http::withToken($token)->patch($url, $data);
+                //判断状态码
+                if ($response->failed()) {
+                    $this->error('task status error' . $response->json('message'));
+                    Log::error('task status error', ['data' => $response->json()]);
+                } else {
+                    $this->info('task status successful ');
+                }
+            }
             return 0;
         });
         return 0;

@@ -220,6 +220,15 @@ const AiModelList = ({ studioName }: IWidget) => {
               return <PublicityIcon value={entity.privacy} />;
             },
           },
+          actions: {
+            render(dom, entity, index, action, schema) {
+              return (
+                <Link to={`/studio/${studioName}/ai/models/${entity.uid}/logs`}>
+                  logs
+                </Link>
+              );
+            },
+          },
         }}
         request={async (params = {}, sorter, filter) => {
           console.log(params, sorter, filter);

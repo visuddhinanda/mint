@@ -51,6 +51,7 @@ export interface ITaskData {
   title: string;
   description?: string | null;
   category?: TTaskCategory | null;
+  progress?: number;
   html?: string | null;
   type: TTaskType;
   order?: number;
