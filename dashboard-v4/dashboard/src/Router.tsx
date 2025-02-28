@@ -195,8 +195,8 @@ const Widget = () => {
         <Route path="anonymous" element={<Anonymous />}>
           <Route path="users">
             <Route path="sign-in" element={<NutUsersSignIn />} />
+            <Route path="sign-up" element={<UsersSignUp />} />
             <Route path="sign-up/:token" element={<NutUsersSignUp />} />
-
             <Route path="unlock">
               <Route path="new" element={<NutUsersUnlockNew />} />
               <Route path="verify/:token" element={<NutUsersUnlockVerify />} />
