@@ -1,19 +1,33 @@
 import { useRef, useState } from "react";
 import { useIntl } from "react-intl";
-import { Alert, Button, Result, message } from "antd";
+import { Alert, Button, message } from "antd";
 import type { ProFormInstance } from "@ant-design/pro-components";
 import {
   CheckCard,
   ProForm,
+  ProFormCaptcha,
   ProFormCheckbox,
   ProFormText,
   StepsForm,
 } from "@ant-design/pro-components";
 
-import { post } from "../../request";
-import { IInviteRequest, IInviteResponse } from "../api/Auth";
+import { MailOutlined, LockOutlined } from "@ant-design/icons";
+
+import { get, post } from "../../request";
+import {
+  IEmailCertificationResponse,
+  IInviteData,
+  IInviteRequest,
+  IInviteResponse,
+} from "../api/Auth";
 import { dashboardBasePath } from "../../utils";
 import { get as getUiLang } from "../../locales";
+import {
+  AccountInfo,
+  IAccountForm,
+  onSignIn,
+  SignUpSuccess,
+} from "../nut/users/SignUp";
 
 interface IFormData {
   email: string;
@@ -25,6 +39,7 @@ const SingUpWidget = () => {
   const formRef = useRef<ProFormInstance>();
   const [error, setError] = useState<string>();
   const [agree, setAgree] = useState(false);
+  const [invite, setInvite] = useState<IInviteData>();
   return (
     <StepsForm<IFormData>
       formRef={formRef}
@@ -46,7 +61,7 @@ const SingUpWidget = () => {
                 {"下一步"}
               </Button>
             );
-          } else if (props.step === 2) {
+          } else if (props.step === 3) {
             return <></>;
           } else {
             return dom;
@@ -85,8 +100,8 @@ const SingUpWidget = () => {
                 <div>✅经文阅读</div>
                 <div>✅字典</div>
                 <div>✅经文搜索</div>
-                <div>❌课程</div>
                 <div>❌翻译</div>
+                <div>❌参加课程</div>
               </div>
             }
             value="B"
@@ -142,29 +157,31 @@ const SingUpWidget = () => {
       </StepsForm.StepForm>
 
       <StepsForm.StepForm<{
-        checkbox: string;
+        email: string;
+        captcha: number;
       }>
         name="checkbox"
         title={intl.formatMessage({ id: "auth.sign-up.email-certification" })}
         stepProps={{
           description: " ",
         }}
-        onFinish={async () => {
-          const values = formRef.current?.getFieldsValue();
-          const url = `/v2/invite`;
-          const data: IInviteRequest = {
-            email: values.email,
-            lang: getUiLang(),
-            subject: intl.formatMessage({ id: "labels.email.sign-up.subject" }),
-            studio: "",
-            dashboard: dashboardBasePath(),
-          };
-          console.info("api request", values);
+        onFinish={async (value) => {
+          if (!invite) {
+            message.error("无效的id");
+            return false;
+          }
+          const url = `/v2/email-certification/${invite?.id}`;
+          console.info("api request email-certification", url);
           try {
-            const res = await post<IInviteRequest, IInviteResponse>(url, data);
+            const res = await get<IEmailCertificationResponse>(url);
             console.debug("api response", res);
             if (res.ok) {
-              message.success(intl.formatMessage({ id: "flashes.success" }));
+              if (res.data === value.captcha) {
+                message.success(intl.formatMessage({ id: "flashes.success" }));
+              } else {
+                setError("验证码不正确");
+              }
+              //建立账号
             } else {
               setError(intl.formatMessage({ id: `error.${res.message}` }));
             }
@@ -178,10 +195,13 @@ const SingUpWidget = () => {
         {error ? <Alert type="error" message={error} /> : undefined}
         <ProForm.Group>
           <ProFormText
-            width="md"
+            fieldProps={{
+              size: "large",
+              prefix: <MailOutlined />,
+            }}
             name="email"
             required
-            label={intl.formatMessage({ id: "forms.fields.email.label" })}
+            placeholder={intl.formatMessage({ id: "forms.fields.email.label" })}
             rules={[
               {
                 required: true,
@@ -190,17 +210,105 @@ const SingUpWidget = () => {
             ]}
           />
         </ProForm.Group>
+        <ProForm.Group>
+          <ProFormCaptcha
+            fieldProps={{
+              size: "large",
+              prefix: <LockOutlined />,
+            }}
+            captchaProps={{
+              size: "large",
+            }}
+            placeholder={"请输入验证码"}
+            captchaTextRender={(timing, count) => {
+              if (timing) {
+                return `${count} ${"获取验证码"}`;
+              }
+              return "获取验证码";
+            }}
+            name="captcha"
+            rules={[
+              {
+                required: true,
+                message: "请输入验证码！",
+              },
+            ]}
+            onGetCaptcha={async () => {
+              const values = formRef.current?.getFieldsValue();
+              const url = `/v2/email-certification`;
+              const data: IInviteRequest = {
+                email: values.email,
+                lang: getUiLang(),
+                subject: intl.formatMessage({
+                  id: "labels.email.sign-up.subject",
+                }),
+                studio: "",
+                dashboard: dashboardBasePath(),
+              };
+              console.info("api request", values);
+              try {
+                const res = await post<IInviteRequest, IInviteResponse>(
+                  url,
+                  data
+                );
+                console.debug("api response", res);
+                if (res.ok) {
+                  setInvite(res.data);
+                  message.success(
+                    "邮件发送成功，请登录此邮箱查收邮件,并将邮件中的验证码填入。"
+                  );
+                } else {
+                  setError(intl.formatMessage({ id: `error.${res.message}` }));
+                  message.error("邮件发送失败");
+                }
+              } catch (error) {
+                setError(error as string);
+                message.error("邮件发送失败");
+              }
+            }}
+          />
+        </ProForm.Group>
       </StepsForm.StepForm>
-
+      <StepsForm.StepForm<IAccountForm>
+        name="info"
+        title={intl.formatMessage({ id: "auth.sign-up.info" })}
+        onFinish={async (values: IAccountForm) => {
+          if (typeof invite === "undefined") {
+            return false;
+          }
+          values.email = invite.email;
+          const signUp = await onSignIn(invite.id, values);
+          if (signUp) {
+            if (signUp.ok) {
+              return true;
+            } else {
+              message.error(signUp.message);
+              return false;
+            }
+          } else {
+            return false;
+          }
+        }}
+        request={async () => {
+          console.debug("account info", invite);
+          return {
+            id: invite ? invite.id : "",
+            username: "",
+            nickname: "",
+            password: "",
+            password2: "",
+            email: invite ? invite.email : "",
+            lang: "zh-Hant",
+          };
+        }}
+      >
+        <AccountInfo email={false} />
+      </StepsForm.StepForm>
       <StepsForm.StepForm
         name="finish"
         title={intl.formatMessage({ id: "labels.done" })}
       >
-        <Result
-          status="success"
-          title="注册邮件已经成功发送"
-          subTitle="请查收邮件，根据提示完成注册。"
-        />
+        <SignUpSuccess />
       </StepsForm.StepForm>
     </StepsForm>
   );
