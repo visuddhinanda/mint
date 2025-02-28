@@ -1,7 +1,7 @@
 import { useIntl } from "react-intl";
 import { ProForm, ProFormText } from "@ant-design/pro-components";
 import { Alert, message } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
 
 import { useAppDispatch } from "../../../hooks";
@@ -32,6 +32,7 @@ const Widget = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [error, setError] = useState<string>();
+  const [searchParams] = useSearchParams();
 
   return (
     <>
@@ -52,7 +53,17 @@ const Widget = () => {
             get<IUserResponse>("/v2/auth/current").then((json) => {
               if (json.ok) {
                 dispatch(signIn([json.data, res.data]));
-                navigate(TO_HOME);
+                let url: string | null = null;
+                searchParams.forEach((value, key) => {
+                  if (key === "url") {
+                    url = value;
+                  }
+                });
+                if (url) {
+                  window.location.href = atob(url);
+                } else {
+                  navigate(TO_HOME);
+                }
               } else {
                 setError("用户名或密码错误");
                 console.error(json.message);
