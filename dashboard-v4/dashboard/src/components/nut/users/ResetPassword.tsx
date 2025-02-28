@@ -12,6 +12,7 @@ import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { RuleObject } from "antd/lib/form";
 import { StoreValue } from "antd/lib/form/interface";
+import LoginButton from "../../auth/LoginButton";
 
 interface IFormData {
   username: string;
@@ -58,15 +59,7 @@ const Widget = ({ token }: IWidget) => {
           message={notify}
           type={type}
           showIcon
-          action={
-            ok ? (
-              <Link to={"/anonymous/users/sign-in"}>
-                {intl.formatMessage({
-                  id: "buttons.sign-in",
-                })}
-              </Link>
-            ) : undefined
-          }
+          action={ok ? <LoginButton /> : undefined}
         />
       ) : (
         <></>

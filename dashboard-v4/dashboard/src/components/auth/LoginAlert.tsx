@@ -4,6 +4,7 @@ import { Alert } from "antd";
 
 import { useAppSelector } from "../../hooks";
 import { isGuest } from "../../reducers/current-user";
+import LoginButton from "./LoginButton";
 
 const LoginAlertWidget = () => {
   const intl = useIntl();
@@ -16,13 +17,7 @@ const LoginAlertWidget = () => {
       })}
       type="warning"
       closable
-      action={
-        <Link to="/anonymous/users/sign-in">
-          {intl.formatMessage({
-            id: "buttons.sign-in",
-          })}
-        </Link>
-      }
+      action={<LoginButton />}
     />
   ) : (
     <></>
