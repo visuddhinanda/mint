@@ -2,9 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Invite;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
@@ -20,15 +18,15 @@ class InviteMail extends Mailable
      *
      * @return void
      */
-    public function __construct(string $uuid,string $subject='wikipali invite email',string $lang='en-US',string $dashboard=null)
+    public function __construct(string $uuid, string $subject = 'wikipali invite email', string $lang = 'en-US', string $dashboard = null)
     {
         //
         $this->uuid = $uuid;
         $this->lang = $lang;
         $this->subject($subject);
-        if($dashboard && !empty($dashboard)){
+        if ($dashboard && !empty($dashboard)) {
             $this->dashboard_url = $dashboard;
-        }else{
+        } else {
             $this->dashboard_url = config('mint.server.dashboard_base_path');
         }
     }
@@ -41,9 +39,9 @@ class InviteMail extends Mailable
     public function build()
     {
 
-        return $this->view('emails.invite.'.$this->lang)
-                    ->with([
-                        'url' => $this->dashboard_url.'/anonymous/users/sign-up/'.$this->uuid,
-                    ]);
+        return $this->view('emails.invite.' . $this->lang)
+            ->with([
+                'url' => $this->dashboard_url . '/anonymous/users/sign-up/' . $this->uuid,
+            ]);
     }
 }

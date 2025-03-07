@@ -13,6 +13,7 @@ const items = {
   "auth.type.user": "user",
   "auth.type.group": "group",
   "auth.sign-up.email-certification": "E-Mail certification",
+  "auth.sign-up.info": "完善个人信息",
 };
 
 export default items;

@@ -9,7 +9,7 @@ const Widget = () => {
     <div>
       <Card
         title={intl.formatMessage({
-          id: "nut.users.sign-up.title",
+          id: "nut.users.sign-in.title",
         })}
       >
         <Space direction="vertical">

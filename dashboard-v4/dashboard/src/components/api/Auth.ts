@@ -115,4 +115,10 @@ export interface IInviteResponse {
   data: IInviteData;
 }
 
+export interface IEmailCertificationResponse {
+  ok: boolean;
+  message: string;
+  data: number;
+}
+
 export type TSoftwareEdition = "basic" | "pro";
