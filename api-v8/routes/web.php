@@ -19,20 +19,23 @@ use App\Http\Controllers\AssetsController;
 Route::redirect('/app', '/app/pcdl/index.php');
 Route::redirect('/app/pcdl', '/app/pcdl/index.php');
 
-Route::get('/', [PageIndexController::class,'index']);
+Route::get('/', [PageIndexController::class, 'index']);
 
-Route::get('/api/sentence/progress/image', [SentenceInfoController::class,'showprogress']);
-Route::get('/api/sentence/progress/daily/image', [SentenceInfoController::class,'showprogressdaily']);
-Route::get('/wbwanalyses', [WbwAnalysisController::class,'index']);
-Route::get('/attachments/{bucket}/{name}',[AssetsController::class,'show']);
+Route::get('/api/sentence/progress/image', [SentenceInfoController::class, 'showprogress']);
+Route::get('/api/sentence/progress/daily/image', [SentenceInfoController::class, 'showprogressdaily']);
+Route::get('/wbwanalyses', [WbwAnalysisController::class, 'index']);
+Route::get('/attachments/{bucket}/{name}', [AssetsController::class, 'show']);
 
-Route::get('/export/wbw', function (){
-    return view('export_wbw',['sentences' => []]);
+Route::get('/export/wbw', function () {
+    return view('export_wbw', ['sentences' => []]);
 });
 
-Route::get('/privacy/{file}', function ($file){
+Route::get('/privacy/{file}', function ($file) {
     $content = file_get_contents(base_path("/documents/mobile/privacy/{$file}.md"));
-    return view('privacy',['content' => $content]);
+    return view('privacy', ['content' => $content]);
+});
+
+Route::get('/book/{id}', function ($id) {
+    return view('book', ['id' => $id]);
 });
 Route::redirect('/privacy', '/privacy/index');
-
