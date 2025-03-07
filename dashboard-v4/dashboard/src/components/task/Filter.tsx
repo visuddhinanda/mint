@@ -1,4 +1,4 @@
-import { Button, Popover, Select, Space, Typography } from "antd";
+import { Button, Popover, Typography } from "antd";
 import { IFilter } from "./TaskList";
 import { useRef, useState } from "react";
 import { useIntl } from "react-intl";
