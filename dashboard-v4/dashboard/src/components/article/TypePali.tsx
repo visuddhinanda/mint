@@ -26,6 +26,7 @@ import { useAppSelector } from "../../hooks";
 import { currentUser } from "../../reducers/current-user";
 import { ArticleTplModal } from "../template/Builder/ArticleTpl";
 import { IPayload, ITokenCreate, ITokenCreateResponse } from "../api/token";
+import TokenModal from "./TokenModal";
 
 interface IWidget {
   type?: ArticleType;
@@ -73,6 +74,7 @@ const TypePaliWidget = ({
   const user = useAppSelector(currentUser);
   const channels = channelId?.split("_");
   const _id = articleId?.split("-");
+  const [tokenOpen, setTokenOpen] = useState(false);
 
   const srcDataMode = mode === "edit" || mode === "wbw" ? "edit" : "read";
 
@@ -257,6 +259,7 @@ const TypePaliWidget = ({
       book: parseInt(_book),
       para_start: parseInt(_para),
       para_end: parseInt(_para) + 100,
+      power: "edit",
     });
     const url = "/v2/access-token";
     const values = { payload: payload };
@@ -277,6 +280,13 @@ const TypePaliWidget = ({
         <ErrorResult code={errorCode} />
       ) : (
         <>
+          <TokenModal
+            channels={channels}
+            articleId={articleId}
+            type={type}
+            open={tokenOpen}
+            onClose={() => setTokenOpen(false)}
+          />
           <TaskBuilderChapterModal
             studioName={user?.realName}
             book={parseInt(mBook ?? "0")}
@@ -319,10 +329,7 @@ const TypePaliWidget = ({
                       setTplOpen(true);
                       break;
                     case "token":
-                      const token = getAccessToken();
-                      if (typeof token === "string") {
-                        alert(token);
-                      }
+                      setTokenOpen(true);
                       break;
                   }
                 },
