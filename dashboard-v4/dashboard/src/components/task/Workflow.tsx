@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { IProjectData, ITaskData } from "../api/task";
 import ProjectList from "./ProjectList";
 import ProjectTask from "./ProjectTask";
-import { Modal } from "antd";
+import { Card, Modal } from "antd";
 
 interface IModal {
   tiger?: React.ReactNode;
@@ -55,7 +55,8 @@ interface IWidget {
 }
 
 const Workflow = ({ studioName, onSelect, onData }: IWidget) => {
-  const [projectId, setProjectId] = useState<string>();
+  const [project, setProject] = useState<IProjectData>();
+
   return (
     <div style={{ display: "flex" }}>
       <div style={{ minWidth: 300, flex: 1 }}>
@@ -63,16 +64,22 @@ const Workflow = ({ studioName, onSelect, onData }: IWidget) => {
           studioName={studioName}
           type="workflow"
           readonly
-          onSelect={(data) => setProjectId(data.id)}
+          onSelect={(data: IProjectData) => setProject(data)}
         />
       </div>
       <div style={{ flex: 3 }}>
-        <ProjectTask
-          studioName={studioName}
-          projectId={projectId}
-          readonly
-          onChange={onData}
-        />
+        <Card title={project ? project.title : "请选择一个工作流"}>
+          {project ? (
+            <ProjectTask
+              studioName={studioName}
+              projectId={project.id}
+              readonly
+              onChange={onData}
+            />
+          ) : (
+            <></>
+          )}
+        </Card>
       </div>
     </div>
   );
