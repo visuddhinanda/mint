@@ -1,25 +1,16 @@
 import {
   ProForm,
-  ProFormRadio,
   ProFormText,
   ProFormTextArea,
 } from "@ant-design/pro-components";
-import { Col, Row, Space, message } from "antd";
-import { useState } from "react";
-import { IProjectData, IProjectResponse } from "../api/task";
-import { get } from "../../request";
+import { message } from "antd";
+import {
+  IProjectData,
+  IProjectResponse,
+  IProjectUpdateRequest,
+} from "../api/task";
+import { get, patch } from "../../request";
 import { useIntl } from "react-intl";
-
-type LayoutType = Parameters<typeof ProForm>[0]["layout"];
-const LAYOUT_TYPE_HORIZONTAL = "horizontal";
-
-const waitTime = (time: number = 100) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(true);
-    }, time);
-  });
-};
 
 interface IWidget {
   projectId?: string;
@@ -31,8 +22,13 @@ const ProjectEdit = ({ projectId }: IWidget) => {
   return (
     <ProForm<IProjectData>
       onFinish={async (values) => {
-        await waitTime(2000);
-        console.log(values);
+        const url = `/v2/project/${projectId}`;
+        console.info("api request", url, values);
+        const res = await patch<IProjectUpdateRequest, IProjectResponse>(
+          url,
+          values
+        );
+        console.log("api response", res);
         message.success("提交成功");
       }}
       params={{}}
