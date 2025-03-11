@@ -76,6 +76,7 @@ class TaskGroupController extends Controller
                     'old_id' => $task['id'],
                     'title' => $task['title'],
                     'type' => 'instance',
+                    'category' => $task['category'],
                     'status' => $task['status'],
                     'description' => $task['description'],
                     'order' => $task['order'],
