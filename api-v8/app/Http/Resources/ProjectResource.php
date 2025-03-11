@@ -28,7 +28,7 @@ class ProjectResource extends JsonResource
             'path' => ProjectApi::getListByIds(json_decode($this->path)),
             'description' => $this->description,
             "owner" => StudioApi::getById($this->owner_id),
-            "editor" => UserApi::getIdByUuid($this->editor_id),
+            "editor" => UserApi::getByUuid($this->editor_id),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
