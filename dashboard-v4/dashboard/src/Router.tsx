@@ -150,6 +150,8 @@ import StudioTaskHall from "./pages/studio/task/hall";
 import StudioTaskList from "./pages/studio/task/tasks";
 import StudioTaskProjects from "./pages/studio/task/projects";
 import StudioTaskProject from "./pages/studio/task/project";
+import StudioTaskProjectEdit from "./pages/studio/task/project-edit";
+import StudioTaskWorkflow from "./pages/studio/task/workflow";
 
 import StudioAi from "./pages/studio/ai";
 import StudioAiModes from "./pages/studio/ai/models";
@@ -346,6 +348,11 @@ const Widget = () => {
             <Route path="list" element={<StudioTaskList />} />
             <Route path="projects" element={<StudioTaskProjects />} />
             <Route path="project/:projectId" element={<StudioTaskProject />} />
+            <Route
+              path="project/:projectId/edit"
+              element={<StudioTaskProjectEdit />}
+            />
+            <Route path="workflows" element={<StudioTaskWorkflow />} />
           </Route>
 
           <Route path="dict" element={<StudioDict />}>
