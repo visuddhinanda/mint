@@ -53,7 +53,10 @@ class MqAiTranslate extends Command
         $this->info(" [*] Waiting for {$queue}. To exit press CTRL+C");
         Log::debug("mq:progress start.");
         Mq::worker($exchange, $queue, function ($message) {
-            Log::debug('start', ['message' => $message]);
+            if (\App\Tools\Tools::isStop()) {
+                return 0;
+            }
+            Log::debug('ai translate start', ['message' => $message]);
             //写入 model log
             $modelLog = new ModelLog();
             $modelLog->uid = Str::uuid();
@@ -145,8 +148,8 @@ class MqAiTranslate extends Command
             $data = [
                 'res_id' => $sUid,
                 'res_type' => 'sentence',
-                'title' => 'AI ' . $message->task->info->title,
-                'content' => 'AI ' . $message->task->info->category,
+                'title' => $message->task->info->title,
+                'content' => $message->task->info->category,
                 'content_type' => 'markdown',
                 'type' => 'discussion',
             ];
@@ -196,7 +199,7 @@ class MqAiTranslate extends Command
                 $this->info('task progress successful progress=' . $response->json()['data']['progress']);
             }
 
-            //完成 修改状态
+            //任务完成 修改任务状态为 done
             if ($taskProgress->current === $taskProgress->total) {
                 $url = config('app.url') . '/api/v2/task-status/' . $message->task->info->id;
                 $data = [
