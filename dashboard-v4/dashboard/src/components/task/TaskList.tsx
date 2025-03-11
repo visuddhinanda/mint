@@ -63,10 +63,8 @@ export interface IFilter {
     | "not-includes"
     | "equals"
     | "not-equals"
-    | ">="
-    | "<="
-    | ">"
-    | "<"
+    | "null"
+    | "not-null"
     | null;
   value: string | string[] | null;
 }
