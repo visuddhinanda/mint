@@ -92,6 +92,7 @@ const items = {
   "labels.filters.not-null": "不为空",
   "labels.filters.and": "全部条件",
   "labels.filters.or": "任一条件",
+  "labels.task.workflows": "工作流",
 };
 
 export default items;
