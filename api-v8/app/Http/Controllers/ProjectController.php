@@ -24,9 +24,10 @@ class ProjectController extends Controller
             Log::error('notification auth failed {request}', ['request' => $request]);
             return $this->error(__('auth.failed'), 401, 401);
         }
+        $studioId = StudioApi::getIdByName($request->get('studio'));
         switch ($request->get('view')) {
             case 'studio':
-                $table = Project::where('owner_id', $user['user_uid'])
+                $table = Project::where('owner_id', $studioId)
                     ->whereNull('parent_id')
                     ->where('type', $request->get('type', 'instance'));
                 break;
@@ -34,8 +35,13 @@ class ProjectController extends Controller
                 $table = Project::where('uid', $request->get('project_id'))
                     ->orWhereJsonContains('path', $request->get('project_id'));
                 break;
+            case 'community':
+                $table = Project::where('owner_id', '<>', $studioId)
+                    ->whereNull('parent_id')
+                    ->where('type', $request->get('type', 'instance'));
+                break;
             default:
-                # code...
+                return $this->error('view', 200, 200);
                 break;
         }
 
@@ -100,6 +106,7 @@ class ProjectController extends Controller
         $new->owner_id = $studioId;
         $new->type = $request->get('type', 'instance');
 
+
         if (Str::isUuid($request->get('parent_id'))) {
             $parentPath = Project::where('uid', $request->get('parent_id'))->value('path');
             $parentPath = json_decode($parentPath);
@@ -126,17 +133,17 @@ class ProjectController extends Controller
         return $this->ok(new ProjectResource($project));
     }
 
+
     /**
-     * Show the form for editing the specified resource.
+     * Update the specified resource in storage.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Project  $project
      * @return \Illuminate\Http\Response
      */
-    public function edit(Project $project)
+    public function update(Request $request, Project $project)
     {
         //
-    }
-
         $user = AuthApi::current($request);
         if (!$user) {
             return $this->error(__('auth.failed'), 401, 401);
@@ -163,16 +170,6 @@ class ProjectController extends Controller
         $project->save();
 
         return $this->ok(new ProjectResource($project));
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Project  $project
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Project $project)
-    {
-        //
     }
 
     /**
