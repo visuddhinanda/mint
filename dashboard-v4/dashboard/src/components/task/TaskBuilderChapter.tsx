@@ -1,4 +1,13 @@
-import { Button, Divider, message, Modal, Steps } from "antd";
+import {
+  Button,
+  Divider,
+  Input,
+  message,
+  Modal,
+  Space,
+  Steps,
+  Typography,
+} from "antd";
 
 import { useState } from "react";
 import Workflow from "./Workflow";
@@ -20,6 +29,7 @@ import {
   ITokenCreateResponse,
   ITokenData,
 } from "../api/token";
+const { Text } = Typography;
 
 interface IModal {
   studioName?: string;
@@ -81,40 +91,59 @@ const TaskBuilderChapter = ({
   const [tokens, setTokens] = useState<ITokenData[]>();
   const [messages, setMessages] = useState<string[]>([]);
   const [prop, setProp] = useState<IProp[]>();
+  const [title, setTitle] = useState<string>();
 
   const steps = [
     {
       title: "章节选择",
       content: (
-        <ChapterToc
-          book={book}
-          para={para}
-          onData={(data: IChapterToc[]) => {
-            setChapter(data);
-            //获取channel token
-            let payload: IPayload[] = [];
-            channels?.forEach((channel) => {
-              data.forEach((chapter) => {
-                payload.push({
-                  res_id: channel,
-                  res_type: "channel",
-                  book: chapter.book,
-                  para_start: chapter.paragraph,
-                  para_end: chapter.paragraph + chapter.chapter_len,
+        <div style={{ padding: 8 }}>
+          <Space key={1}>
+            <Text type="secondary">{"任务组标题"}</Text>
+            <Input
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+              }}
+            />
+          </Space>
+          <ChapterToc
+            key={2}
+            book={book}
+            para={para}
+            onData={(data: IChapterToc[]) => {
+              setChapter(data);
+              if (data.length > 0) {
+                if (!title && data[0].text) {
+                  setTitle(data[0].text);
+                }
+              }
+              //获取channel token
+              let payload: IPayload[] = [];
+              channels?.forEach((channel) => {
+                data.forEach((chapter) => {
+                  payload.push({
+                    res_id: channel,
+                    res_type: "channel",
+                    book: chapter.book,
+                    para_start: chapter.paragraph,
+                    para_end: chapter.paragraph + chapter.chapter_len,
+                    power: "edit",
+                  });
                 });
               });
-            });
-            const url = "/v2/access-token";
-            const values = { payload: payload };
-            console.info("api request", url, values);
-            post<ITokenCreate, ITokenCreateResponse>(url, values).then(
-              (json) => {
-                console.info("api response", json);
-                setTokens(json.data.rows);
-              }
-            );
-          }}
-        />
+              const url = "/v2/access-token";
+              const values = { payload: payload };
+              console.info("api request", url, values);
+              post<ITokenCreate, ITokenCreateResponse>(url, values).then(
+                (json) => {
+                  console.info("api response", json);
+                  setTokens(json.data.rows);
+                }
+              );
+            }}
+          />
+        </div>
       ),
     },
     {
@@ -132,6 +161,7 @@ const TaskBuilderChapter = ({
         <div>
           <TaskBuilderProp
             workflow={workflow}
+            channelsId={channels}
             onChange={(data: IProp[] | undefined) => setProp(data)}
           />
         </div>
@@ -194,7 +224,7 @@ const TaskBuilderChapter = ({
                 data: chapter.map((item, id) => {
                   return {
                     id: item.paragraph.toString(),
-                    title: item.text ?? "",
+                    title: id === 0 && title ? title : item.text ?? "",
                     type: "instance",
                     parent_id: item.parent.toString(),
                     res_id: `${item.book}-${item.paragraph}`,
@@ -239,7 +269,7 @@ const TaskBuilderChapter = ({
                               searchValue,
                               replaceValue
                             );
-                          } else if (value.type === "string") {
+                          } else {
                             //替换book
                             if (project.resId) {
                               const [book, paragraph] =
