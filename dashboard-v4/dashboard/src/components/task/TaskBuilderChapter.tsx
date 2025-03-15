@@ -28,6 +28,7 @@ import {
   ITokenCreate,
   ITokenCreateResponse,
   ITokenData,
+  TPower,
 } from "../api/token";
 const { Text } = Typography;
 
@@ -122,14 +123,19 @@ const TaskBuilderChapter = ({
               let payload: IPayload[] = [];
               channels?.forEach((channel) => {
                 data.forEach((chapter) => {
-                  payload.push({
-                    res_id: channel,
-                    res_type: "channel",
-                    book: chapter.book,
-                    para_start: chapter.paragraph,
-                    para_end: chapter.paragraph + chapter.chapter_len,
-                    power: "edit",
-                  });
+                  const power: TPower[] = ["readonly", "edit"];
+                  payload = payload.concat(
+                    power.map((item) => {
+                      return {
+                        res_id: channel,
+                        res_type: "channel",
+                        book: chapter.book,
+                        para_start: chapter.paragraph,
+                        para_end: chapter.paragraph + chapter.chapter_len,
+                        power: item,
+                      };
+                    })
+                  );
                 });
               });
               const url = "/v2/access-token";
@@ -162,7 +168,10 @@ const TaskBuilderChapter = ({
           <TaskBuilderProp
             workflow={workflow}
             channelsId={channels}
-            onChange={(data: IProp[] | undefined) => setProp(data)}
+            onChange={(data: IProp[] | undefined) => {
+              console.info("prop value", data);
+              setProp(data);
+            }}
           />
         </div>
       ),
@@ -249,6 +258,7 @@ const TaskBuilderChapter = ({
               if (!workflow) {
                 return;
               }
+
               let taskData: ITaskGroupInsertData[] = res.data.rows
                 .filter((value) => value.isLeaf)
                 .map((project, pId) => {
@@ -282,18 +292,23 @@ const TaskBuilderChapter = ({
                                 "paragraphs=#",
                                 `paragraphs=${paragraph}`
                               );
-                              //查找token
+                              //替换channel
+                              //查找toke
+
+                              const [channel, power] = value.value.split("@");
                               const mToken = tokens?.find(
                                 (token) =>
                                   token.payload.book?.toString() === book &&
                                   token.payload.para_start?.toString() ===
                                     paragraph &&
-                                  token.payload.res_id === value.value
+                                  token.payload.res_id === channel &&
+                                  (power && power.length > 0
+                                    ? token.payload.power === power
+                                    : true)
                               );
                               newContent = newContent?.replace(
                                 value.key,
-                                value.value +
-                                  (mToken ? "@" + mToken?.token : "")
+                                channel + (mToken ? "@" + mToken?.token : "")
                               );
                             }
                           }
