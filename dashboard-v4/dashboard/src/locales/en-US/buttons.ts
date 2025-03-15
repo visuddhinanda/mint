@@ -100,6 +100,7 @@ const items = {
   "buttons.task.status.change.to.done": "完成任务",
   "buttons.task.status.change.to.restarted": "重做",
   "buttons.task.status.change.to.requested_restart": "请求重做",
+  "buttons.access-token.get": "access token",
 };
 
 export default items;
