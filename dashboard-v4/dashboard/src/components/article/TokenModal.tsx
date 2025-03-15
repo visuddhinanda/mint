@@ -4,7 +4,7 @@ import { ArticleType } from "./Article";
 import Token from "./Token";
 
 interface IWidget {
-  channels?: string[];
+  channelId?: string;
   articleId?: string;
   type?: ArticleType;
   trigger?: React.ReactNode;
@@ -12,7 +12,7 @@ interface IWidget {
   onClose?: Function;
 }
 const TokenModal = ({
-  channels,
+  channelId,
   articleId,
   type,
   trigger,
@@ -51,7 +51,7 @@ const TokenModal = ({
         onOk={handleOk}
         onCancel={handleCancel}
       >
-        <Token channels={channels} articleId={articleId} type={type} />
+        <Token channelId={channelId} articleId={articleId} type={type} />
       </Modal>
     </>
   );

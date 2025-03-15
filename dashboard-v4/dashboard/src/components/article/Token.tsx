@@ -15,30 +15,30 @@ import {
 const { Text } = Typography;
 
 interface IWidget {
-  channels?: string[];
+  channelId?: string;
   articleId?: string;
   type?: ArticleType;
 }
-const DictInfoCopyRef = ({ channels, articleId, type }: IWidget) => {
+const DictInfoCopyRef = ({ channelId, articleId, type }: IWidget) => {
   const [text, setText] = useState("");
   const [power, setPower] = useState<TPower>("readonly");
   const intl = useIntl();
 
   useEffect(() => {
-    if (!channels || !articleId || !type) {
-      console.error("token", channels, articleId, type);
+    if (!channelId || !articleId || !type) {
+      console.error("token", channelId, articleId, type);
       return;
     }
     const id = articleId.split("-");
-    if (!channels || !id || id.length < 2) {
-      console.error("channels or book or para is undefined", channels, id);
+    if (!channelId || !id || id.length < 2) {
+      console.error("channels or book or para is undefined", channelId, id);
       return;
     }
     const _book = id[0];
     const _para = id[1];
     let payload: IPayload[] = [];
     payload.push({
-      res_id: channels[0],
+      res_id: channelId,
       res_type: "channel",
       book: parseInt(_book),
       para_start: parseInt(_para),
@@ -54,7 +54,7 @@ const DictInfoCopyRef = ({ channels, articleId, type }: IWidget) => {
         setText(json.data.rows[0].token);
       }
     });
-  }, [articleId, channels, power, type]);
+  }, [articleId, channelId, power, type]);
   return (
     <div>
       <div style={{ textAlign: "center", padding: 20 }}>
