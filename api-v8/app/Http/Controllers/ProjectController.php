@@ -24,7 +24,12 @@ class ProjectController extends Controller
             Log::error('notification auth failed {request}', ['request' => $request]);
             return $this->error(__('auth.failed'), 401, 401);
         }
-        $studioId = StudioApi::getIdByName($request->get('studio'));
+        if ($request->has('studio')) {
+            $studioId = StudioApi::getIdByName($request->get('studio'));
+        } else {
+            $studioId = $user['user_uid'];
+        }
+
         switch ($request->get('view')) {
             case 'studio':
                 $table = Project::where('owner_id', $studioId)
