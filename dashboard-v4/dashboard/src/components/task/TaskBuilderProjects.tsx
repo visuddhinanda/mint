@@ -4,6 +4,7 @@ import {
   Input,
   message,
   Modal,
+  Space,
   Steps,
   Tag,
   Typography,
@@ -24,7 +25,7 @@ import {
 import { post } from "../../request";
 import TaskBuilderProp, { IParam, IProp } from "./TaskBuilderProp";
 
-const { Paragraph } = Typography;
+const { Paragraph, Text } = Typography;
 
 interface IBuildProjects {
   onChange?: (titles: string[]) => void;
@@ -163,7 +164,7 @@ const TaskBuilderProjects = ({
   const [workflow, setWorkflow] = useState<ITaskData[]>();
   const [projectsTitle, setProjectsTitle] = useState<string[]>();
   const [prop, setProp] = useState<IProp[]>();
-
+  const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<string[]>([]);
   const steps = [
     {
@@ -195,7 +196,13 @@ const TaskBuilderProjects = ({
       content: (
         <div>
           <div>
-            <Paragraph>新增任务组：{projectsTitle?.length}</Paragraph>
+            <Space>
+              <Text type="secondary">title</Text>
+              <Text>{projectsTitle}</Text>
+            </Space>
+          </div>
+          <div>
+            <Paragraph>新增任务组：{projectsTitle}</Paragraph>
             <Paragraph>每个任务组任务数量：{workflow?.length}</Paragraph>
             <Paragraph>点击生成按钮生成</Paragraph>
           </div>
@@ -242,11 +249,14 @@ const TaskBuilderProjects = ({
         {current === steps.length - 1 && (
           <Button
             type="primary"
+            loading={loading}
+            disabled={loading}
             onClick={async () => {
               if (!studioName || !parentId || !projectsTitle) {
                 console.error("缺少参数", studioName, parentId, projectsTitle);
                 return;
               }
+              setLoading(true);
               //生成projects
               setMessages((origin) => [...origin, "正在生成任务组……"]);
               const url = "/v2/project-tree";
@@ -329,6 +339,10 @@ const TaskBuilderProjects = ({
                   ...origin,
                   "生成任务关联" + taskRes.data.taskRelationCount,
                 ]);
+                setMessages((origin) => [
+                  ...origin,
+                  "打开译经楼-我的任务查看已经生成的任务",
+                ]);
                 onDone && onDone();
               } else {
                 setMessages((origin) => [
@@ -336,6 +350,7 @@ const TaskBuilderProjects = ({
                   "生成任务失败。错误信息：" + taskRes.data,
                 ]);
               }
+              setLoading(false);
             }}
           >
             Done

@@ -30,7 +30,7 @@ import {
   ITokenData,
   TPower,
 } from "../api/token";
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
 
 interface IModal {
   studioName?: string;
@@ -93,6 +93,7 @@ const TaskBuilderChapter = ({
   const [messages, setMessages] = useState<string[]>([]);
   const [prop, setProp] = useState<IProp[]>();
   const [title, setTitle] = useState<string>();
+  const [loading, setLoading] = useState(false);
 
   const steps = [
     {
@@ -179,10 +180,33 @@ const TaskBuilderChapter = ({
     {
       title: "生成",
       content: (
-        <div>
-          {messages?.map((item, id) => {
-            return <div key={id}>{item}</div>;
-          })}
+        <div style={{ padding: 8 }}>
+          <div>
+            <Space>
+              <Text type="secondary">title</Text>
+              <Text>{title}</Text>
+            </Space>
+          </div>
+          <div>
+            <Space>
+              <Text type="secondary">新增任务组</Text>
+              <Text>{chapter?.length}</Text>
+            </Space>
+          </div>
+          <div>
+            <Space>
+              <Text type="secondary">每个任务组任务数量</Text>
+              <Text>{workflow?.length}</Text>
+            </Space>
+          </div>
+          <div>
+            <Paragraph>点击生成按钮生成</Paragraph>
+          </div>
+          <div>
+            {messages?.map((item, id) => {
+              return <div key={id}>{item}</div>;
+            })}
+          </div>
         </div>
       ),
     },
@@ -220,11 +244,15 @@ const TaskBuilderChapter = ({
         )}
         {current === steps.length - 1 && (
           <Button
+            loading={loading}
+            disabled={loading}
             type="primary"
             onClick={async () => {
               if (!studioName || !chapter) {
+                console.error("缺少参数", studioName, chapter);
                 return;
               }
+              setLoading(true);
               //生成projects
               setMessages((origin) => [...origin, "正在生成任务组……"]);
               const url = "/v2/project-tree";
@@ -340,7 +368,12 @@ const TaskBuilderChapter = ({
                   ...origin,
                   "生成任务关联" + taskRes.data.taskRelationCount,
                 ]);
+                setMessages((origin) => [
+                  ...origin,
+                  "打开译经楼-我的任务查看已经生成的任务",
+                ]);
               }
+              setLoading(false);
             }}
           >
             Done
