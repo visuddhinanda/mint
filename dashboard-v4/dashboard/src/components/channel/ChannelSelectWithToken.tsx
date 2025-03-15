@@ -10,8 +10,8 @@ interface IWidget {
   onChange?: (channel?: string | null) => void;
 }
 const ChannelSelectWithToken = ({ channelsId, type, onChange }: IWidget) => {
-  const [channel, setChannel] = useState<string>();
-  const [token, setToken] = useState<string>();
+  const [channel, setChannel] = useState<string>("");
+  const [power, setPower] = useState<string>();
   return (
     <Space>
       <ProFormSelect
@@ -27,8 +27,8 @@ const ChannelSelectWithToken = ({ channelsId, type, onChange }: IWidget) => {
           setChannel(value);
           let output = value;
           if (value) {
-            if (token) {
-              output += "@" + token;
+            if (power) {
+              output += "@" + power;
             }
           }
           onChange && onChange(output);
@@ -61,7 +61,6 @@ const ChannelSelectWithToken = ({ channelsId, type, onChange }: IWidget) => {
       />
       <ProFormSelect
         options={[
-          { value: "null", label: "null" },
           { value: "readonly", label: "readonly" },
           { value: "edit", label: "edit" },
         ]}
@@ -71,6 +70,17 @@ const ChannelSelectWithToken = ({ channelsId, type, onChange }: IWidget) => {
         allowClear={true}
         label={false}
         placeholder={"选择访问权限"}
+        onChange={(value: string) => {
+          console.debug(value);
+          setPower(value);
+          let output = channel;
+          if (channel) {
+            if (value) {
+              output += "@" + value;
+            }
+          }
+          onChange && onChange(output);
+        }}
       />
     </Space>
   );
