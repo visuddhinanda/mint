@@ -36,6 +36,7 @@ import { IChannel } from "./Channel";
 import CopyToModal from "./CopyToModal";
 import { ArticleType } from "../article/Article";
 import { ChannelInfoModal } from "./ChannelInfo";
+import TokenModal from "../article/TokenModal";
 
 const { Search } = Input;
 
@@ -49,6 +50,12 @@ export const getSentIdInArticle = () => {
   }
   return sentList;
 };
+
+interface IToken {
+  channelId?: string;
+  articleId?: string;
+  type?: ArticleType;
+}
 
 interface ChannelTreeNode {
   key: string;
@@ -87,6 +94,8 @@ const ChannelMy = ({
   const [statistic, setStatistic] = useState<IItem>();
   const [sentenceCount, setSentenceCount] = useState<number>(0);
   const [sentencesId, setSentencesId] = useState<string[]>();
+  const [token, SetToken] = useState<IToken>();
+  const [tokenOpen, setTokenOpen] = useState(false);
 
   console.debug("ChannelMy render", type, articleId);
 
@@ -250,6 +259,11 @@ const ChannelMy = ({
 
   return (
     <div style={style}>
+      <TokenModal
+        {...token}
+        open={tokenOpen}
+        onClose={() => setTokenOpen(false)}
+      />
       <Card
         size="small"
         title={
@@ -464,6 +478,13 @@ const ChannelMy = ({
                               }),
                               icon: <InfoCircleOutlined />,
                             },
+                            {
+                              key: "token",
+                              label: intl.formatMessage({
+                                id: "buttons.access-token.get",
+                              }),
+                              icon: <InfoCircleOutlined />,
+                            },
                           ],
                           onClick: (e) => {
                             switch (e.key) {
@@ -478,6 +499,14 @@ const ChannelMy = ({
                               case "statistic":
                                 setInfoOpen(true);
                                 setStatistic(node.channel);
+                                break;
+                              case "token":
+                                SetToken({
+                                  channelId: node.channel.uid,
+                                  type: type as ArticleType,
+                                  articleId: articleId,
+                                });
+                                setTokenOpen(true);
                                 break;
                               default:
                                 break;
