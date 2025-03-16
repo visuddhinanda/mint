@@ -43,6 +43,7 @@ class ProjectController extends Controller
             case 'community':
                 $table = Project::where('owner_id', '<>', $studioId)
                     ->whereNull('parent_id')
+                    ->where('privacy', 'public')
                     ->where('type', $request->get('type', 'instance'));
                 break;
             default:
@@ -161,6 +162,7 @@ class ProjectController extends Controller
         $project->description = $request->get('description');
         $project->parent_id = $request->get('parent_id');
         $project->editor_id = $user['user_uid'];
+        $project->privacy = $request->get('privacy');
 
 
         if (Str::isUuid($request->get('parent_id'))) {

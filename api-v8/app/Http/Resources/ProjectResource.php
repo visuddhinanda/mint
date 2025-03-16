@@ -30,6 +30,7 @@ class ProjectResource extends JsonResource
             'description' => $this->description,
             "owner" => StudioApi::getById($this->owner_id),
             "editor" => UserApi::getByUuid($this->editor_id),
+            'privacy' => $this->privacy,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

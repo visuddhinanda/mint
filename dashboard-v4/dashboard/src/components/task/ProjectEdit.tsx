@@ -11,6 +11,7 @@ import {
 } from "../api/task";
 import { get, patch } from "../../request";
 import { useIntl } from "react-intl";
+import Publicity from "../studio/Publicity";
 
 interface IWidget {
   projectId?: string;
@@ -57,6 +58,12 @@ const ProjectEdit = ({ projectId }: IWidget) => {
             id: "forms.fields.type.label",
           })}
           readonly
+        />
+      </ProForm.Group>
+      <ProForm.Group>
+        <Publicity
+          name="privacy"
+          disable={["disable", "public_no_list", "blocked"]}
         />
       </ProForm.Group>
       <ProForm.Group>

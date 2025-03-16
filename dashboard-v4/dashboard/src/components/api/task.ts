@@ -14,6 +14,7 @@
 
 import { IStudio } from "../auth/Studio";
 import { IUser } from "../auth/User";
+import { TPrivacy } from "./ai";
 
 export type TTaskStatus =
   | "pending"
@@ -152,6 +153,7 @@ export interface IProjectData {
   owner: IStudio;
   editor: IUser;
   status: ITaskStatusInProject[];
+  privacy: TPrivacy;
   created_at: string;
   updated_at: string;
   deleted_at?: string | null;
@@ -165,6 +167,7 @@ export interface IProjectUpdateRequest {
   studio_name?: string;
   title: string;
   type: TProjectType;
+  privacy?: TPrivacy;
   weight?: number;
   description?: string | null;
   parent_id?: string | null;
