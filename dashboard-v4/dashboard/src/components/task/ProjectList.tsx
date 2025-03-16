@@ -25,7 +25,7 @@ export interface IResNumberResponse {
     collaboration: number;
   };
 }
-export type TView = "studio" | "shared" | "community";
+export type TView = "current" | "studio" | "shared" | "community";
 interface IWidget {
   studioName?: string;
   type?: TProjectType;
