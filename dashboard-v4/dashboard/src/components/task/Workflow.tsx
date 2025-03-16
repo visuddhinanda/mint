@@ -102,7 +102,7 @@ const Workflow = ({ studioName, onSelect, onData }: IWidget) => {
               <ProjectTask
                 studioName={studioName}
                 projectId={project.id}
-                readonly
+                readonly={view !== "studio"}
                 onChange={onData}
               />
             ) : (
