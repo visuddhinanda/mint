@@ -263,6 +263,7 @@ const TaskBuilderChapter = ({
                     id: item.paragraph.toString(),
                     title: id === 0 && title ? title : item.text ?? "",
                     type: "instance",
+                    weight: item.chapter_strlen,
                     parent_id: item.parent.toString(),
                     res_id: `${item.book}-${item.paragraph}`,
                   };

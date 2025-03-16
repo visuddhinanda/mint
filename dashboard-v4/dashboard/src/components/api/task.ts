@@ -31,6 +31,7 @@ export interface IProject {
   id: string;
   title: string;
   description: string | null;
+  weight: number;
 }
 
 export type TTaskCategory =
@@ -141,6 +142,7 @@ export interface IProjectData {
   id: string;
   title: string;
   type: TProjectType;
+  weight: number;
   description: string | null;
   parent?: IProjectData | null;
   parent_id?: string | null;
@@ -163,6 +165,7 @@ export interface IProjectUpdateRequest {
   studio_name?: string;
   title: string;
   type: TProjectType;
+  weight?: number;
   description?: string | null;
   parent_id?: string | null;
   res_id?: string;

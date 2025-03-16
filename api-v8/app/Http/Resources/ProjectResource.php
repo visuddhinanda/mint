@@ -21,6 +21,7 @@ class ProjectResource extends JsonResource
             'id' => $this->uid,
             'title' => $this->title,
             'type' => $this->type,
+            'weight' => $this->weight,
             'description' => $this->description,
             'executors_id' => json_decode($this->executors_id),
             'parent_id' => $this->parent_id,
