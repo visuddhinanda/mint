@@ -127,37 +127,26 @@ class AiTaskPrepare
             $data['translation'] .= '|channel=' . $channelId;
             $data['translation'] .= '|text=translation}}';
             if (isset($params['nissaya']) && !empty($params['nissaya'])) {
-                $nissayaArray = [];
-                $nissayaChannels = explode(',', $params['nissaya']);
-                foreach ($nissayaChannels as $key => $channel) {
-                    $nissayaChannel = explode('@', $channel);
-                    $channelInfo = ChannelApi::getById($nissayaChannel[0]);
-                    if (!$channelInfo) {
-                        continue;
-                    }
+                $nissayaChannel = explode('@', $params['nissaya']);
+                $channelInfo = ChannelApi::getById($nissayaChannel[0]);
+                if ($channelInfo) {
                     //查看句子是否存在
                     $nissayaSent = Sentence::where('book_id', $sentence['id'][0])
                         ->where('paragraph', $sentence['id'][1])
                         ->where('word_start', $sentence['id'][2])
                         ->where('word_end', $sentence['id'][3])
                         ->where('channel_uid', $nissayaChannel[0])->first();
-                    if (!$nissayaSent) {
-                        continue;
+                    if ($nissayaSent && !empty($nissayaSent->content)) {
+                        $nissayaData = [];
+                        $nissayaData['channel'] = $channelInfo;
+                        $nissayaData['data'] = '{{sent|id=' . $sid;
+                        $nissayaData['data'] .= '|channel=' . $nissayaChannel[0];
+                        $nissayaData['data'] .= '|text=translation}}';
+                        $data['nissaya'] = $nissayaData;
                     }
-                    if (empty($nissayaSent->content)) {
-                        continue;
-                    }
-                    $nissayaData = [];
-                    $nissayaData['channel'] = $channelInfo;
-                    $nissayaData['data'] = '{{sent|id=' . $sid;
-                    $nissayaData['data'] .= '|channel=' . $nissayaChannel[0];
-                    $nissayaData['data'] .= '|text=translation}}';
-                    $nissayaArray[] = $nissayaData;
                 }
             }
-            if (isset($nissayaArray) && count($nissayaArray) > 0) {
-                $data['nissaya'] = $nissayaArray;
-            }
+
             Log::debug('mustache render', ['tpl' => $description, 'data' => $data]);
             $content = $m->render($description, $data);
             $prompt = $mdRender->convert($content, []);
