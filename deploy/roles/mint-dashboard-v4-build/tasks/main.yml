@@ -1,0 +1,32 @@
+- name: Git checkout source code
+  ansible.builtin.git:
+    repo: "https://github.com/iapt-platform/mint.git"
+    dest: "{{ playbook_dir }}/tmp/mint"
+    version: "{{ mint_version }}"
+
+- name: Extract dashboard node_modules
+  ansible.builtin.unarchive:
+    src: dashboard-20241201115354.tar.xz
+    dest: "{{ playbook_dir }}/tmp/mint/dashboard-v4/dashboard"
+    creates: "{{ playbook_dir }}/tmp/mint/dashboard-v4/dashboard/node_modules"
+
+- name: Build dashboard dist
+  ansible.builtin.shell: yarn build
+  args:
+    chdir: "{{ playbook_dir }}/tmp/mint/dashboard-v4/dashboard"
+    creates: "{{ playbook_dir }}/tmp/mint/dashboard-v4/dashboard/dist-{{ mint_version }}"
+  environment:
+    BUILD_PATH: "dist-{{ mint_version }}"
+    NODE_OPTIONS: "--max_old_space_size=4096"
+    PUBLIC_URL: "{{ app_dashboard_base_path }}"
+    REACT_APP_DEFAULT_LOCALE: "zh-Hans"
+    REACT_APP_LANGUAGES: "en-US,zh-Hans,zh-Hant"
+    REACT_APP_ENABLE_LOCAL_TOKEN: "true"
+    REACT_APP_TOKEN_KEY: "token.20250215"
+    REACT_APP_DOCUMENTS_SERVER: "{{ app_documents_server }}"
+    REACT_APP_RPC_SERVER: "{{ app_grpc_web_server }}"
+    REACT_APP_ASSETS_SERVER: "{{ app_assets_server }}"
+    REACT_APP_API_SERVER: "https://{{ inventory_hostname }}"
+    REACT_APP_ICP_CODE: "{{ app_icp_code }}"
+    REACT_APP_MPS_CODE: "{{ app_mps_code }}"
+    REACT_APP_QUESTIONNAIRE_LINK: "{{ app_questionnaire_link }}"

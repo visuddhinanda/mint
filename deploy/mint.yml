@@ -1,0 +1,51 @@
+- name: Build dashboard v4
+  hosts: 127.0.0.1
+  roles:
+    - mint-dashboard-v4-build
+    - mint-frontend-assets-build
+
+- name: Setup pali.syn
+  hosts:
+    - db
+  tasks:
+    - name: Upload pali.stop
+      become: true
+      ansible.builtin.copy:
+        dest: "/usr/share/postgresql/{{ app_postgresql_version }}/tsearch_data/"
+        src: "{{ playbook_dir }}/../dashboard-v4/rpc/tulip/tulip/dictionary/pali.stop"
+        owner: root
+        group: root
+        mode: "0644"
+        creates: "/usr/share/postgresql/{{ app_postgresql_version }}/tsearch_data/pali.stop"
+    - name: Upload pali.syn
+      become: true
+      ansible.builtin.copy:
+        dest: "/usr/share/postgresql/{{ app_postgresql_version }}/tsearch_data/"
+        src: "{{ playbook_dir }}/../dashboard-v4/rpc/tulip/tulip/dictionary/pali.syn"
+        owner: root
+        group: root
+        mode: "0644"
+        creates: "/usr/share/postgresql/{{ app_postgresql_version }}/tsearch_data/pali.syn"
+    - name: Restart postgresql server
+      become: true
+      ansible.builtin.systemd:
+        state: restarted
+        name: postgresql
+
+- name: Setup backend servers
+  hosts:
+    - web
+    - fpm
+    - task
+  roles:
+    - mint-v2
+
+- name: Setup nginx
+  hosts: web
+  roles:
+    - mint-nginx
+
+- name: Setup workers
+  hosts: tasks
+  roles:
+    - mint-workers

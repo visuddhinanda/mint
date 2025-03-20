@@ -1,0 +1,43 @@
+- name: Install dbmate
+  become: true
+  ansible.builtin.get_url:
+    url: "https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-{{ app_dbmate_arch }}"
+    dest: /usr/local/bin/dbmate
+    mode: "0555"
+    creates: /usr/local/bin/dbmate
+
+- name: Create the deployment folder
+  become: true
+  ansible.builtin.file:
+    path: "{{ app_deploy_target }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "0755"
+
+- name: Create the logs folder
+  become: true
+  ansible.builtin.file:
+    path: "{{ app_deploy_target }}/logs"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+    mode: "0755"
+
+- name: Unarchive repo
+  ansible.builtin.unarchive:
+    src: https://github.com/iapt-platform/mint/archive/{{ mint_version }}.zip
+    dest: "{{ app_deploy_target }}/mint"
+    remote_src: true
+    creates: "{{ app_deploy_target }}/mint"
+
+- name: Setup dashboard
+  ansible.builtin.import_tasks: antd-v4.yml
+- name: Setup laravel
+  ansible.builtin.import_tasks: laravel-v8.yml
+- name: Setup systemd services
+  ansible.builtin.import_tasks: systemd.yml
+
+- name: Force systemd to reread configs
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true

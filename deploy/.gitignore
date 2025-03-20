@@ -2,3 +2,4 @@
 /tmp/
 /roles/mint/files/dashboard/
 *.log
+*.xz

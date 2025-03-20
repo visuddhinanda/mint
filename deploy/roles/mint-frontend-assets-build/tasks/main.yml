@@ -1,0 +1,15 @@
+- name: Install nodejs packages for v1
+  ansible.builtin.command:
+    argv:
+      - /usr/bin/yarn
+      - install
+  args:
+    chdir: "{{ playbook_dir }}/tmp/mint/api-v8/public"
+
+- name: Install nodejs packages for v2
+  ansible.builtin.command:
+    argv:
+      - /usr/bin/yarn
+      - install
+  args:
+    chdir: "{{ playbook_dir }}/tmp/mint/api-v8"

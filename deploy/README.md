@@ -23,6 +23,8 @@ peony -i clients/CLUSTER ping.yml
 peony -i clients/CLUSTER ec2.yml
 # setup redis cluster nodes
 peony -i clients/CLUSTER redis.yml -l redis
+# deploy mint: version(git rev-parse --short HEAD)
+peony -i clients/CLUSTER mint.yml --extra-vars "mint_version=xxx"
 ```
 
 ## System image

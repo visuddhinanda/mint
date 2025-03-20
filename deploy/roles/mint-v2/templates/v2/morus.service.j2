@@ -1,0 +1,15 @@
+[Unit]
+Description=Mint morus rpc service for {{ inventory_hostname }}
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/php server.php -p {{ app_morus_listen_port }}
+WorkingDirectory={{ app_deploy_target }}/mint/dashboard-v4/rpc/morus/morus
+User=www-data
+Group=www-data
+Restart=always
+RestartSec=30s
+
+[Install]
+WantedBy=multi-user.target
