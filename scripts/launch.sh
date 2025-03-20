@@ -11,6 +11,9 @@ fi
 
 export WORK_DIR="/srv"
 
+export NVM_DIR="$HOME/.nvm"
+source "$NVM_DIR/nvm.sh"
+
 if [ "$1" == "fpm" ]; then
     echo "start fpm worker"
     # TODO

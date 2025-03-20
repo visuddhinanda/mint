@@ -1,12 +1,12 @@
-- name: Build frontend v4
-  hosts: 127.0.0.1
-  roles:
-    - mint-dashboard-v4-build
-
 - name: Build backend v8
   hosts: fort
   roles:
     - mint-backend-v8-build
+
+- name: Build frontend v4
+  hosts: 127.0.0.1
+  roles:
+    - mint-dashboard-v4-build
 # - name: Setup pali.syn
 #   hosts:
 #     - db
