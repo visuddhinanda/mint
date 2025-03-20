@@ -11,7 +11,7 @@
 
   ```bash
   $ cd ~/workspace
-  $ ./saturn-xiv/palm/docker/spring/start.sh
+  $ ./iapt-platform/mint/docker/spring/start.sh
   > sudo supervisord -c /etc/supervisor/supervisord.conf
   # init redis cluster
   > sudo /etc/redis/clusters-init.sh
