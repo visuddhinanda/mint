@@ -10,7 +10,7 @@ fi
 
 export VERSION=$(date "+%4Y%m%d%H%M%S")
 export CODE="mint-php$1"
-export TAR="$CODE-$(uname -m)"
+export TAR="$CODE-$(uname -m)-$VERSION"
 
 podman pull ubuntu:latest
 podman build --build-arg PHP_VERSION=$1 -t $CODE .

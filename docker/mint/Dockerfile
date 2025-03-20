@@ -2,7 +2,7 @@ FROM ubuntu:latest
 LABEL maintainer="Jeremy Zheng"
 
 ENV DEBIAN_FRONTEND noninteractive
-ARG PHP_VERSION=8.3
+ARG PHP_VERSION=8.4
 
 RUN apt update
 RUN apt -y install lsb-release apt-utils \
@@ -41,7 +41,7 @@ RUN wget -q -O $HOME/downloads/composer https://getcomposer.org/installer
 RUN cd $HOME/downloads && php${PHP_VERSION} composer && cp composer.phar /usr/local/bin/composer
 
 # https://github.com/nvm-sh/nvm
-ENV NVM_VERSION "v0.40.1"
+ENV NVM_VERSION "v0.40.2"
 RUN git clone -b ${NVM_VERSION} https://github.com/nvm-sh/nvm.git $HOME/.nvm
 RUN echo 'export NVM_DIR="$HOME/.nvm"' >> $HOME/.bashrc
 RUN echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $HOME/.bashrc
@@ -49,17 +49,6 @@ RUN echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >>
 RUN bash -i -c "nvm install --lts"
 RUN bash -i -c "npm install -g yarn"
 
-# https://pip.pypa.io/en/stable/installation/
-RUN sh -c ". $HOME/.profile \
-    && python3 -m venv $HOME/local/python3 \
-    && . $HOME/local/python3/bin/activate \
-    && pip install --upgrade pip \
-    && pip install ansible paramiko"
-RUN echo 'export ANSIBLE_HOST_KEY_CHECKING=False' >> $HOME/.profile
-RUN echo 'alias peony="ANSIBLE_LOG_PATH=$HOME/tmp/$(date +%Y%m%d%H%M%S).log ansible-playbook"' >> $HOME/.profile
-RUN echo 'source $HOME/local/python3/bin/activate' >> $HOME/.zshrc
-
-ADD launch.sh /mint.sh
 RUN echo "$(date -u +%4Y%m%d%H%M%S)" | tee /VERSION
 
 VOLUME /srv
