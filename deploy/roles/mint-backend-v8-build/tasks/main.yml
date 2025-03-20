@@ -1,0 +1,25 @@
+- name: Download source code
+  ansible.builtin.unarchive:
+    src: https://github.com/iapt-platform/mint/archive/{{ mint_version }}.zip
+    dest: "{{ ansible_env.HOME }}/build"
+    remote_src: true
+    creates: "{{ ansible_env.HOME }}/build/mint-{{ mint_version }}"
+
+- name: Upload dashboard dist
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/tmp/mint-{{ mint_version }}/dashboard-v4/dashboard/dist"
+    dest: "{{ ansible_env.HOME }}/build/mint-{{ mint_version }}/dashboard-v4/dashboard"
+    mode: "0755"
+
+- name: Compress repo.xz
+  community.general.archive:
+    path: "{{ ansible_env.HOME }}/build/mint-{{ mint_version }}"
+    dest: "{{ ansible_env.HOME }}/build/mint-{{ mint_version }}.tar.xz"
+    format: xz
+    mode: "0444"
+
+- name: Download repo.xz
+  ansible.builtin.fetch:
+    src: "{{ ansible_env.HOME }}/build/mint-{{ mint_version }}.tar.xz"
+    dest: "{{ playbook_dir }}/tmp/"
+    mode: "0444"

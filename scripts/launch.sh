@@ -2,22 +2,28 @@
 
 set -e
 
-export PHP_VERSION="8.1"
-export CODE="mint-php${PHP_VERSION}"
+export USAGE="USAGE: $0 setup"
 
-export USAGE="USAGE: $0 MINT_VERSION TASK"
-
-if [ "$#" -ne 2 ]; then
+if [ "$#" -ne 1 ]; then
     echo $USAGE
-    exit 2
+    exit 1
 fi
 
-if [ "$2" == "fpm" || "$2" == "worker" ]; then
-    podman run --rm -it --events-backend=file --hostname=mint --network host -v $PWD:/srv:z $CODE /srv/launch.sh $2
+export WORK_DIR="/srv"
+
+if [ "$1" == "fpm" ]; then
+    echo "start fpm worker"
+    # TODO
 elif [ "$1" == "setup" ]; then
-    cd /srv/www/mint-
-elif [ "$1" == "shell" ]; then
-    podman run --rm -it --events-backend=file --hostname=mint --network host -v $PWD:/srv:z $CODE /bin/bash
+    cd $WORK_DIR/api-v8/
+    composer install --optimize-autoloader --no-dev
+    npm install
+    cd $WORK_DIR/api-v8/public/
+    composer install --optimize-autoloader --no-dev
+    npm install
+elif [ "$1" == "db-migrate" ]; then
+    echo "migrate database"
+    # TODO
 else
     echo $USAGE
     exit 1
