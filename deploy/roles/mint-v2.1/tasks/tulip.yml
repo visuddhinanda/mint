@@ -5,24 +5,24 @@
       - update
       - --optimize-autoloader
       - --no-dev
-    chdir: "{{ app_deploy_target }}/mint/dashboard-v4/rpc/tulip/tulip"
+    chdir: "{{ app_deploy_target }}/dashboard-v4/rpc/tulip/tulip"
 
 - name: upload tulip db/.env
   template:
     src: v2/tulip/db/env.j2
-    dest: "{{ app_deploy_target }}/mint/dashboard-v4/rpc/tulip/tulip/db/.env"
+    dest: "{{ app_deploy_target }}/dashboard-v4/rpc/tulip/tulip/db/.env"
     mode: "0644"
 
 - name: upload tulip config.php
   template:
     src: v2/tulip/config.php.j2
-    dest: "{{ app_deploy_target }}/mint/dashboard-v4/rpc/tulip/tulip/config.php"
+    dest: "{{ app_deploy_target }}/dashboard-v4/rpc/tulip/tulip/config.php"
     mode: "0644"
 
 - name: Setup tmp folder
   become: true
   ansible.builtin.file:
-    path: "{{ app_deploy_root }}/mint/dashboard-v4/rpc/tulip/tulip/tmp"
+    path: "{{ app_deploy_root }}/dashboard-v4/rpc/tulip/tulip/tmp"
     state: directory
     owner: "www-data"
     group: "www-data"
@@ -31,14 +31,7 @@
   become: true
   template:
     src: v2/tulip/service.conf.j2
-    dest: /usr/lib/systemd/system/{{ inventory_hostname }}-tulip.service
+    dest: /usr/lib/systemd/system/tulip.{{ app_domain }}.service
     owner: root
     group: root
     mode: "0644"
-
-- name: Run tulip db migrate
-  ansible.builtin.command:
-    argv:
-      - /usr/bin/dbmate
-      - up
-    chdir: "{{ app_deploy_target }}/mint/dashboard-v4/rpc/tulip/tulip/db"

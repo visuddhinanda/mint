@@ -1,11 +1,11 @@
 [Unit]
-Description=Mint {{ action }} worker for {{ inventory_hostname }}
+Description=Mint {{ action }} worker for {{ app_domain }}
 After=network.target
 
 [Service]
 Type=simple
 ExecStart=/usr/bin/php artisan mq:{{ action }}
-WorkingDirectory={{ app_deploy_target }}/mint
+WorkingDirectory={{ app_deploy_target }}
 User=www-data
 Group=www-data
 Restart=always

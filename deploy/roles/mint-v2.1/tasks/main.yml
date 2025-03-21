@@ -13,6 +13,11 @@
     remote_src: true
     creates: "{{ app_deploy_target }}"
 
+# - name: Upload shared
+#   ansible.posix.synchronize:
+#     src: "{{ playbook_dir }}/shared"
+#     dest: "/mnt/{{ app_domain }}/shared"
+
 - name: Upload dashboard-v4 dist
   ansible.posix.synchronize:
     src: "{{ playbook_dir }}/tmp/mint/dashboard-v4/dashboard/dist-{{ mint_version }}/"

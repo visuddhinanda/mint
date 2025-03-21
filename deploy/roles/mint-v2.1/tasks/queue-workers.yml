@@ -2,7 +2,7 @@
   become: true
   template:
     src: v2/queue-worker.service.j2
-    dest: /usr/lib/systemd/system/{{ inventory_hostname }}-{{ action }}-worker.service
+    dest: /usr/lib/systemd/system/{{ action }}.worker.{{ app_domain }}.service
     owner: root
     group: root
     mode: "0644"
@@ -13,7 +13,7 @@
   become: true
   template:
     src: v2/queue-worker.service.j2
-    dest: /usr/lib/systemd/system/{{ inventory_hostname }}-{{ action }}-worker.service
+    dest: /usr/lib/systemd/system/{{ action }}.worker.{{ app_domain }}.service
     owner: root
     group: root
     mode: "0644"
@@ -24,7 +24,7 @@
   become: true
   template:
     src: v2/queue-worker.service.j2
-    dest: /usr/lib/systemd/system/{{ inventory_hostname }}-{{ action }}-worker.service
+    dest: /usr/lib/systemd/system/{{ action }}.worker.{{ app_domain }}.service
     owner: root
     group: root
     mode: "0644"
@@ -35,7 +35,7 @@
   become: true
   template:
     src: v2/queue-worker.service.j2
-    dest: /usr/lib/systemd/system/{{ inventory_hostname }}-{{ action }}-worker.service
+    dest: /usr/lib/systemd/system/{{ action }}.worker.{{ app_domain }}.service
     owner: root
     group: root
     mode: "0644"
@@ -46,7 +46,7 @@
   become: true
   template:
     src: v2/queue-worker.service.j2
-    dest: /usr/lib/systemd/system/{{ inventory_hostname }}-{{ action }}-worker.service
+    dest: /usr/lib/systemd/system/{{ action }}.worker.{{ app_domain }}.service
     owner: root
     group: root
     mode: "0644"
@@ -57,7 +57,7 @@
   become: true
   template:
     src: v2/queue-worker.service.j2
-    dest: /usr/lib/systemd/system/{{ inventory_hostname }}-{{ action }}-worker.service
+    dest: /usr/lib/systemd/system/{{ action }}.worker.{{ app_domain }}.service
     owner: root
     group: root
     mode: "0644"

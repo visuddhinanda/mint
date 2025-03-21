@@ -5,13 +5,13 @@
       - install
       - --optimize-autoloader
       - --no-dev
-    chdir: "{{ app_deploy_target }}/mint/dashboard-v4/rpc/morus/morus"
+    chdir: "{{ app_deploy_target }}/dashboard-v4/rpc/morus/morus"
 
 - name: Upload morus rpc service
   become: true
   ansible.builtin.template:
     src: v2/morus.service.j2
-    dest: /usr/lib/systemd/system/{{ inventory_hostname }}-morus.service
+    dest: /usr/lib/systemd/system/morus.{{ app_domain }}.service
     owner: root
     group: root
     mode: "0644"

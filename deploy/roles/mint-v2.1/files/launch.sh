@@ -26,6 +26,22 @@ if [ "$1" == "setup" ]; then
     composer update --optimize-autoloader --no-dev
     echo "install v1 nodejs packages"
     npm install --production
+
+    echo "check file permissions"
+    cd $WORK_DIR/
+    chown -R www-data:www-data bootstrap/cache storage
+
+    cd $WORK_DIR/
+    echo "caching configuration "
+    su -c php artisan config:cache www-data
+    echo "caching events"
+    su -c php artisan event:cache www-data
+    echo "caching "
+    su -c php artisan www-data
+    echo "caching routes"
+    su -c php artisan route:cache www-data
+    echo "caching views"
+    su -c php artisan view:cache www-data
 else
     $@
 fi

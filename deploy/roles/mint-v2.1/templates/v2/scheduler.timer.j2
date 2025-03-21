@@ -1,10 +1,10 @@
 [Unit]
-Description=Runs Mint {{ inventory_hostname }} scheduler every minute
+Description=Runs Mint {{ app_domain }} scheduler every minute
 
 [Timer]
 OnBootSec=15minutes
 OnUnitActiveSec=1minute
-Unit={{ inventory_hostname }}-scheduler.service
+Unit=scheduler.{{ app_domain }}.service
 
 [Install]
 WantedBy=timers.target

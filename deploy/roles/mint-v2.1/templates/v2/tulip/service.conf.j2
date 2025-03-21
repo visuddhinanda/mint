@@ -1,11 +1,11 @@
 [Unit]
-Description=Mint tulip rpc service for {{ inventory_hostname }}
+Description=Mint tulip rpc service for {{ app_domain }}
 After=network.target
 
 [Service]
 Type=simple
 ExecStart=/usr/bin/php server.php
-WorkingDirectory={{ app_deploy_target }}/mint/dashboard-v4/rpc/tulip/tulip
+WorkingDirectory={{ app_deploy_target }}/dashboard-v4/rpc/tulip/tulip
 User=www-data
 Group=www-data
 Restart=always

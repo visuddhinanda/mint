@@ -8,18 +8,16 @@
   become: true
   template:
     src: v2/lily/services/server.service.j2
-    dest: /usr/lib/systemd/system/mint-{{ app_deploy_env }}-lily.service
+    dest: /usr/lib/systemd/system/rpc.lily.{{ app_domain }}.service
     owner: root
     group: root
     mode: "0644"
 
-- name: upload lily rpc worker({{ queue }}) service
+- name: upload lily rpc worker service
   become: true
   template:
     src: v2/lily/services/worker.service.j2
-    dest: /usr/lib/systemd/system/mint-{{ app_deploy_env }}-worker-{{ queue }}.service
+    dest: /usr/lib/systemd/system/worker.lily.{{ app_domain }}.service
     owner: root
     group: root
     mode: "0644"
-  vars:
-    queue: "palm.lily.tex-to-pdf"
