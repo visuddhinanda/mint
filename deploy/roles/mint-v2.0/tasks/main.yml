@@ -32,12 +32,6 @@
 
 - name: Setup dashboard
   ansible.builtin.import_tasks: antd-v4.yml
-- name: Setup laravel
-  ansible.builtin.import_tasks: laravel-v8.yml
 - name: Setup systemd services
   ansible.builtin.import_tasks: systemd.yml
 
-- name: Force systemd to reread configs
-  become: true
-  ansible.builtin.systemd:
-    daemon_reload: true
