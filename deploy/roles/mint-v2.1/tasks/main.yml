@@ -1,0 +1,42 @@
+- name: Create www folder
+  become: true
+  ansible.builtin.file:
+    path: "/mnt/www/{{ inventory_hostname }}"
+    state: directory
+    mode: "0755"
+
+- name: Download source code
+  ansible.builtin.unarchive:
+    src: https://github.com/iapt-platform/mint/archive/{{ mint_version }}.zip
+    dest: "/mnt/www/{{ inventory_hostname }}"
+    remote_src: true
+    creates: "{{ app_deploy_target }}"
+
+# - name: Install third packages
+#   ansible.builtin.command: docker/mint/run.sh {{ app_mint_image_name }} setup
+#   args:
+#     chdir: "{{ ansible_env.HOME }}/build/mint-{{ mint_version }}"
+#     creates: "{{ ansible_env.HOME }}/build/mint-{{ mint_version }}/api-v8/public/node_modules"
+
+# if [ "$1" == "fpm" ]; then
+#     echo "start fpm worker"
+#     # TODO
+# elif [ "$1" == "setup" ]; then
+#     cd $WORK_DIR/api-v8/
+#     composer install --optimize-autoloader --no-dev
+#     npm install
+#     cd $WORK_DIR/api-v8/public/
+#     composer install --optimize-autoloader --no-dev
+#     npm install
+# elif [ "$1" == "db-migrate" ]; then
+#     echo "migrate database"
+#     # TODO
+# else
+#     echo $USAGE
+#     exit 1
+# fi
+
+- name: Upload dashboard-v4 dist
+  ansible.posix.synchronize:
+    src: "{{ playbook_dir }}/tmp/mint/dashboard-v4/dashboard/dist-{{ mint_version }}"
+    dest: "{{ app_deploy_target }}/dashboard-v4/dashboard"

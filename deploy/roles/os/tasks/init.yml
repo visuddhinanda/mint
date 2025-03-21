@@ -12,3 +12,8 @@
   ansible.builtin.file:
     path: "{{ ansible_env.HOME }}/local/"
     state: directory
+
+- name: Create tmp folder
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/tmp/"
+    state: directory

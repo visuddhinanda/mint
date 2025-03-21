@@ -2,14 +2,14 @@
 
 set -e
 
-export USAGE="USAGE: $0 MINT_IMAGE TASK"
+export USAGE="USAGE: $0 MINT_IMAGE COMMAND"
 
-if [ "$#" -ne 2 ]; then
+if [[ "$#" -lt 2 ]]; then
     echo $USAGE
     exit 2
 fi
 
-export LAUNCH_MINT_CONTAINER="podman run --rm -it --events-backend=file --hostname=mint --network host -v $PWD:/srv:z $1"
+podman run --rm -it --events-backend=file --hostname=mint --network host -v $PWD:/srv:z $@
 
 if [ "$2" == "shell" ]; then
     $LAUNCH_MINT_CONTAINER /bin/bash
