@@ -11,7 +11,7 @@ class UsersDesensitize extends Command
 {
     /**
      * 对用户表进行脱敏，改写password email 两个字段数据.以test & admin开头的不会被改写
-     * php artisan users:desensitize
+     * php artisan users:desensitize --test
      * @var string
      */
     protected $signature = 'users:desensitize {--test}';
