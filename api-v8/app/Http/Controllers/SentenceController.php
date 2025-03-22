@@ -302,13 +302,15 @@ class SentenceController extends Controller
                 $power = ShareApi::getResPower($user["user_uid"], $channel->uid, 2);
                 if ($power < 20) {
                     //判断token
-                    if (isset($sent['access_token'])) {
-                        $key = AccessToken::where('res_id', $channelId)->value('token');
-                        $jwt = JWT::decode($sent['access_token'], new Key($key, 'HS512'));
-                        if ($jwt->book !== $sent['book_id']) {
-                            continue;
-                        }
-                    } else {
+                    if (!isset($sent['access_token'])) {
+                        Log::error('no access token');
+                        continue;
+                    }
+                    $key = AccessToken::where('res_id', $channelId)->value('token');
+                    $jwt = JWT::decode($sent['access_token'], new Key($key, 'HS512'));
+                    Log::debug('access token', ['jwt' => $jwt]);
+                    if ($jwt->book !== $sent['book_id']) {
+                        Log::error('access token error');
                         continue;
                     }
                 }

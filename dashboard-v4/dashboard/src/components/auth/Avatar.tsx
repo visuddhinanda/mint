@@ -16,6 +16,7 @@ import { useAppSelector } from "../../hooks";
 import { currentUser as _currentUser } from "../../reducers/current-user";
 import { TooltipPlacement } from "antd/lib/tooltip";
 import SettingModal from "./setting/SettingModal";
+import LoginButton from "./LoginButton";
 
 const { Title } = Typography;
 
@@ -82,16 +83,13 @@ const AvatarWidget = ({ style, placement = "bottomRight" }: IWidget) => {
       </ProCard>
     );
   };
-  const Login = () => (
-    <Link to="/anonymous/users/sign-in">
-      {intl.formatMessage({
-        id: "nut.users.sign-in-up.title",
-      })}
-    </Link>
-  );
+
   return (
     <>
-      <Popover content={user ? <UserCard /> : <Login />} placement={placement}>
+      <Popover
+        content={user ? <UserCard /> : <LoginButton />}
+        placement={placement}
+      >
         <span style={style}>
           <Avatar
             style={{ backgroundColor: user ? "#87d068" : "gray" }}

@@ -41,11 +41,12 @@ class ProjectTreeController extends Controller
         }
         $newData = [];
         foreach ($request->get('data') as $key => $value) {
-            $newData[] = [
+            $data = [
                 'uid' => Str::uuid(),
                 'old_id' => $value['id'],
                 'title' => $value['title'],
                 'type' => $value['type'],
+
                 'res_id' => $value['res_id'],
                 'parent_id' => $value['parent_id'],
                 'path' => null,
@@ -54,6 +55,10 @@ class ProjectTreeController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
+            if (isset($value['weight'])) {
+                $data['weight'] = $value['weight'];
+            }
+            $newData[] = $data;
         }
         foreach ($newData as $key => $value) {
             if ($value['parent_id']) {

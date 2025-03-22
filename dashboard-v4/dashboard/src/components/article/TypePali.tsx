@@ -26,6 +26,7 @@ import { useAppSelector } from "../../hooks";
 import { currentUser } from "../../reducers/current-user";
 import { ArticleTplModal } from "../template/Builder/ArticleTpl";
 import { IPayload, ITokenCreate, ITokenCreateResponse } from "../api/token";
+import TokenModal from "./TokenModal";
 
 interface IWidget {
   type?: ArticleType;
@@ -72,7 +73,6 @@ const TypePaliWidget = ({
   const [tplOpen, setTplOpen] = useState(false);
   const user = useAppSelector(currentUser);
   const channels = channelId?.split("_");
-  const _id = articleId?.split("-");
 
   const srcDataMode = mode === "edit" || mode === "wbw" ? "edit" : "read";
 
@@ -238,37 +238,6 @@ const TypePaliWidget = ({
     }
   }
 
-  const getAccessToken = async () => {
-    if (!channels || !_id || _id.length < 2) {
-      console.error(
-        "channels or book or para is undefined",
-        channels,
-        book,
-        para
-      );
-      return null;
-    }
-    const _book = _id[0];
-    const _para = _id[1];
-    let payload: IPayload[] = [];
-    payload.push({
-      res_id: channels[0],
-      res_type: "channel",
-      book: parseInt(_book),
-      para_start: parseInt(_para),
-      para_end: parseInt(_para) + 100,
-    });
-    const url = "/v2/access-token";
-    const values = { payload: payload };
-    console.info("token api request", url, values);
-    const res = await post<ITokenCreate, ITokenCreateResponse>(url, values);
-    console.info("token api response", res);
-    if (res.ok) {
-      return res.data.rows[0].token;
-    } else {
-      return null;
-    }
-  };
   return (
     <div>
       {loading ? (
@@ -305,10 +274,6 @@ const TypePaliWidget = ({
                     key: "task",
                     label: "生成任务",
                   },
-                  {
-                    key: "token",
-                    label: "获取访问密钥",
-                  },
                 ],
                 onClick: ({ key }) => {
                   switch (key) {
@@ -317,12 +282,6 @@ const TypePaliWidget = ({
                       break;
                     case "tpl":
                       setTplOpen(true);
-                      break;
-                    case "token":
-                      const token = getAccessToken();
-                      if (typeof token === "string") {
-                        alert(token);
-                      }
                       break;
                   }
                 },

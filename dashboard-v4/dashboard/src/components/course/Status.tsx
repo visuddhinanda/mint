@@ -20,6 +20,7 @@ import { useAppSelector } from "../../hooks";
 import { currentUser } from "../../reducers/current-user";
 import UserAction from "./UserAction";
 import { getStatusColor, getStudentActionsByStatus } from "./RolePower";
+import LoginButton from "../auth/LoginButton";
 
 const { Paragraph, Text } = Typography;
 
@@ -113,11 +114,7 @@ const StatusWidget = ({ data }: IWidget) => {
   } else {
     //未登录
     labelStatus = "未登录";
-    operation = (
-      <Link to="/anonymous/users/sign-in" target="_blank">
-        {"登录"}
-      </Link>
-    );
+    operation = <LoginButton target="_blank" />;
   }
 
   return data?.id ? (

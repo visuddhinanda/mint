@@ -246,6 +246,7 @@ export const SentEditInner = ({
         simNum={simNum}
         loadedRes={loadedRes}
         wbwData={wbwData}
+        origin={origin}
         magicDictLoading={magicDictLoading}
         compact={isCompact}
         mode={articleMode}

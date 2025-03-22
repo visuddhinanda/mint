@@ -219,6 +219,7 @@ const ProjectListWidget = ({
         request={async (params = {}, sorter, filter) => {
           console.log(params, sorter, filter);
           let url = `/v2/project?view=studio&type=${activeKey}`;
+          url += `&studio=${studioName}`;
           const offset =
             ((params.current ? params.current : 1) - 1) *
             (params.pageSize ? params.pageSize : 20);

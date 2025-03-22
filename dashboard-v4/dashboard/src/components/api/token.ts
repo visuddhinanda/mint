@@ -4,7 +4,10 @@ export interface IPayload {
   book?: number;
   para_start?: number;
   para_end?: number;
+  power: TPower;
 }
+
+export type TPower = "readonly" | "edit";
 
 export interface ITokenCreate {
   payload: IPayload[];

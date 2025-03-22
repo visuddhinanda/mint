@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\AiModel;
 use Illuminate\Http\Request;
 use App\Http\Resources\AiAssistantResource;
+use App\Http\Api\AuthApi;
+use Illuminate\Support\Facades\Log;
 
 class AiAssistantController extends Controller
 {
@@ -16,7 +18,13 @@ class AiAssistantController extends Controller
     public function index(Request $request)
     {
         //
-        $table = AiModel::whereNotNull('owner_id');
+        $user = AuthApi::current($request);
+        if (!$user) {
+            Log::error('notification auth failed {request}', ['request' => $request]);
+            return $this->error(__('auth.failed'), 401, 401);
+        }
+        $table = AiModel::where('owner_id', $request->get('user_id'))
+            ->orWhere('privacy', 'public');
         if ($request->has('keyword')) {
             $table = $table->where('name', 'like', '%' . $request->get('keyword') . '%');
         }

@@ -23,6 +23,7 @@ import { AdminIcon } from "../../assets/icon";
 import User from "./User";
 import { fullUrl } from "../../utils";
 import Studio from "./Studio";
+import LoginButton from "./LoginButton";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -45,13 +46,7 @@ const SignInAvatarWidget = ({ style, placement = "bottomRight" }: IWidget) => {
     user?.roles?.includes("root") || user?.roles?.includes("administrator");
 
   if (typeof user === "undefined") {
-    return (
-      <Link to="/anonymous/users/sign-in">
-        {intl.formatMessage({
-          id: "nut.users.sign-in-up.title",
-        })}
-      </Link>
-    );
+    return <LoginButton />;
   } else {
     const welcome = (
       <Paragraph>

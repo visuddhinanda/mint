@@ -24,9 +24,15 @@ class ProjectController extends Controller
             Log::error('notification auth failed {request}', ['request' => $request]);
             return $this->error(__('auth.failed'), 401, 401);
         }
+        if ($request->has('studio')) {
+            $studioId = StudioApi::getIdByName($request->get('studio'));
+        } else {
+            $studioId = $user['user_uid'];
+        }
+
         switch ($request->get('view')) {
             case 'studio':
-                $table = Project::where('owner_id', $user['user_uid'])
+                $table = Project::where('owner_id', $studioId)
                     ->whereNull('parent_id')
                     ->where('type', $request->get('type', 'instance'));
                 break;
@@ -34,8 +40,14 @@ class ProjectController extends Controller
                 $table = Project::where('uid', $request->get('project_id'))
                     ->orWhereJsonContains('path', $request->get('project_id'));
                 break;
+            case 'community':
+                $table = Project::where('owner_id', '<>', $studioId)
+                    ->whereNull('parent_id')
+                    ->where('privacy', 'public')
+                    ->where('type', $request->get('type', 'instance'));
+                break;
             default:
-                # code...
+                return $this->error('view', 200, 200);
                 break;
         }
 
@@ -100,6 +112,7 @@ class ProjectController extends Controller
         $new->owner_id = $studioId;
         $new->type = $request->get('type', 'instance');
 
+
         if (Str::isUuid($request->get('parent_id'))) {
             $parentPath = Project::where('uid', $request->get('parent_id'))->value('path');
             $parentPath = json_decode($parentPath);
@@ -126,16 +139,6 @@ class ProjectController extends Controller
         return $this->ok(new ProjectResource($project));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Project  $project
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Project $project)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
@@ -147,6 +150,33 @@ class ProjectController extends Controller
     public function update(Request $request, Project $project)
     {
         //
+        $user = AuthApi::current($request);
+        if (!$user) {
+            return $this->error(__('auth.failed'), 401, 401);
+        }
+        if (!self::canEdit($user['user_uid'], $project->owner_id)) {
+            return $this->error(__('auth.failed'), 403, 403);
+        }
+
+        $project->title = $request->get('title');
+        $project->description = $request->get('description');
+        $project->parent_id = $request->get('parent_id');
+        $project->editor_id = $user['user_uid'];
+        $project->privacy = $request->get('privacy');
+
+
+        if (Str::isUuid($request->get('parent_id'))) {
+            $parentPath = Project::where('uid', $request->get('parent_id'))->value('path');
+            $parentPath = json_decode($parentPath);
+            if (!is_array($parentPath)) {
+                $parentPath = array();
+            }
+            array_push($parentPath, $project->parent_id);
+            $project->path = json_encode($parentPath, JSON_UNESCAPED_UNICODE);
+        }
+        $project->save();
+
+        return $this->ok(new ProjectResource($project));
     }
 
     /**

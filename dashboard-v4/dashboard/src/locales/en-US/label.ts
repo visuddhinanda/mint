@@ -76,6 +76,15 @@ const items = {
   "labels.task.category.review": "review",
   "labels.task.category.proofread": "proofread",
   "labels.ai-assistant": "AI Assistant",
+  "labels.filters.includes": "includes",
+  "labels.filters.not-includes": "not includes",
+  "labels.filters.equal": "equal",
+  "labels.filters.not-equal": "not equal",
+  "labels.filters.null": "null",
+  "labels.filters.not-null": "not null",
+  "labels.filters.and": "and",
+  "labels.filters.or": "or",
+  "labels.task.workflows": "Workflows",
 };
 
 export default items;

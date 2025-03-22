@@ -1,4 +1,4 @@
-import { Button, Popover, Select, Space, Typography } from "antd";
+import { Button, Popover, Typography } from "antd";
 import { IFilter } from "./TaskList";
 import { useRef, useState } from "react";
 import { useIntl } from "react-intl";
@@ -21,7 +21,6 @@ const FilterItem = ({ item, sn, onRemove }: IProps) => {
   const intl = useIntl();
   return (
     <ProForm.Group>
-      <Text>{sn === 0 ? "当" : "且"}</Text>
       <ProFormSelect
         initialValue={item.field}
         name={`field_${sn}`}
@@ -46,15 +45,18 @@ const FilterItem = ({ item, sn, onRemove }: IProps) => {
         name={`operator_${sn}`}
         style={{ width: 120 }}
         options={[
-          {
-            value: "includes",
-            label: "包含",
-          },
-          {
-            value: "not-includes",
-            label: "不包含",
-          },
-        ]}
+          "includes",
+          "not-includes",
+          "equal",
+          "not-equal",
+          "null",
+          "not-null",
+        ].map((item) => {
+          return {
+            value: item,
+            label: intl.formatMessage({ id: `labels.filters.${item}` }),
+          };
+        })}
       />
       <UserSelect
         name={"value_" + sn}
@@ -83,7 +85,7 @@ const Filter = ({ initValue, onChange }: IWidget) => {
       arrowPointAtCenter
       title={intl.formatMessage({ id: "labels.filter" })}
       content={
-        <div style={{ width: 750 }}>
+        <div style={{ width: 780 }}>
           <ProForm
             formRef={formRef}
             submitter={{
@@ -133,22 +135,45 @@ const Filter = ({ initValue, onChange }: IWidget) => {
               }
             }}
           >
-            {filterList.map((item, id) => {
-              return (
-                <FilterItem
-                  item={item}
-                  key={id}
-                  sn={id}
-                  onRemove={() => {
-                    setFilterList((origin) => {
-                      return origin.filter(
-                        (value, index: number) => index !== id
-                      );
-                    });
-                  }}
-                />
-              );
-            })}
+            <ProForm.Group>
+              <Text type="secondary">{"满足以下"}</Text>
+              <ProFormSelect
+                name={"operator"}
+                initialValue={"and"}
+                style={{ width: 120 }}
+                options={["and", "or"].map((item) => {
+                  return {
+                    value: item,
+                    label: intl.formatMessage({ id: `labels.filters.${item}` }),
+                  };
+                })}
+              />
+            </ProForm.Group>
+            <div
+              style={{
+                border: "1px solid rgba(128, 128, 128, 0.5)",
+                borderRadius: 6,
+                marginBottom: 8,
+                padding: "8px 0 8px 8px",
+              }}
+            >
+              {filterList.map((item, id) => {
+                return (
+                  <FilterItem
+                    item={item}
+                    key={id}
+                    sn={id}
+                    onRemove={() => {
+                      setFilterList((origin) => {
+                        return origin.filter(
+                          (value, index: number) => index !== id
+                        );
+                      });
+                    }}
+                  />
+                );
+              })}
+            </div>
           </ProForm>
         </div>
       }

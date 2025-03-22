@@ -14,6 +14,7 @@
 
 import { IStudio } from "../auth/Studio";
 import { IUser } from "../auth/User";
+import { TPrivacy } from "./ai";
 
 export type TTaskStatus =
   | "pending"
@@ -31,6 +32,7 @@ export interface IProject {
   id: string;
   title: string;
   description: string | null;
+  weight: number;
 }
 
 export type TTaskCategory =
@@ -141,6 +143,7 @@ export interface IProjectData {
   id: string;
   title: string;
   type: TProjectType;
+  weight: number;
   description: string | null;
   parent?: IProjectData | null;
   parent_id?: string | null;
@@ -150,6 +153,7 @@ export interface IProjectData {
   owner: IStudio;
   editor: IUser;
   status: ITaskStatusInProject[];
+  privacy: TPrivacy;
   created_at: string;
   updated_at: string;
   deleted_at?: string | null;
@@ -163,6 +167,8 @@ export interface IProjectUpdateRequest {
   studio_name?: string;
   title: string;
   type: TProjectType;
+  privacy?: TPrivacy;
+  weight?: number;
   description?: string | null;
   parent_id?: string | null;
   res_id?: string;
@@ -222,6 +228,7 @@ export interface ITaskGroupResponse {
 export interface IProjectTreeInsertRequest {
   studio_name: string;
   parent_id?: string | null;
+  title?: string;
   data: IProjectUpdateRequest[];
 }
 
