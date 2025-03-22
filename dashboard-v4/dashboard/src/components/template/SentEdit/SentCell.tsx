@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { useIntl } from "react-intl";
-import { Divider, message as AntdMessage, Modal } from "antd";
+import {
+  Divider,
+  message as AntdMessage,
+  Modal,
+  Collapse,
+  CollapseProps,
+} from "antd";
 import { ExclamationCircleOutlined, LoadingOutlined } from "@ant-design/icons";
 
 import { ISentence } from "../SentEdit";
@@ -30,6 +36,7 @@ import { randomString } from "../../../utils";
 import User from "../../auth/User";
 import { ISentenceListResponse } from "../../api/Corpus";
 import { toISentence } from "./SentCanRead";
+import SentAttachment from "./SentAttachment";
 
 interface ISnowFlakeResponse {
   ok: boolean;
@@ -475,7 +482,7 @@ const SentCellWidget = ({
           </div>
         ) : undefined}
       </SentEditMenu>
-      {compact ? undefined : <Divider style={{ margin: "10px 0" }} />}
+
       <CopyToModal
         important
         sentencesId={[sentId]}
@@ -483,6 +490,16 @@ const SentCellWidget = ({
         open={copyOpen}
         onClose={() => setCopyOpen(false)}
       />
+      <Collapse bordered={false} style={{ backgroundColor: "unset" }}>
+        <Collapse.Panel
+          header={"attachment"}
+          key="parent2"
+          style={{ backgroundColor: "unset" }}
+        >
+          <SentAttachment sentenceId={sentData?.id} />
+        </Collapse.Panel>
+      </Collapse>
+      {compact ? undefined : <Divider style={{ margin: "10px 0" }} />}
     </div>
   );
 };

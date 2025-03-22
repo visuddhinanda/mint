@@ -32,9 +32,13 @@ import RecentModal from "../../../components/recent/RecentModal";
 import { useAppSelector } from "../../../hooks";
 import { add } from "../../../reducers/inline-dict";
 import { paraParam } from "../../../reducers/para-change";
-import { get } from "../../../request";
+import { get, post } from "../../../request";
 import store from "../../../store";
-import { IRecent } from "../../../components/recent/RecentList";
+import {
+  IRecent,
+  IRecentRequest,
+  IRecentResponse,
+} from "../../../components/recent/RecentList";
 import { fullUrl } from "../../../utils";
 import ThemeSelect from "../../../components/general/ThemeSelect";
 import {
@@ -145,6 +149,26 @@ const Widget = () => {
     console.log("发布mode变更", currMode);
     store.dispatch(modeChange({ mode: currMode as ArticleMode }));
   }, [currMode]);
+
+  useEffect(() => {
+    if (!type || !id) {
+      return;
+    }
+    const url = "/v2/recent";
+    // 将 Map 转换为普通对象
+    const mapObject = Object.fromEntries(searchParams);
+    // 将普通对象序列化为 JSON 字符串
+    const jsonString = JSON.stringify(mapObject);
+    const data: IRecentRequest = {
+      type: type as ArticleType,
+      article_id: id,
+      param: jsonString,
+    };
+    console.info("recent scan api request", url, data);
+    post<IRecentRequest, IRecentResponse>(url, data).then((json) => {
+      console.info("recent scan api response", json);
+    });
+  }, [id, searchParams, type]);
 
   console.log(anchorNavOpen, anchorNavShow);
 

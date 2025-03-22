@@ -1,7 +1,7 @@
 import { IStudio } from "../auth/Studio";
 import { IUser } from "../auth/User";
 
-export type TPrivacy = "private" | "public";
+export type TPrivacy = "private" | "public" | "disable";
 
 export interface IKimiResponse {
   id: string;

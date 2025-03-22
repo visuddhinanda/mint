@@ -35,16 +35,19 @@ class AccessTokenController extends Controller
         $result = array();
         foreach ($payload as $key => $value) {
             //获取token
-            $token = AccessToken::where('res_type', $value['res_type'])
-                ->where('res_id', $value['res_id'])
-                ->first();
-            if (!$token) {
-                $token = new AccessToken();
-                $token->res_type = $value['res_type'];
-                $token->res_id = $value['res_id'];
-                $token->token = Str::uuid();
+            $token = AccessToken::firstOrNew(
+                [
+                    'res_type' => $value['res_type'],
+                    'res_id' => $value['res_id']
+                ],
+                [
+                    'token' => (string)Str::uuid()
+                ]
+            );
+            if (!$token->exists) {
                 $token->save();
             }
+
             try {
                 $jwt = JWT::encode($value, $token->token, 'HS512');
             } catch (\Exception $e) {

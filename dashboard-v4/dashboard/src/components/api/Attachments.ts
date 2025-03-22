@@ -24,3 +24,15 @@ export interface IAttachmentListResponse {
   message: string;
   data: { rows: IAttachmentRequest[]; count: number };
 }
+
+export interface IResAttachmentData {
+  uid: string;
+  sentence_id: string;
+  attachment_id: string;
+  attachment: IAttachmentRequest;
+}
+export interface IResAttachmentListResponse {
+  ok: boolean;
+  message: string;
+  data: { rows: IResAttachmentData[]; count: number };
+}

@@ -46,10 +46,10 @@ const UserSelectWidget = ({
         console.log("keyWord", keyWords);
 
         if (typeof keyWords === "string") {
-          const json = await get<IUserListResponse>(
-            `/v2/ai-assistant?keyword=${keyWords}`
-          );
-          console.info("api response user select", json);
+          const url = `/v2/ai-assistant?keyword=${keyWords}`;
+          console.info("ai assistant api request", url);
+          const json = await get<IUserListResponse>(url);
+          console.info("ai assistant api response ", json);
           const userList: RequestOptionsType[] = json.data.rows.map((item) => {
             return {
               value: item.id,

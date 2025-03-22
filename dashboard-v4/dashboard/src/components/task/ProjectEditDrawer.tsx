@@ -1,4 +1,4 @@
-import { Button, Drawer, Space } from "antd";
+import { Drawer } from "antd";
 import { useEffect, useState } from "react";
 
 import ProjectEdit from "./ProjectEdit";
@@ -37,11 +37,6 @@ const ProjectEditDrawer = ({
         onClose={onCloseDrawer}
         open={open}
         destroyOnClose
-        extra={
-          <Space>
-            <Button type="primary">从模版创建任务</Button>
-          </Space>
-        }
       >
         <ProjectEdit studioName={studioName} projectId={projectId} />
       </Drawer>

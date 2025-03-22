@@ -134,6 +134,16 @@ const LeftSiderWidget = ({ selectedKeys = "", openKeys }: IWidgetHeadBar) => {
               ),
               key: "task_projects",
             },
+            {
+              label: (
+                <Link to={`${urlBase}/task/workflows`}>
+                  {intl.formatMessage({
+                    id: "labels.task.workflows",
+                  })}
+                </Link>
+              ),
+              key: "task_workflows",
+            },
           ],
         },
         {

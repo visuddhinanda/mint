@@ -19,6 +19,7 @@ class ProjectApi
                 'id' => $id,
                 'title' => $project->title,
                 'type' => $project->type,
+                'weight' => $project->weight,
                 'description' => $project->description,
             ];
         } else {
@@ -40,6 +41,7 @@ class ProjectApi
                         'id' => $id,
                         'title' => $project->title,
                         'type' => $project->type,
+                        'weight' => $project->weight,
                         'description' => $project->description,
                     ];
                     continue;

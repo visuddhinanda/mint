@@ -31,6 +31,7 @@ class AiAssistantApi
             'nickName' => $user->name,
             'userName' => $user->real_name,
             'realName' => $user->real_name,
+            'roles' => ['ai'],
             'sn' => 0,
         ];
 

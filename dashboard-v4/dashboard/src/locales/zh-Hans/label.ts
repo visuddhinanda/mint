@@ -84,6 +84,15 @@ const items = {
   "labels.task.category.review": "审稿",
   "labels.task.category.proofread": "proofread",
   "labels.ai-assistant": "人工智能助手",
+  "labels.filters.includes": "包含",
+  "labels.filters.not-includes": "不包含",
+  "labels.filters.equal": "等于",
+  "labels.filters.not-equal": "不等于",
+  "labels.filters.null": "为空",
+  "labels.filters.not-null": "不为空",
+  "labels.filters.and": "全部条件",
+  "labels.filters.or": "任一条件",
+  "labels.task.workflows": "工作流",
 };
 
 export default items;

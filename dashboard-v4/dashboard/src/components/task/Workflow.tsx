@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { IProjectData, ITaskData } from "../api/task";
-import ProjectList from "./ProjectList";
+import ProjectList, { TView } from "./ProjectList";
 import ProjectTask from "./ProjectTask";
-import { Modal } from "antd";
+import { Button, Card, Modal, Tree } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Key } from "antd/es/table/interface";
 
 interface IModal {
   tiger?: React.ReactNode;
@@ -55,24 +57,68 @@ interface IWidget {
 }
 
 const Workflow = ({ studioName, onSelect, onData }: IWidget) => {
-  const [projectId, setProjectId] = useState<string>();
+  const [project, setProject] = useState<IProjectData>();
+  const [view, setView] = useState<TView>("studio");
   return (
     <div style={{ display: "flex" }}>
-      <div style={{ minWidth: 300, flex: 1 }}>
-        <ProjectList
-          studioName={studioName}
-          type="workflow"
-          readonly
-          onSelect={(data) => setProjectId(data.id)}
+      <div style={{ minWidth: 200, flex: 1 }}>
+        <Tree
+          multiple={false}
+          defaultSelectedKeys={["studio"]}
+          treeData={[
+            { title: "my", key: "studio" },
+            { title: "shared", key: "shared" },
+            { title: "community", key: "community" },
+            { title: "authors", key: "authors" },
+          ]}
+          onSelect={(selectedKeys: Key[]) => {
+            console.debug("selectedKeys", selectedKeys);
+            if (selectedKeys.length > 0) {
+              setProject(undefined);
+              setView(selectedKeys[0].toString() as TView);
+            }
+          }}
         />
       </div>
-      <div style={{ flex: 3 }}>
-        <ProjectTask
-          studioName={studioName}
-          projectId={projectId}
-          readonly
-          onChange={onData}
-        />
+      <div style={{ flex: 5 }}>
+        <div style={{ display: project ? "block" : "none" }}>
+          <Card
+            title={
+              project ? (
+                <>
+                  <Button
+                    type="link"
+                    icon={<ArrowLeftOutlined />}
+                    onClick={() => setProject(undefined)}
+                  />
+                  {project.title}
+                </>
+              ) : (
+                "请选择一个工作流"
+              )
+            }
+          >
+            {project ? (
+              <ProjectTask
+                studioName={studioName}
+                projectId={project.id}
+                readonly={view !== "studio"}
+                onChange={onData}
+              />
+            ) : (
+              <></>
+            )}
+          </Card>
+        </div>
+        <div style={{ display: project ? "none" : "block" }}>
+          <ProjectList
+            studioName={studioName}
+            view={view}
+            type="workflow"
+            readonly
+            onSelect={(data: IProjectData) => setProject(data)}
+          />
+        </div>
       </div>
     </div>
   );

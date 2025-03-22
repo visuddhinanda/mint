@@ -98,7 +98,12 @@ const TaskTable = ({ tasks }: IWidget) => {
           {tasksTitle?.map((row, level) => {
             return (
               <tr>
-                {level === 0 ? <th rowSpan={2}>project</th> : undefined}
+                {level === 0 ? (
+                  <>
+                    <th rowSpan={2}>project</th>
+                    <th>weight</th>
+                  </>
+                ) : undefined}
                 {row.map((task, index) => {
                   return (
                     <th
@@ -118,6 +123,7 @@ const TaskTable = ({ tasks }: IWidget) => {
           {projects?.map((row, index) => (
             <tr key={index}>
               <td>{row.title}</td>
+              <td>{row.weight}</td>
               {dataHeading?.map((task, id) => {
                 const taskData = tasks?.find(
                   (value: ITaskData) =>
