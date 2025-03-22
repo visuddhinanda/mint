@@ -15,5 +15,5 @@
     image: "{{ app_mint_image_name }}"
     command: "/srv/scripts/worker-{{ zone_name }}-{{ worker_name }}.sh"
     volumes:
-      - "{{ app_deploy_target }}:/srv"
+      - "{{ app_deploy_target }}:/srv:z"
     # auto_remove: true

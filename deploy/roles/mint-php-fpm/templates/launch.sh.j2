@@ -1,5 +1,5 @@
 #!/bin/sh
 
-set -i 's/^listen = /listen = {{ app_php_fpm_port }}/' /etc/php/{{ app_php_version }}/fpm/php-fpm.conf
+sed -i 's/^listen = .*/listen = 9000/g' /etc/php/{{ app_php_version }}/fpm/pool.d/www.conf
 
 /usr/sbin/php-fpm{{ app_php_version }} --nodaemonize --fpm-config /etc/php/{{ app_php_version }}/fpm/php-fpm.conf

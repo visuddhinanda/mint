@@ -14,6 +14,8 @@
     name: "{{ app_domain }}-fpm-{{ app_php_fpm_port }}"
     image: "{{ app_mint_image_name }}"
     command: "/srv/scripts/php-fpm.sh"
+    ports:
+      - "0.0.0.0:{{ app_php_fpm_port }}:9000/tcp"
     volumes:
-      - "{{ app_deploy_target }}:/srv"
-    auto_remove: true
+      - "{{ app_deploy_target }}:/srv:z"
+    # auto_remove: true
