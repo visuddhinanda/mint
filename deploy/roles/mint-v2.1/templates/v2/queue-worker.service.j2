@@ -1,10 +1,10 @@
 [Unit]
-Description=Mint {{ action }} worker for {{ app_domain }}
+Description=Mint {{ name }} worker for {{ app_domain }}
 After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/php artisan mq:{{ action }}
+ExecStart=/usr/bin/php artisan mq:{{ name }}
 WorkingDirectory={{ app_deploy_target }}
 User=www-data
 Group=www-data

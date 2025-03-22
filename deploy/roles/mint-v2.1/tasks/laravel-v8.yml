@@ -1,18 +1,3 @@
-- name: Upload launch.sh
-  ansible.builtin.copy:
-    src: launch.sh
-    dest: "{{ app_deploy_target }}/scripts/"
-    mode: "0555"
-
-- name: Setup third packages
-  ansible.builtin.command:
-    argv:
-      - "{{ app_deploy_target }}/docker/mint/run.sh"
-      - "{{ app_mint_image_name }}"
-      - setup
-    chdir: "{{ app_deploy_target }}/"
-    creates: "{{ app_deploy_target }}/api-v8/public/node_modules"
-
 - name: Upload .env(v2)
   ansible.builtin.template:
     src: v2/env.j2
@@ -30,35 +15,41 @@
     src: v1/config.js.j2
     dest: "{{ app_deploy_target }}/api-v8/public/app/config.js"
     mode: "0444"
+# - name: Setup third packages
+#   ansible.builtin.command:
+#     argv:
+#       - "{{ app_deploy_target }}/docker/mint/run.sh"
+#       - "{{ app_mint_image_name }}"
+#       - setup
+#     chdir: "{{ app_deploy_target }}/"
+#     creates: "{{ app_deploy_target }}/api-v8/public/node_modules"
+# - name: Upload launch.sh
+#   ansible.builtin.copy:
+#     src: launch.sh
+#     dest: "{{ app_deploy_target }}/scripts/"
+#     mode: "0555"
+# # https://laravel.com/docs/10.x/scheduling#running-the-scheduler
+# - name: Upload scheduler service
+#   become: true
+#   ansible.builtin.template:
+#     src: v2/scheduler.service.j2
+#     dest: /usr/lib/systemd/system/scheduler.{{ app_domain }}.service
+#     owner: root
+#     group: root
+#     mode: "0644"
 
-- name: Setup sqlite3 db for v1
-  ansible.builtin.file:
-    src: /mnt/{{ app_domain }}/shared/appdata
-    dest: "{{ app_deploy_target }}/api-v8/storage/app/data"
-    state: link
+# # https://wiki.archlinux.org/title/Systemd/Timers
+# - name: Upload scheduler timer
+#   become: true
+#   ansible.builtin.template:
+#     src: v2/scheduler.timer.j2
+#     dest: /usr/lib/systemd/system/scheduler.{{ app_domain }}.timer
+#     owner: root
+#     group: root
+#     mode: "0644"
 
-# https://laravel.com/docs/10.x/scheduling#running-the-scheduler
-- name: Upload scheduler service
-  become: true
-  ansible.builtin.template:
-    src: v2/scheduler.service.j2
-    dest: /usr/lib/systemd/system/scheduler.{{ app_domain }}.service
-    owner: root
-    group: root
-    mode: "0644"
-
-# https://wiki.archlinux.org/title/Systemd/Timers
-- name: Upload scheduler timer
-  become: true
-  ansible.builtin.template:
-    src: v2/scheduler.timer.j2
-    dest: /usr/lib/systemd/system/scheduler.{{ app_domain }}.timer
-    owner: root
-    group: root
-    mode: "0644"
-
-- name: Setup laravel queue workers
-  ansible.builtin.import_tasks: queue-workers.yml
+# - name: Setup laravel queue workers
+#   ansible.builtin.import_tasks: queue-workers.yml
 # - name: Setup morus service
 #   ansible.builtin.import_tasks: morus.yml
 

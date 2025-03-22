@@ -1,27 +1,20 @@
-- name: Create www folder
-  become: true
-  ansible.builtin.file:
-    path: "/mnt/{{ app_domain }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-    mode: "0755"
-
 - name: Download source code
   ansible.builtin.unarchive:
     src: https://github.com/iapt-platform/mint/archive/{{ mint_version }}.zip
-    dest: "/mnt/{{ app_domain }}"
+    dest: "{{ app_deploy_target | dirname }}"
     remote_src: true
     creates: "{{ app_deploy_target }}"
-
-# - name: Upload shared
-#   ansible.posix.synchronize:
-#     src: "{{ playbook_dir }}/shared"
-#     dest: "/mnt/{{ app_domain }}/shared"
 
 - name: Upload dashboard-v4 dist
   ansible.posix.synchronize:
     src: "{{ playbook_dir }}/tmp/mint/dashboard-v4/dashboard/dist-{{ mint_version }}/"
     dest: "{{ app_deploy_target }}/dashboard-v4/dashboard/dist/"
+
+- name: Upload docker shell script
+  ansible.builtin.template:
+    src: containers/shell.sh.j2
+    dest: "{{ app_deploy_target }}/scripts/shell.sh"
+    mode: "0555"
 
 - name: Setup laravel
   ansible.builtin.import_tasks: laravel-v8.yml
