@@ -15,6 +15,21 @@
     src: v1/config.js.j2
     dest: "{{ app_deploy_target }}/api-v8/public/app/config.js"
     mode: "0444"
+
+- name: Upload vendors.sh
+  ansible.builtin.copy:
+    src: vendors.sh
+    dest: "{{ app_deploy_target }}/scripts/"
+    mode: "0555"
+
+- name: Initialize vendors and configuration
+  containers.podman.podman_container:
+    name: mint-initialize-vendors-configs
+    image: "{{ app_mint_image_name }}"
+    command: /srv/scripts/vendors.sh
+    volumes:
+      - "{{ app_deploy_target }}:/srv"
+    auto_remove: true
 # - name: Setup third packages
 #   ansible.builtin.command:
 #     argv:
@@ -23,11 +38,7 @@
 #       - setup
 #     chdir: "{{ app_deploy_target }}/"
 #     creates: "{{ app_deploy_target }}/api-v8/public/node_modules"
-# - name: Upload launch.sh
-#   ansible.builtin.copy:
-#     src: launch.sh
-#     dest: "{{ app_deploy_target }}/scripts/"
-#     mode: "0555"
+
 # # https://laravel.com/docs/10.x/scheduling#running-the-scheduler
 # - name: Upload scheduler service
 #   become: true

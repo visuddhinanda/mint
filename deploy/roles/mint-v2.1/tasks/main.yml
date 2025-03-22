@@ -17,7 +17,7 @@
     mode: "0555"
 
 - name: Setup laravel
-  ansible.builtin.import_tasks: laravel-v8.yml
+  ansible.builtin.import_tasks: laravel.yml
 
 - name: Force systemd to reread configs
   become: true
