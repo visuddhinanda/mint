@@ -1,0 +1,19 @@
+- name: Upload php-fpm.sh
+  ansible.builtin.template:
+    src: launch.sh.j2
+    dest: "{{ app_deploy_target }}/scripts/php-fpm.sh"
+    mode: "0555"
+
+- name: Stop php-fpm worker
+  containers.podman.podman_container:
+    name: "{{ app_domain }}-fpm-{{ app_php_fpm_port }}"
+    state: absent
+
+- name: Start php-fpm worker
+  containers.podman.podman_container:
+    name: "{{ app_domain }}-fpm-{{ app_php_fpm_port }}"
+    image: "{{ app_mint_image_name }}"
+    command: "/srv/scripts/php-fpm.sh"
+    volumes:
+      - "{{ app_deploy_target }}:/srv"
+    auto_remove: true

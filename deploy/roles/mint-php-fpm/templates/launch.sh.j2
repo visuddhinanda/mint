@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -i 's/^listen = /listen = {{ app_php_fpm_port }}/' /etc/php/{{ app_php_version }}/fpm/php-fpm.conf
+
+/usr/sbin/php-fpm{{ app_php_version }} --nodaemonize --fpm-config /etc/php/{{ app_php_version }}/fpm/php-fpm.conf

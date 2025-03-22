@@ -37,6 +37,18 @@
       ansible.builtin.systemd:
         state: restarted
         name: postgresql
+
+- name: Setup mint background workers
+  hosts:
+    - task
+  roles:
+    - mint-workers
+
+- name: Setup mint php-fpm
+  hosts:
+    - fpm
+  roles:
+    - mint-php-fpm
 # FIXME
 # - name: Setup database
 #   hosts:
