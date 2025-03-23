@@ -185,7 +185,12 @@ class MqAiTranslate extends Command
 
             //修改task 完成度
             $taskProgress = $message->task->progress;
-            $progress = (int)($taskProgress->current * 100 / $taskProgress->total);
+            if ($taskProgress->total > 0) {
+                $progress = (int)($taskProgress->current * 100 / $taskProgress->total);
+            } else {
+                $progress = 100;
+                Log::error('progress total is zero', ['task_id' => $message->task->info->id]);
+            }
             $url = config('app.url') . '/api/v2/task/' . $message->task->info->id;
             $data = [
                 'progress' => $progress,
@@ -200,7 +205,7 @@ class MqAiTranslate extends Command
             }
 
             //任务完成 修改任务状态为 done
-            if ($taskProgress->current === $taskProgress->total) {
+            if ($progress === 100) {
                 $url = config('app.url') . '/api/v2/task-status/' . $message->task->info->id;
                 $data = [
                     'status' => 'done',
@@ -209,7 +214,6 @@ class MqAiTranslate extends Command
                 $response = Http::withToken($token)->patch($url, $data);
                 //判断状态码
                 if ($response->failed()) {
-                    $this->error('task status error' . $response->json('message'));
                     Log::error('task status error', ['data' => $response->json()]);
                 } else {
                     $this->info('task status successful ');
