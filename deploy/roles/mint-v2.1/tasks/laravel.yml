@@ -19,7 +19,7 @@
 - name: Upload vendors.sh
   ansible.builtin.template:
     src: containers/vendors.sh.j2
-    dest: "{{ app_deploy_target }}/scripts/"
+    dest: "{{ app_deploy_target }}/scripts/vendors.sh"
     mode: "0555"
 
 - name: Initialize vendors and configuration
