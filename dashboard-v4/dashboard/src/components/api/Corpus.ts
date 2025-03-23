@@ -212,7 +212,7 @@ export interface IPaliTocListResponse {
 export interface IChapterToc {
   book: number;
   paragraph: number;
-  level: string;
+  level: number;
   text: string | null;
   chapter_len: number;
   chapter_strlen: number;

@@ -10,10 +10,17 @@ import { Skeleton } from "antd";
 interface IWidget {
   book?: number;
   para?: number;
+  maxLevel?: number;
   onSelect?: (selectedKeys: Key[]) => void;
   onData?: (data: IChapterToc[]) => void;
 }
-const ChapterTocWidget = ({ book, para, onSelect, onData }: IWidget) => {
+const ChapterTocWidget = ({
+  book,
+  para,
+  maxLevel = 8,
+  onSelect,
+  onData,
+}: IWidget) => {
   const [tocList, setTocList] = useState<ListNodeData[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -23,19 +30,22 @@ const ChapterTocWidget = ({ book, para, onSelect, onData }: IWidget) => {
     get<IChapterTocListResponse>(url)
       .then((json) => {
         console.info("api response", json);
-        onData && onData(json.data.rows);
-        const toc = json.data.rows.map((item, id) => {
+        const chapters = json.data.rows.filter(
+          (value) => value.level <= maxLevel
+        );
+        onData && onData(chapters);
+        const toc = chapters.map((item, id) => {
           return {
             key: `${item.book}-${item.paragraph}`,
             title: item.text,
-            level: parseInt(item.level),
+            level: item.level,
           };
         });
         setTocList(toc);
-        if (json.data.rows.length > 0) {
+        if (chapters.length > 0) {
           let path: string[] = [];
-          for (let index = json.data.rows.length - 1; index >= 0; index--) {
-            const element = json.data.rows[index];
+          for (let index = chapters.length - 1; index >= 0; index--) {
+            const element = chapters[index];
             if (element.book === book && para && element.paragraph <= para) {
               path.push(`${element.book}-${element.paragraph}`);
               break;
@@ -44,7 +54,7 @@ const ChapterTocWidget = ({ book, para, onSelect, onData }: IWidget) => {
         }
       })
       .finally(() => setLoading(false));
-  }, [book, para]);
+  }, [book, maxLevel, para]);
 
   return loading ? (
     <Skeleton active />
