@@ -113,6 +113,7 @@ const TaskBuilderChapter = ({
             key={2}
             book={book}
             para={para}
+            maxLevel={7}
             onData={(data: IChapterToc[]) => {
               setChapter(data);
               if (data.length > 0) {
