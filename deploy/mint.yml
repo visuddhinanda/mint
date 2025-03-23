@@ -49,53 +49,9 @@
     - fpm
   roles:
     - mint-php-fpm
-# FIXME
-# - name: Setup database
-#   hosts:
-#     - fort
-#   tasks:
-#     - name: Run all of outstanding migrations
-#       ansible.builtin.command:
-#         argv:
-#           - "{{ app_deploy_target }}/docker/mint/run.sh"
-#           - "{{ app_mint_image_name }}"
-#           - db-migrate
-#         chdir: "{{ app_deploy_target }}/"
-#       register: mint_db_migrate_output
-#       changed_when: mint_db_migrate_output.rc != 0
 
-# - name: Build backend v8
-#   hosts: fort
-#   roles:
-#     - mint-backend-v8-build
-
-# - name: Build backend v8
-#   hosts: fort
-#   roles:
-#     - mint-backend-v8-build
-
-# - name: Setup backend servers
-#   hosts:
-#     - web
-#     - fpm
-#     - task
-#   roles:
-#     - mint-v2
-
-# - name: Setup backend servers
-#   hosts:
-#     - web
-#     - fpm
-#     - task
-#   roles:
-#     - mint-v2
-
-# - name: Setup nginx
-#   hosts: web
-#   roles:
-#     - mint-nginx
-
-# - name: Setup workers
-#   hosts: tasks
-#   roles:
-#     - mint-workers
+- name: Setup nginx
+  hosts:
+    - web
+  roles:
+    - mint-nginx

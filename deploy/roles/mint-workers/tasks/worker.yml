@@ -13,7 +13,8 @@
   containers.podman.podman_container:
     name: "{{ app_domain }}-worker-{{ zone_name }}-{{ worker_name }}"
     image: "{{ app_mint_image_name }}"
-    command: "/srv/scripts/worker-{{ zone_name }}-{{ worker_name }}.sh"
+    command: "{{ app_deploy_target }}/scripts/worker-{{ zone_name }}-{{ worker_name }}.sh"
     volumes:
-      - "{{ app_deploy_target }}:/srv:z"
+      - "{{ app_deploy_target }}:{{ app_deploy_target }}:z"
+    workdir: "{{ app_deploy_target }}"
     # auto_remove: true

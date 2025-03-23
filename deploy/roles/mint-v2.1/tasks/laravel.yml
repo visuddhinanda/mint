@@ -17,8 +17,8 @@
     mode: "0444"
 
 - name: Upload vendors.sh
-  ansible.builtin.copy:
-    src: vendors.sh
+  ansible.builtin.template:
+    src: containers/vendors.sh.j2
     dest: "{{ app_deploy_target }}/scripts/"
     mode: "0555"
 
@@ -26,7 +26,14 @@
   containers.podman.podman_container:
     name: "{{ app_domain }}-initialize"
     image: "{{ app_mint_image_name }}"
-    command: /srv/scripts/vendors.sh
+    command: "{{ app_deploy_target }}/scripts/vendors.sh"
     volumes:
-      - "{{ app_deploy_target }}:/srv"
-    auto_remove: true
+      - "{{ app_deploy_target }}:{{ app_deploy_target }}:z"
+    workdir: "{{ app_deploy_target }}"
+    # auto_remove: true
+
+- name: Create a current link
+  ansible.builtin.file:
+    src: "{{ app_deploy_target }}"
+    dest: "{{ app_deploy_target | dirname }}/current"
+    state: link

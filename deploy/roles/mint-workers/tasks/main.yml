@@ -12,9 +12,3 @@
     - ai.translate
   loop_control:
     loop_var: worker_name
-
-- name: Setup laravel scheduler
-  ansible.builtin.include_tasks: worker.yml
-  vars:
-    zone_name: schedule
-    worker_name: run
