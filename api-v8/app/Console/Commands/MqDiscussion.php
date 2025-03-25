@@ -105,7 +105,7 @@ class MqDiscussion extends Command
                             $sendTo[] = $sentence->acceptor_uid;
                         }
                         $this->notification(
-                            $message->editor->uid,
+                            $message->editor->id,
                             $sendTo,
                             'discussion',
                             $message->id,
@@ -203,7 +203,7 @@ class MqDiscussion extends Command
                             $sendTo[] = $editor['uid'];
                         }
                         $this->notification(
-                            $message->editor->uid,
+                            $message->editor->id,
                             $sendTo,
                             'discussion',
                             $message->id,

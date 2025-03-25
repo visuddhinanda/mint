@@ -52,7 +52,7 @@ class MqAiTranslate extends Command
         $queue = 'ai_translate';
         $this->info(" [*] Waiting for {$queue}. To exit press CTRL+C");
         Log::debug("mq:progress start.");
-        Mq::worker($exchange, $queue, function ($message) {
+        Mq::worker($exchange, $queue, function ($message) use ($queue) {
             Log::debug('ai translate start', ['message' => $message]);
             //写入 model log
             $modelLog = new ModelLog();
@@ -68,9 +68,9 @@ class MqAiTranslate extends Command
                 "temperature" => 0.7,
                 "stream" => false
             ];
-            Log::info('ai request' . $message->model->url);
-            Log::info('model:' . $param['model']);
-            Log::debug('ai api request', [
+            Log::info($queue . ' ai request' . $message->model->url);
+            Log::info($queue . ' model:' . $param['model']);
+            Log::debug($queue . ' ai api request', [
                 'url' => $message->model->url,
                 'data' => $param
             ]);
@@ -88,29 +88,29 @@ class MqAiTranslate extends Command
             if ($response->failed()) {
                 $modelLog->success = false;
                 $modelLog->save();
-                Log::error('http response error', ['data' => $response->json()]);
+                Log::error($queue . ' http response error', ['data' => $response->json()]);
                 return 1;
             }
             $modelLog->save();
-            Log::info('log saved');
+            Log::debug($queue . ' log saved');
             $aiData = $response->json();
-            Log::debug('http response', ['data' => $response->json()]);
+            Log::debug($queue . ' http response', ['data' => $response->json()]);
             $responseContent = $aiData['choices'][0]['message']['content'];
             if (isset($aiData['choices'][0]['message']['reasoning_content'])) {
                 $reasoningContent = $aiData['choices'][0]['message']['reasoning_content'];
             }
 
-            Log::info('ai content=' . $responseContent);
+            Log::debug($queue . ' ai content=' . $responseContent);
             if (empty($reasoningContent)) {
-                Log::info('no reasoningContent');
+                Log::debug($queue . ' no reasoningContent');
             } else {
-                Log::info('reasoning=' . $reasoningContent);
+                Log::debug($queue . ' reasoning=' . $reasoningContent);
             }
 
             //获取model token
-            Log::debug('ai assistant token', ['user' => $message->model->uid]);
+            Log::debug($queue . ' ai assistant token', ['user' => $message->model->uid]);
             $token = AuthController::getUserToken($message->model->uid);
-            Log::debug('ai assistant token', ['token' => $token]);
+            Log::debug($queue . ' ai assistant token', ['token' => $token]);
 
             if ($message->task->info->category === 'translate') {
                 //写入句子库
@@ -118,16 +118,20 @@ class MqAiTranslate extends Command
                 $sentData = [];
                 $message->sentence->content = $responseContent;
                 $sentData[] = $message->sentence;
-                Log::info("upload to {$url}");
-                Log::debug('sentence update http request', ['data' => $sentData]);
+                Log::debug($queue . " upload to {$url}");
+                Log::debug($queue . ' sentence update http request', ['data' => $sentData]);
                 $response = Http::withToken($token)->post($url, [
                     'sentences' => $sentData,
                 ]);
-                Log::debug('sentence update http response', ['data' => $response->json()]);
+                Log::debug($queue . ' sentence update http response', ['data' => $response->json()]);
                 if ($response->failed()) {
-                    Log::error('upload error', ['data' => $response->json()]);
+                    Log::error($queue . ' upload error', [
+                        'data' => $response->json(),
+                        'message' => $message
+                    ]);
+                    return 1;
                 } else {
-                    Log::info('upload successful');
+                    Log::info($queue . ' upload successful');
                 }
             }
 
@@ -150,9 +154,9 @@ class MqAiTranslate extends Command
             ];
             $response = Http::withToken($token)->post($url, $data);
             if ($response->failed()) {
-                Log::error('ai discussion error', ['data' => $response->json()]);
+                Log::error($queue . ' ai discussion error', ['data' => $response->json()]);
             } else {
-                Log::info('ai discussion topic successful');
+                Log::info($queue . ' ai discussion topic successful');
             }
             $data['parent'] = $response->json()['data']['id'];
             unset($data['title']);
@@ -167,12 +171,12 @@ class MqAiTranslate extends Command
             }
             foreach ($topicChildren as  $content) {
                 $data['content'] = $content;
-                Log::debug('discussion child request', ['url' => $url, 'data' => $data]);
+                Log::debug($queue . ' discussion child request', ['url' => $url, 'data' => $data]);
                 $response = Http::withToken($token)->post($url, $data);
                 if ($response->failed()) {
-                    Log::error('discussion error', ['data' => $response->json()]);
+                    Log::error($queue . ' discussion error', ['data' => $response->json()]);
                 } else {
-                    Log::info('discussion child successful');
+                    Log::info($queue . ' discussion child successful');
                 }
             }
 
@@ -182,18 +186,18 @@ class MqAiTranslate extends Command
                 $progress = (int)($taskProgress->current * 100 / $taskProgress->total);
             } else {
                 $progress = 100;
-                Log::error('progress total is zero', ['task_id' => $message->task->info->id]);
+                Log::error($queue . ' progress total is zero', ['task_id' => $message->task->info->id]);
             }
             $url = config('app.url') . '/api/v2/task/' . $message->task->info->id;
             $data = [
                 'progress' => $progress,
             ];
-            Log::debug('task progress request', ['url' => $url, 'data' => $data]);
+            Log::debug($queue . ' task progress request', ['url' => $url, 'data' => $data]);
             $response = Http::withToken($token)->patch($url, $data);
             if ($response->failed()) {
-                Log::error('task progress error', ['data' => $response->json()]);
+                Log::error($queue . ' task progress error', ['data' => $response->json()]);
             } else {
-                Log::info('task progress successful progress=' . $response->json()['data']['progress']);
+                Log::info($queue . ' task progress successful progress=' . $response->json()['data']['progress']);
             }
 
             //任务完成 修改任务状态为 done
@@ -202,13 +206,13 @@ class MqAiTranslate extends Command
                 $data = [
                     'status' => 'done',
                 ];
-                Log::debug('task status request', ['url' => $url, 'data' => $data]);
+                Log::debug($queue . ' task status request', ['url' => $url, 'data' => $data]);
                 $response = Http::withToken($token)->patch($url, $data);
                 //判断状态码
                 if ($response->failed()) {
-                    Log::error('task status error', ['data' => $response->json()]);
+                    Log::error($queue . ' task status error', ['data' => $response->json()]);
                 } else {
-                    Log::info('task status successful ');
+                    Log::info($queue . ' task status done');
                 }
             }
             return 0;
