@@ -116,7 +116,7 @@ class Mq
                     }
                 } catch (\Exception $e) {
                     // push to issues
-                    Log::error('mq worker exception', ['exception'=>$e] );
+                    Log::error('mq worker exception', ['exception' => $e]);
                     $channelName = 'issues';
                     $channelIssues = $connection->channel();
                     $channelIssues->queue_declare($channelName, false, true, false, false);
@@ -132,6 +132,7 @@ class Mq
                     $channelIssues->close();
                 }
             }
+            Log::debug('ack');
             $message->ack();
 
 
