@@ -199,8 +199,8 @@ class MqDiscussion extends Command
                         $sendTo[] = $term->term;
                         //作者
                         $editor = UserApi::getById($term->editor_id);
-                        if ($editor['id'] !== 0 && !in_array($editor['uid'], $sendTo)) {
-                            $sendTo[] = $editor['uid'];
+                        if ($editor['id'] !== 0 && !in_array($editor['id'], $sendTo)) {
+                            $sendTo[] = $editor['id'];
                         }
                         $this->notification(
                             $message->editor->id,
@@ -231,7 +231,7 @@ class MqDiscussion extends Command
 
     private function WebHook($msgParam, $type, $resId)
     {
-        $rootId = UserApi::getById(0)['uid'];
+        $rootId = UserApi::getById(0)['id'];
         $articleTitle = "webhook://discussion/{$type}/zh-hans";
         $tpl = Article::where('owner', $rootId)
             ->where('title', $articleTitle)

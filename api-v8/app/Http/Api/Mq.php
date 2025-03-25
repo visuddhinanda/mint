@@ -165,11 +165,19 @@ class Mq
         };
 
         register_shutdown_function($shutdown, $channel, $connection);
+
+        $timeout = 15;
+        $deadline = time() + $timeout;
         // Loop as long as the channel has callbacks registered
         while ($channel->is_consuming()) {
-            $channel->wait(null, true);
+            try {
+                $channel->wait(null, false, $deadline - time());
+            } catch (\Throwable $th) {
+                //throw $th;
+                Log::error('rabbitmq timeout');
+            }
+
             // do something else
-            usleep(300000);
         }
     }
 }
