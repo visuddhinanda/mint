@@ -44,6 +44,8 @@ server {
     location ~ \.php$ {
         fastcgi_pass php_fpm_{{ app_php_fpm_port }};
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        # for nginx v1.18
+        # fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
         fastcgi_hide_header X-Powered-By;
     }

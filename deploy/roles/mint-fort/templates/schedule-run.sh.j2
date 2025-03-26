@@ -9,4 +9,8 @@ source "$NVM_DIR/nvm.sh"
 
 cd $WORK_DIR/api-v8/
 
-php artisan schedule:run
+while true
+do
+    php -d memory_limit={{ app_php_memory_limit }} artisan schedule:run || true
+    sleep 60
+done

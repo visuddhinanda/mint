@@ -55,3 +55,9 @@
     - web
   roles:
     - mint-nginx
+
+- name: Setup single-node worker
+  hosts:
+    - fort
+  roles:
+    - mint-fort

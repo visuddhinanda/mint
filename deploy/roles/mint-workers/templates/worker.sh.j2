@@ -9,4 +9,12 @@ source "$NVM_DIR/nvm.sh"
 
 cd $WORK_DIR/api-v8/
 
-php -d memory_limit={{ app_php_memory_limit }} artisan {{ zone_name }}:{{ worker_name }}
+# php -d memory_limit={{ app_php_memory_limit }} artisan {{ zone_name }}:{{ worker_name }}
+
+while true
+do
+    php -d memory_limit={{ app_php_memory_limit }} artisan {{ zone_name }}:{{ worker_name }} || true
+    sleep 10
+done
+
+exit 0
