@@ -155,7 +155,7 @@ class Mq
                 ]
             );
 
-            //kill me
+            //exit
             foreach (config('mint.mq.loop_limit') as $key => $value) {
                 if ($queue === $key) {
                     if ($value > 0) {
@@ -165,8 +165,7 @@ class Mq
                             $GLOBALS[$key] = 1;
                         }
                         if ($GLOBALS[$key] >= $value) {
-                            //kill me
-                            Log::debug('mq kill loop=' . $GLOBALS[$key]);
+                            Log::debug('mq exit loop=' . $GLOBALS[$key]);
                             $message->getChannel()->basic_cancel($message->getConsumerTag());
                         }
                     }
