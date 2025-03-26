@@ -174,9 +174,7 @@ class Mq
                 $channel->wait(null, false, $deadline - time());
             } catch (\Throwable $th) {
                 //throw $th;
-                Log::error('rabbitmq timeout');
             }
-
             // do something else
         }
     }
