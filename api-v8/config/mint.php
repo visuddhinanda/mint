@@ -102,28 +102,10 @@ return [
     'ai' => [
         'assistant' => 'test161',
         'default' => 'kimi',
-        'accounts' => [
-            [
-                'name' => 'kimi',
-                'description' => 'Moonshot AI 月之暗面',
-                'api_url' => 'https://api.moonshot.cn/v1/chat/completions',
-                'model' => ['moonshot-v1-8k'],
-                'token' => env('AI_API_TOKEN_MOONSHOT'),
-            ],
-            [
-                'name' => 'volcengine',
-                'description' => '字节跳动AI引擎',
-                'api_url' => 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
-                'model' => ['Doubao-lite-4k', 'Doubao-pro-4k'],
-                'token' => env('AI_API_TOKEN_VOLCENGIN'),
-            ],
-            [
-                'name' => 'deepseek',
-                'description' => 'deepseek',
-                'api_url' => 'https://api.deepseek.com/chat/completions',
-                'model' => ['deepseek-chat'],
-                'token' => env('AI_API_TOKEN_DEEPSEEK'),
-            ],
-        ],
+    ],
+    'mq' => [
+        'loop_limit' => [
+            'ai_translate' => env('MQ_LOOP_LIMIT_AI_TRANSLATE', 0)
+        ]
     ]
 ];
