@@ -7,6 +7,7 @@ use App\Http\Api\Mq;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Illuminate\Http\Client\RequestException;
 
 use App\Http\Controllers\AuthController;
 use App\Models\Sentence;
@@ -77,20 +78,36 @@ class MqAiTranslate extends Command
             $modelLog->model_id = $message->model->uid;
             $modelLog->request_at = now();
             $modelLog->request_data = json_encode($param, JSON_UNESCAPED_UNICODE);
+            try {
+                $response = Http::withToken($message->model->key)
+                    ->post($message->model->url, $param);
 
-            $response = Http::withToken($message->model->key)
-                ->retry(2, 120000)
-                ->post($message->model->url, $param);
-            $modelLog->request_headers = json_encode($response->handlerStats(), JSON_UNESCAPED_UNICODE);
-            $modelLog->response_headers = json_encode($response->headers(), JSON_UNESCAPED_UNICODE);
-            $modelLog->status = $response->status();
-            $modelLog->response_data = json_encode($response->json(), JSON_UNESCAPED_UNICODE);
-            if ($response->failed()) {
+                $response->throw(); // 触发异常（如果请求失败）
+
+                $modelLog->request_headers = json_encode($response->handlerStats(), JSON_UNESCAPED_UNICODE);
+                $modelLog->response_headers = json_encode($response->headers(), JSON_UNESCAPED_UNICODE);
+                $modelLog->status = $response->status();
+                $modelLog->response_data = json_encode($response->json(), JSON_UNESCAPED_UNICODE);
+                /*
+                if ($response->failed()) {
+                    $modelLog->success = false;
+                    $modelLog->save();
+                    Log::error($queue . ' http response error', ['data' => $response->json()]);
+                    return 1;
+                }*/
+            } catch (RequestException $e) {
+                Log::error('HTTP 请求发生异常: ' . $e->getMessage());
+                $failResponse = $e->response;
+                $modelLog->request_headers = json_encode($failResponse->handlerStats(), JSON_UNESCAPED_UNICODE);
+                $modelLog->response_headers = json_encode($failResponse->headers(), JSON_UNESCAPED_UNICODE);
+                $modelLog->status = $failResponse->status();
+                $modelLog->response_data = $response->body();
                 $modelLog->success = false;
                 $modelLog->save();
-                Log::error($queue . ' http response error', ['data' => $response->json()]);
                 return 1;
             }
+
+
             $modelLog->save();
             Log::debug($queue . ' log saved');
             $aiData = $response->json();
