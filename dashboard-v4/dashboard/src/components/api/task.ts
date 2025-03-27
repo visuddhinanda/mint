@@ -232,7 +232,7 @@ export interface IProjectTreeInsertRequest {
   data: IProjectUpdateRequest[];
 }
 
-interface IProjectTreeData {
+export interface IProjectTreeData {
   id: string;
   resId?: string;
   isLeaf: boolean;
