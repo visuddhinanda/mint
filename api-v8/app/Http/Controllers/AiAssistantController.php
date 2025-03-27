@@ -23,7 +23,7 @@ class AiAssistantController extends Controller
             Log::error('notification auth failed {request}', ['request' => $request]);
             return $this->error(__('auth.failed'), 401, 401);
         }
-        $table = AiModel::where('owner_id', $request->get('user_id'))
+        $table = AiModel::where('owner_id', $user['user_uid'])
             ->orWhere('privacy', 'public');
         if ($request->has('keyword')) {
             $table = $table->where('name', 'like', '%' . $request->get('keyword') . '%');
