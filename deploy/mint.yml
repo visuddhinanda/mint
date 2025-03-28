@@ -78,11 +78,9 @@
   hosts:
     - fort
   tasks:
-    - name: Start schedule run service
+    - name: Enable schedule run timer
       ansible.builtin.systemd_service:
-        name: "{{ app_container_prefix }}-{{ app_domain }}-worker-{{ item }}"
-        enabled: true
+        name: "{{ app_domain }}-scheduler.timer"
         state: restarted
+        enabled: true
         scope: user
-      loop:
-        - schedule-run

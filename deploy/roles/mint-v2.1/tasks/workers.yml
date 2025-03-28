@@ -25,4 +25,5 @@
       new: true
       names: true
       restart_policy: always
-      stop_timeout: 120
+      restart_sec: 30
+      stop_timeout: 20

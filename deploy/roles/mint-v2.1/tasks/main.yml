@@ -27,9 +27,6 @@
 - name: Setup laravel
   ansible.builtin.import_tasks: laravel.yml
 
-- name: Setup php-fpm
-  ansible.builtin.import_tasks: php-fpm.yml
-
 - name: Force systemd to reread configs
   become: true
   ansible.builtin.systemd:

@@ -47,11 +47,11 @@
   loop_control:
     loop_var: worker_name
 
-- name: Setup schedule run worker
-  ansible.builtin.include_tasks: workers.yml
-  vars:
-    zone_name: schedule
-    worker_name: run
+- name: Setup schedule run
+  ansible.builtin.import_tasks: schedule-run.yml
+
+- name: Setup php-fpm
+  ansible.builtin.import_tasks: php-fpm.yml
 
 - name: Create a current link
   ansible.builtin.file:
