@@ -69,9 +69,9 @@ class MqAiTranslate extends Command
                 "temperature" => 0.7,
                 "stream" => false
             ];
-            Log::info($queue . ' ai request' . $message->model->url);
+            Log::info($queue . ' LLM request' . $message->model->url);
             Log::info($queue . ' model:' . $param['model']);
-            Log::debug($queue . ' ai api request', [
+            Log::debug($queue . ' LLM api request', [
                 'url' => $message->model->url,
                 'data' => $param
             ]);
