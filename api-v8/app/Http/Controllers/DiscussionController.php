@@ -348,7 +348,9 @@ class DiscussionController extends Controller
             $parentInfo->increment('children_count', 1);
             $parentInfo->save();
         }
-        Mq::publish('discussion', new DiscussionResource($discussion));
+        if ($request->get('notification', true)) {
+            Mq::publish('discussion', new DiscussionResource($discussion));
+        }
 
         return $this->ok(new DiscussionResource($discussion));
     }
