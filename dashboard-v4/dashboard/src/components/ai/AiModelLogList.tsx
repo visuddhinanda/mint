@@ -125,6 +125,7 @@ const AiModelLogList = ({ modelId }: IWidget) => {
       pagination={{
         showQuickJumper: true,
         showSizeChanger: true,
+        pageSize: 20,
       }}
       search={false}
       options={{

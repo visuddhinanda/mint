@@ -41,10 +41,10 @@ class ModelLogController extends Controller
         );
 
         $table = $table->skip($request->get('offset', 0))
-            ->take($request->get('limit', 1000));
+            ->take($request->get('limit', 20));
 
         $result = $table->get();
-        return $this->ok(["rows" => ModelLogResource::collection($result), "count" => $count]);
+        return $this->ok(["rows" => ModelLogResource::collection($result), "total" => $count]);
     }
 
     /**

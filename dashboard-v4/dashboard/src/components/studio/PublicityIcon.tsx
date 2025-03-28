@@ -1,4 +1,4 @@
-import { GlobalOutlined } from "@ant-design/icons";
+import { GlobalOutlined, StopOutlined } from "@ant-design/icons";
 import { TPublicity } from "./PublicitySelect";
 import { LockIcon } from "../../assets/icon";
 
@@ -10,6 +10,8 @@ const PublicityIcon = ({ value }: IWidget) => {
     <GlobalOutlined />
   ) : value === "private" ? (
     <LockIcon />
+  ) : value === "disable" ? (
+    <StopOutlined style={{ color: "red" }} />
   ) : (
     <></>
   );
