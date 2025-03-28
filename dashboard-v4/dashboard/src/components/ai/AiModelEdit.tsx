@@ -91,10 +91,7 @@ const AiModelEdit = ({ studioName, modelId, onChange }: IWidget) => {
         />
       </ProForm.Group>
       <ProForm.Group>
-        <Publicity
-          name="privacy"
-          disable={["disable", "public_no_list", "blocked"]}
-        />
+        <Publicity name="privacy" disable={["public_no_list", "blocked"]} />
       </ProForm.Group>
       <ProForm.Group>
         <ProFormTextArea
