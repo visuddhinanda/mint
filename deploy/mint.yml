@@ -38,17 +38,35 @@
         state: restarted
         name: postgresql
 
-- name: Setup mint background workers
+- name: Start mint background workers
   hosts:
     - task
-  roles:
-    - mint-workers
+  tasks:
+    - name: Start worker service
+      ansible.builtin.systemd_service:
+        name: "{{ app_container_prefix }}-{{ app_domain }}-worker-mq-{{ item }}"
+        enabled: true
+        state: restarted
+        scope: user
+      loop:
+        - discussion
+        - pr
+        - progress
+        - wbw.analyses
+        - export.pali.chapter
+        - export.article
+        - ai.translate
 
-- name: Setup mint php-fpm
+- name: Start mint php-fpm
   hosts:
     - fpm
-  roles:
-    - mint-php-fpm
+  tasks:
+    - name: Start fpm service
+      ansible.builtin.systemd_service:
+        name: "{{ app_container_prefix }}-{{ app_domain }}-fpm-{{ app_php_fpm_port }}"
+        enabled: true
+        state: restarted
+        scope: user
 
 - name: Setup nginx
   hosts:
@@ -56,8 +74,15 @@
   roles:
     - mint-nginx
 
-- name: Setup single-node worker
+- name: Start single-node worker
   hosts:
     - fort
-  roles:
-    - mint-fort
+  tasks:
+    - name: Start schedule run service
+      ansible.builtin.systemd_service:
+        name: "{{ app_container_prefix }}-{{ app_domain }}-worker-{{ item }}"
+        enabled: true
+        state: restarted
+        scope: user
+      loop:
+        - schedule-run

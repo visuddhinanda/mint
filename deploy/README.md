@@ -87,3 +87,7 @@ php ./migrations/20211126220400-pali_sent_index-upgrade.php
 ```bash
 /public/app/upgrade/upgrade_pali_toc.php
 ```
+
+## Documents
+
+- [Configure a container to start automatically as a systemd service](https://www.redhat.com/en/blog/container-systemd-persist-reboot)
