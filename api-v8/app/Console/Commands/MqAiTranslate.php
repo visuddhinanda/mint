@@ -69,9 +69,9 @@ class MqAiTranslate extends Command
                 "temperature" => 0.7,
                 "stream" => false
             ];
-            Log::info($queue . ' ai request' . $message->model->url);
+            Log::info($queue . ' LLM request' . $message->model->url);
             Log::info($queue . ' model:' . $param['model']);
-            Log::debug($queue . ' ai api request', [
+            Log::debug($queue . ' LLM api request', [
                 'url' => $message->model->url,
                 'data' => $param
             ]);
@@ -84,6 +84,7 @@ class MqAiTranslate extends Command
 
                 $response->throw(); // 触发异常（如果请求失败）
 
+                Log::info($queue . ' LLM request successful');
                 $modelLog->request_headers = json_encode($response->handlerStats(), JSON_UNESCAPED_UNICODE);
                 $modelLog->response_headers = json_encode($response->headers(), JSON_UNESCAPED_UNICODE);
                 $modelLog->status = $response->status();
@@ -96,7 +97,7 @@ class MqAiTranslate extends Command
                     return 1;
                 }*/
             } catch (RequestException $e) {
-                Log::error('HTTP 请求发生异常: ' . $e->getMessage());
+                Log::error($queue . ' LLM request exception: ' . $e->getMessage());
                 $failResponse = $e->response;
                 $modelLog->request_headers = json_encode($failResponse->handlerStats(), JSON_UNESCAPED_UNICODE);
                 $modelLog->response_headers = json_encode($failResponse->headers(), JSON_UNESCAPED_UNICODE);
@@ -109,15 +110,15 @@ class MqAiTranslate extends Command
 
 
             $modelLog->save();
-            Log::debug($queue . ' log saved');
+            Log::info($queue . ' model log saved');
             $aiData = $response->json();
-            Log::debug($queue . ' http response', ['data' => $response->json()]);
+            Log::debug($queue . ' LLM http response', ['data' => $response->json()]);
             $responseContent = $aiData['choices'][0]['message']['content'];
             if (isset($aiData['choices'][0]['message']['reasoning_content'])) {
                 $reasoningContent = $aiData['choices'][0]['message']['reasoning_content'];
             }
 
-            Log::debug($queue . ' ai content=' . $responseContent);
+            Log::debug($queue . ' LLM response content=' . $responseContent);
             if (empty($reasoningContent)) {
                 Log::debug($queue . ' no reasoningContent');
             } else {
@@ -135,20 +136,18 @@ class MqAiTranslate extends Command
                 $sentData = [];
                 $message->sentence->content = $responseContent;
                 $sentData[] = $message->sentence;
-                Log::debug($queue . " upload to {$url}");
-                Log::debug($queue . ' sentence update http request', ['data' => $sentData]);
+                Log::info($queue . " sentence update {$url}");
                 $response = Http::withToken($token)->post($url, [
                     'sentences' => $sentData,
                 ]);
-                Log::debug($queue . ' sentence update http response', ['data' => $response->json()]);
                 if ($response->failed()) {
-                    Log::error($queue . ' upload error', [
+                    Log::error($queue . ' sentence update failed', [
+                        'url' => $url,
                         'data' => $response->json(),
-                        'message' => $message
                     ]);
                     return 1;
                 } else {
-                    Log::info($queue . ' upload successful');
+                    Log::info($queue . ' sentence update successful');
                 }
             }
 
@@ -171,31 +170,36 @@ class MqAiTranslate extends Command
             ];
             $response = Http::withToken($token)->post($url, $data);
             if ($response->failed()) {
-                Log::error($queue . ' ai discussion error', ['data' => $response->json()]);
+                Log::error($queue . ' discussion error', ['data' => $response->json()]);
             } else {
-                Log::info($queue . ' ai discussion topic successful');
-            }
-            $data['parent'] = $response->json()['data']['id'];
-            unset($data['title']);
-            $topicChildren = [];
-            //提示词
-            $topicChildren[] = $message->prompt;
-            //任务结果
-            $topicChildren[] = $responseContent;
-            //推理过程写入discussion
-            if (isset($reasoningContent) && !empty($reasoningContent)) {
-                $topicChildren[] = $reasoningContent;
-            }
-            foreach ($topicChildren as  $content) {
-                $data['content'] = $content;
-                Log::debug($queue . ' discussion child request', ['url' => $url, 'data' => $data]);
-                $response = Http::withToken($token)->post($url, $data);
-                if ($response->failed()) {
-                    Log::error($queue . ' discussion error', ['data' => $response->json()]);
+                Log::info($queue . ' discussion topic successful');
+                if (isset($response->json()['data']['id'])) {
+                    $data['parent'] = $response->json()['data']['id'];
+                    unset($data['title']);
+                    $topicChildren = [];
+                    //提示词
+                    $topicChildren[] = $message->prompt;
+                    //任务结果
+                    $topicChildren[] = $responseContent;
+                    //推理过程写入discussion
+                    if (isset($reasoningContent) && !empty($reasoningContent)) {
+                        $topicChildren[] = $reasoningContent;
+                    }
+                    foreach ($topicChildren as  $content) {
+                        $data['content'] = $content;
+                        Log::debug($queue . ' discussion child request', ['url' => $url, 'data' => $data]);
+                        $response = Http::withToken($token)->post($url, $data);
+                        if ($response->failed()) {
+                            Log::error($queue . ' discussion error', ['data' => $response->json()]);
+                        } else {
+                            Log::info($queue . ' discussion child successful');
+                        }
+                    }
                 } else {
-                    Log::info($queue . ' discussion child successful');
+                    Log::error($queue . 'discussion response is null');
                 }
             }
+
 
             //修改task 完成度
             $taskProgress = $message->task->progress;
