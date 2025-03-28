@@ -167,6 +167,7 @@ class MqAiTranslate extends Command
                 'content' => $message->task->info->category,
                 'content_type' => 'markdown',
                 'type' => 'discussion',
+                'notification' => false,
             ];
             $response = Http::withToken($token)->post($url, $data);
             if ($response->failed()) {
