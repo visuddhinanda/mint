@@ -52,7 +52,7 @@ class MqAiTranslate extends Command
         $exchange = 'router';
         $queue = 'ai_translate';
         $this->info(" [*] Waiting for {$queue}. To exit press CTRL+C");
-        Log::debug("mq:progress start.");
+        Log::debug("mq {$queue} start.");
         Mq::worker($exchange, $queue, function ($message) use ($queue) {
             Log::debug('ai translate start', ['message' => $message]);
             //写入 model log
