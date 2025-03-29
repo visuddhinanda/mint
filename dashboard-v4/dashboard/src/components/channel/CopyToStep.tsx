@@ -30,6 +30,7 @@ const CopyToStepWidget = ({
   const [current, setCurrent] = useState(0);
   const [destChannel, setDestChannel] = useState<IChannel>();
   const [copyPercent, setCopyPercent] = useState<number>();
+  const [total, setTotal] = useState<number>();
 
   useEffect(() => {
     setCurrent(initStep);
@@ -83,7 +84,8 @@ const CopyToStepWidget = ({
           goPrev={() => {
             prev();
           }}
-          onSubmit={() => {
+          onSubmit={(total: number) => {
+            setTotal(total);
             next();
           }}
         />
@@ -95,6 +97,7 @@ const CopyToStepWidget = ({
       content: (
         <div style={contentStyle}>
           <CopyToResult
+            total={total}
             onClose={() => {
               if (typeof onClose !== "undefined") {
                 onClose();

@@ -1,15 +1,16 @@
 import { Button, Result } from "antd";
 
 interface IWidget {
+  total?: number;
   onClose?: Function;
   onInit?: Function;
 }
-const CopytoResultWidget = ({ onClose, onInit }: IWidget) => {
+const CopyToResult = ({ total, onClose, onInit }: IWidget) => {
   return (
     <Result
       status="success"
       title="Successfully Copied!"
-      subTitle="Sentence: 23 , Words: 143"
+      subTitle={`Sentence: ${total}`}
       extra={[
         <Button
           key="init"
@@ -37,4 +38,4 @@ const CopytoResultWidget = ({ onClose, onInit }: IWidget) => {
   );
 };
 
-export default CopytoResultWidget;
+export default CopyToResult;
