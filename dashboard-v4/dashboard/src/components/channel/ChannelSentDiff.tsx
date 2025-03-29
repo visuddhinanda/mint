@@ -31,7 +31,7 @@ interface IWidget {
   sentences?: string[];
   important?: boolean;
   goPrev?: Function;
-  onSubmit?: Function;
+  onSubmit?: (total: number) => void;
 }
 const ChannelSentDiffWidget = ({
   srcChannel,
@@ -199,18 +199,17 @@ const ChannelSentDiffWidget = ({
               copy: true,
               fork_from: srcChannel.id,
             };
-            console.debug("fork post", url, postData);
+            console.info("fork post api request", url, postData);
             post<ISentenceNewRequest, ISentenceListResponse>(url, postData)
               .then((json) => {
+                console.info("fork api response", json);
                 if (json.ok) {
                   //发布数据
                   const newData: ISentence[] = json.data.rows.map((item) =>
                     toISentence(item)
                   );
                   store.dispatch(accept(newData));
-                  if (typeof onSubmit !== "undefined") {
-                    onSubmit();
-                  }
+                  onSubmit && onSubmit(json.data.count);
                 } else {
                   message.error(json.message);
                 }
