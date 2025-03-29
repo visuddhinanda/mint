@@ -260,16 +260,33 @@ class SentenceController extends Controller
             return $this->error("没有查询到数据");
         }
     }
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
+    private function UserCanEdit($userId, $channelId, $book, $access_token = null)
+    {
+        $channel = Channel::where('uid', $channelId)->first();
+        if (!$channel) {
+            return false;
+        }
+        if ($channel->owner_uid !== $userId) {
+            //判断是否为协作
+            $power = ShareApi::getResPower($userId, $channel->uid, 2);
+            if ($power < 20) {
+                //判断token
+                if (!$access_token) {
+                    Log::error('no access token');
+                    return false;
+                }
+                $key = AccessToken::where('res_id', $channelId)->value('token');
+                $jwt = JWT::decode($access_token, new Key($key, 'HS512'));
+                Log::debug('access token', ['jwt' => $jwt]);
+                if ($jwt->book !== $book) {
+                    Log::error('access token error');
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
     /**
      * 新建多个句子
      * 如果句子存在，修改
@@ -287,26 +304,50 @@ class SentenceController extends Controller
         if (!$request->has('sentences')) {
             return $this->error('no date', 200, 200);
         }
-
+        $destChannel = null;
+        if ($request->has('channel')) {
+            if ($this->UserCanEdit(
+                $user["user_uid"],
+                $request->get('channel'),
+                $request->get('book', 0),
+                $request->get('access_token', null)
+            )) {
+                $destChannel = Channel::where('uid', $request->get('channel'))->first();;
+            } else {
+                return $this->error(__('auth.failed'), 403, 403);
+            }
+        }
         $sentFirst = null;
         $changedSent = [];
         foreach ($request->get('sentences') as $key => $sent) {
             # 权限
-            $channelId = $sent['channel_uid'];
-            $channel = Channel::where('uid', $channelId)->first();
-            if (!$channel) {
+            if (!$request->has('channel')) {
+                if (!$this->UserCanEdit(
+                    $user["user_uid"],
+                    $sent['channel_uid'],
+                    $sent['book_id'],
+                    isset($sent['access_token']) ?? null
+                )) {
+                    $destChannel = Channel::where('uid', $sent['channel_uid'])->first();;
+                } else {
+                    continue;
+                }
+            }
+            /*
+            $destChannel = Channel::where('uid', $sent['channel_uid'])->first();
+            if (!$destChannel) {
                 continue;
             }
-            if ($channel->owner_uid !== $user["user_uid"]) {
+            if ($destChannel->owner_uid !== $user["user_uid"]) {
                 //判断是否为协作
-                $power = ShareApi::getResPower($user["user_uid"], $channel->uid, 2);
+                $power = ShareApi::getResPower($user["user_uid"], $destChannel->uid, 2);
                 if ($power < 20) {
                     //判断token
                     if (!isset($sent['access_token'])) {
                         Log::error('no access token');
                         continue;
                     }
-                    $key = AccessToken::where('res_id', $channelId)->value('token');
+                    $key = AccessToken::where('res_id', $destChannel->uid)->value('token');
                     $jwt = JWT::decode($sent['access_token'], new Key($key, 'HS512'));
                     Log::debug('access token', ['jwt' => $jwt]);
                     if ($jwt->book !== $sent['book_id']) {
@@ -315,7 +356,7 @@ class SentenceController extends Controller
                     }
                 }
             }
-
+*/
             if ($sentFirst === null) {
                 $sentFirst = $sent;
             }
@@ -324,7 +365,7 @@ class SentenceController extends Controller
                 "paragraph" => $sent['paragraph'],
                 "word_start" => $sent['word_start'],
                 "word_end" => $sent['word_end'],
-                "channel_uid" => $channel->uid,
+                "channel_uid" => $destChannel->uid,
             ], [
                 "id" => app('snowflake')->id(),
                 "uid" => Str::uuid(),
@@ -334,8 +375,8 @@ class SentenceController extends Controller
                 $row->content_type = $sent['content_type'];
             }
             $row->strlen = mb_strlen($sent['content'], "UTF-8");
-            $row->language = $channel->lang;
-            $row->status = $channel->status;
+            $row->language = $destChannel->lang;
+            $row->status = $destChannel->status;
             if ($request->has('copy')) {
                 //复制句子，保留原作者信息
                 $row->editor_uid = $sent["editor_uid"];
@@ -377,7 +418,7 @@ class SentenceController extends Controller
             Mq::publish('progress', [
                 'book' => $sentFirst['book_id'],
                 'para' => $sentFirst['paragraph'],
-                'channel' => $channel->uid,
+                'channel' => $destChannel->uid,
             ]);
         }
 
