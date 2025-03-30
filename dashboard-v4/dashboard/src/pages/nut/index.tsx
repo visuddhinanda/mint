@@ -7,6 +7,7 @@ import FooterBar from "../../components/library/FooterBar";
 import HeadBar from "../../components/library/HeadBar";
 import Home from "../../components/nut/Home";
 import InnerDrawer from "../../components/nut/InnerDrawer";
+import AI from "../../components/nut/test/AI";
 
 interface IRandomPanel {
   v1: string;
@@ -36,7 +37,7 @@ const Widget = () => {
     <div>
       <HeadBar />
       <div>Home Page</div>
-
+      <AI />
       <InnerDrawer />
       <div>
         <h1>Mermaid</h1>

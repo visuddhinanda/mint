@@ -80,6 +80,7 @@ class MqAiTranslate extends Command
             $modelLog->request_data = json_encode($param, JSON_UNESCAPED_UNICODE);
             try {
                 $response = Http::withToken($message->model->key)
+                    ->timeout(300)
                     ->post($message->model->url, $param);
 
                 $response->throw(); // 触发异常（如果请求失败）
@@ -137,7 +138,7 @@ class MqAiTranslate extends Command
                 $message->sentence->content = $responseContent;
                 $sentData[] = $message->sentence;
                 Log::info($queue . " sentence update {$url}");
-                $response = Http::withToken($token)->post($url, [
+                $response = Http::timeout(10)->withToken($token)->post($url, [
                     'sentences' => $sentData,
                 ]);
                 if ($response->failed()) {
@@ -147,7 +148,8 @@ class MqAiTranslate extends Command
                     ]);
                     return 1;
                 } else {
-                    Log::info($queue . ' sentence update successful');
+                    $count = $response->json()['data']['count'];
+                    Log::info("{$queue} sentence update {$count} successful");
                 }
             }
 
@@ -169,7 +171,7 @@ class MqAiTranslate extends Command
                 'type' => 'discussion',
                 'notification' => false,
             ];
-            $response = Http::withToken($token)->post($url, $data);
+            $response = Http::timeout(10)->withToken($token)->post($url, $data);
             if ($response->failed()) {
                 Log::error($queue . ' discussion error', ['data' => $response->json()]);
             } else {
@@ -189,7 +191,7 @@ class MqAiTranslate extends Command
                     foreach ($topicChildren as  $content) {
                         $data['content'] = $content;
                         Log::debug($queue . ' discussion child request', ['url' => $url, 'data' => $data]);
-                        $response = Http::withToken($token)->post($url, $data);
+                        $response = Http::timeout(10)->withToken($token)->post($url, $data);
                         if ($response->failed()) {
                             Log::error($queue . ' discussion error', ['data' => $response->json()]);
                         } else {
@@ -215,7 +217,7 @@ class MqAiTranslate extends Command
                 'progress' => $progress,
             ];
             Log::debug($queue . ' task progress request', ['url' => $url, 'data' => $data]);
-            $response = Http::withToken($token)->patch($url, $data);
+            $response = Http::timeout(10)->withToken($token)->patch($url, $data);
             if ($response->failed()) {
                 Log::error($queue . ' task progress error', ['data' => $response->json()]);
             } else {
@@ -229,7 +231,7 @@ class MqAiTranslate extends Command
                     'status' => 'done',
                 ];
                 Log::debug($queue . ' task status request', ['url' => $url, 'data' => $data]);
-                $response = Http::withToken($token)->patch($url, $data);
+                $response = Http::timeout(10)->withToken($token)->patch($url, $data);
                 //判断状态码
                 if ($response->failed()) {
                     Log::error($queue . ' task status error', ['data' => $response->json()]);
