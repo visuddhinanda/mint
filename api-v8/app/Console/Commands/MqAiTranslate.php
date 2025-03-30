@@ -148,7 +148,8 @@ class MqAiTranslate extends Command
                     ]);
                     return 1;
                 } else {
-                    Log::info($queue . ' sentence update successful');
+                    $count = $response->json()['data']['count'];
+                    Log::info("{$queue} sentence update {$count} successful");
                 }
             }
 
