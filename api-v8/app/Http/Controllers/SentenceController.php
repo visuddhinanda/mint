@@ -322,11 +322,12 @@ class SentenceController extends Controller
         foreach ($request->get('sentences') as $key => $sent) {
             # 权限
             if (!$request->has('channel')) {
-                if (!$this->UserCanEdit(
+
+                if ($this->UserCanEdit(
                     $user["user_uid"],
                     $sent['channel_uid'],
                     $sent['book_id'],
-                    isset($sent['access_token']) ?? null
+                    isset($sent['access_token']) ? $sent['access_token'] : null
                 )) {
                     $destChannel = Channel::where('uid', $sent['channel_uid'])->first();;
                 } else {
