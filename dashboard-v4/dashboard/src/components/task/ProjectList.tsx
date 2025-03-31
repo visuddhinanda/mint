@@ -16,6 +16,8 @@ import ProjectCreate from "./ProjectCreate";
 import ProjectEditDrawer from "./ProjectEditDrawer";
 import User from "../auth/User";
 import TimeShow from "../general/TimeShow";
+import ShareModal from "../share/ShareModal";
+import { EResType } from "../share/Share";
 
 export interface IResNumberResponse {
   ok: boolean;
@@ -65,7 +67,7 @@ const ProjectListWidget = ({
         id: "buttons.no",
       }),
       onOk() {
-        const url = `/v2/channel/${id}`;
+        const url = `/v2/project/${id}`;
         console.log("delete api request", url);
         return delete_<IDeleteResponse>(url)
           .then((json) => {
@@ -141,6 +143,17 @@ const ProjectListWidget = ({
               <Button size="small" type="link" key="clone">
                 克隆
               </Button>,
+              <ShareModal
+                trigger={
+                  <Button type="link" size="small">
+                    {intl.formatMessage({
+                      id: "buttons.share",
+                    })}
+                  </Button>
+                }
+                resId={row.id}
+                resType={EResType.workflow}
+              />,
             ],
           },
         }}
