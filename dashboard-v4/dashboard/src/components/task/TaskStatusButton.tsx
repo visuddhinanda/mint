@@ -7,7 +7,7 @@ import {
   PopconfirmProps,
 } from "antd";
 import { useIntl } from "react-intl";
-import { CheckOutlined } from "@ant-design/icons";
+import { CheckOutlined, LoadingOutlined } from "@ant-design/icons";
 
 import {
   ITaskData,
@@ -17,6 +17,13 @@ import {
 } from "../api/task";
 import { patch } from "../../request";
 import TaskStatus from "./TaskStatus";
+import { useState } from "react";
+
+interface IStatusMenu {
+  label: string;
+  key: TTaskStatus;
+  disabled?: boolean;
+}
 
 interface IWidget {
   type?: "button" | "tag";
@@ -30,25 +37,24 @@ const TaskStatusButton = ({
   buttonType = "primary",
   onChange,
 }: IWidget) => {
-  interface IStatusMenu {
-    label: string;
-    key: TTaskStatus;
-    disabled?: boolean;
-  }
   const intl = useIntl();
+  const [loading, setLoading] = useState(false);
 
   const setStatus = (setting: ITaskUpdateRequest) => {
     const url = `/v2/task-status/${setting.id}`;
     console.info("api request", url, setting);
-    patch<ITaskUpdateRequest, ITaskListResponse>(url, setting).then((json) => {
-      console.info("api response", json);
-      if (json.ok) {
-        message.success("Success");
-        onChange && onChange(json.data.rows);
-      } else {
-        message.error(json.message);
-      }
-    });
+    setLoading(true);
+    patch<ITaskUpdateRequest, ITaskListResponse>(url, setting)
+      .then((json) => {
+        console.info("api response", json);
+        if (json.ok) {
+          message.success("Success");
+          onChange && onChange(json.data.rows);
+        } else {
+          message.error(json.message);
+        }
+      })
+      .finally(() => setLoading(false));
   };
   const handleMenuClick: MenuProps["onClick"] = (e) => {
     console.log("click", e);
@@ -179,7 +185,7 @@ const TaskStatusButton = ({
     id: `buttons.task.status.change.to.${newStatus}`,
     defaultMessage: "unknown",
   });
-  return (
+  return type === "button" ? (
     <Popconfirm
       title={intl.formatMessage(
         { id: "message.task.status.change" },
@@ -189,19 +195,15 @@ const TaskStatusButton = ({
       okText="Yes"
       cancelText="No"
     >
-      {type === "button" ? (
-        <Dropdown.Button type={buttonType} trigger={["click"]} menu={menuProps}>
-          <CheckOutlined />
-          {buttonText}
-        </Dropdown.Button>
-      ) : (
-        <Dropdown placement="bottomLeft" menu={menuProps}>
-          <span>
-            <TaskStatus task={task} />
-          </span>
-        </Dropdown>
-      )}
+      <Dropdown.Button type={buttonType} trigger={["click"]} menu={menuProps}>
+        {loading ? <LoadingOutlined /> : <CheckOutlined />}
+        {buttonText}
+      </Dropdown.Button>
     </Popconfirm>
+  ) : (
+    <Dropdown placement="bottomLeft" menu={menuProps}>
+      <span>{loading ? <LoadingOutlined /> : <TaskStatus task={task} />}</span>
+    </Dropdown>
   );
 };
 

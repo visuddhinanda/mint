@@ -4,7 +4,10 @@ import { useIntl } from "react-intl";
 import { useEffect, useState } from "react";
 import { get } from "../../request";
 
-const TaskStatus = ({ task }: { task?: ITaskData }) => {
+interface IWidget {
+  task?: ITaskData;
+}
+const TaskStatus = ({ task }: IWidget) => {
   const intl = useIntl();
   const [progress, setProgress] = useState(task?.progress);
 
