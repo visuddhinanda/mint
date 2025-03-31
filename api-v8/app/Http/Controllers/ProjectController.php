@@ -6,6 +6,8 @@ use App\Models\Project;
 use Illuminate\Http\Request;
 use App\Http\Api\AuthApi;
 use App\Http\Api\StudioApi;
+use App\Http\Api\ShareApi;
+
 use App\Http\Resources\ProjectResource;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
@@ -39,6 +41,14 @@ class ProjectController extends Controller
             case 'project-tree':
                 $table = Project::where('uid', $request->get('project_id'))
                     ->orWhereJsonContains('path', $request->get('project_id'));
+                break;
+            case 'shared':
+                $resList = ShareApi::getResList($studioId, 6);
+                $resId = [];
+                foreach ($resList as $res) {
+                    $resId[] = $res['res_id'];
+                }
+                $table = Project::whereIn('uid', $resId);
                 break;
             case 'community':
                 $table = Project::where('owner_id', '<>', $studioId)

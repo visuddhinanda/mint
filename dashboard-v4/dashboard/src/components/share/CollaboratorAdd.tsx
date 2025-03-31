@@ -43,19 +43,18 @@ const CollaboratorAddWidget = ({ resId, resType, onSuccess }: IWidget) => {
             res_id: resId,
             res_type: resType,
           };
-          console.log("create share", postData);
-          post<IShareRequest, IShareResponse>("/v2/share", postData).then(
-            (json) => {
-              console.log("add member", json);
-              if (json.ok) {
-                if (typeof onSuccess !== "undefined") {
-                  onSuccess();
-                }
-                formRef.current?.resetFields(["userId"]);
-                message.success(intl.formatMessage({ id: "flashes.success" }));
+          const url = "/v2/share";
+          console.info("share api request", url, postData);
+          post<IShareRequest, IShareResponse>(url, postData).then((json) => {
+            console.debug("share api response", json);
+            if (json.ok) {
+              if (typeof onSuccess !== "undefined") {
+                onSuccess();
               }
+              formRef.current?.resetFields(["userId"]);
+              message.success(intl.formatMessage({ id: "flashes.success" }));
             }
-          );
+          });
         }
       }}
     >

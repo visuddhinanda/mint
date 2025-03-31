@@ -8,6 +8,7 @@ import {
   Modal,
   message,
   Tag,
+  Space,
 } from "antd";
 import { ActionType, ProList } from "@ant-design/pro-components";
 import {
@@ -26,6 +27,8 @@ import { getSorterUrl } from "../../utils";
 import { IAiModel, IAiModelListResponse } from "../api/ai";
 import AiModelCreate from "./AiModelCreate";
 import PublicityIcon from "../studio/PublicityIcon";
+import ShareModal from "../share/ShareModal";
+import { EResType } from "../share/Share";
 
 const { Text } = Typography;
 
@@ -113,9 +116,24 @@ const AiModelList = ({ studioName }: IWidget) => {
           actions: {
             render(dom, entity, index, action, schema) {
               return (
-                <Link to={`/studio/${studioName}/ai/models/${entity.uid}/logs`}>
-                  logs
-                </Link>
+                <Space>
+                  <Link
+                    to={`/studio/${studioName}/ai/models/${entity.uid}/logs`}
+                  >
+                    logs
+                  </Link>
+                  <ShareModal
+                    trigger={
+                      <Button type="link" size="small">
+                        {intl.formatMessage({
+                          id: "buttons.share",
+                        })}
+                      </Button>
+                    }
+                    resId={entity.uid}
+                    resType={EResType.modal}
+                  />
+                </Space>
               );
             },
           },
