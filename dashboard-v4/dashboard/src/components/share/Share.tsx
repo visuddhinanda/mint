@@ -16,6 +16,8 @@ export enum EResType {
   channel = 2,
   article = 3,
   collection = 4,
+  workflow = 6,
+  modal = 8,
 }
 interface IWidget {
   resId: string;
