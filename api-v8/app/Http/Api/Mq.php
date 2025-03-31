@@ -47,7 +47,7 @@ class Mq
             $channel->queue_declare($queue, false, true, false, false);
 
             $msgId = Str::uuid();
-            Log::info('mq push message queue={$queue} id={$msgId}');
+            Log::info("mq push message queue={$queue} id={$msgId}");
             $msg = new AMQPMessage(
                 json_encode($message, JSON_UNESCAPED_UNICODE),
                 [
