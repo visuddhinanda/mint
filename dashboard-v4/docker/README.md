@@ -11,7 +11,7 @@ sudo apt install crun podman buildah
   podman system reset # clean
   podman images # show images
   podman ps -a # show containers
-  podman load -i tmp/palm-CODE-TIMESTAMP.tar # import image
+  podman load -i tmp/CODE-TIMESTAMP.tar # import image
   ```
 
 - Envoy build

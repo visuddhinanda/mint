@@ -1,10 +1,5 @@
 - name: Testing ssh connections
-  hosts:
-    - web
-    - db
-    - fpm
-    - task
-    - logging
+  hosts: all,!localhost
   roles:
     - os
     - ubuntu

@@ -23,6 +23,7 @@ peony -i clients/CLUSTER ping.yml
 peony -i clients/CLUSTER ec2.yml
 # setup redis cluster nodes
 peony -i clients/CLUSTER redis.yml -l redis
+peony -i clients/CLUSTER mint.yml --extra-vars "mint_version=xxx"
 ```
 
 ## System image
@@ -86,3 +87,7 @@ php ./migrations/20211126220400-pali_sent_index-upgrade.php
 ```bash
 /public/app/upgrade/upgrade_pali_toc.php
 ```
+
+## Documents
+
+- [Configure a container to start automatically as a systemd service](https://www.redhat.com/en/blog/container-systemd-persist-reboot)

@@ -59,6 +59,10 @@
       - certbot
       - python3-certbot-nginx
       - build-essential
+      - ninja-build
+      - bison
+      - flex
+      - mold
       - pkg-config
       - cmake
       - libssl-dev

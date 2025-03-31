@@ -1,0 +1,11 @@
+- name: Setup schedule run worker service
+  ansible.builtin.include_tasks: workers.yml
+  vars:
+    zone_name: schedule
+    worker_name: run
+
+- name: Setup schedule run worker timer
+  ansible.builtin.template:
+    src: containers/schedule-run.timer.j2
+    dest: "{{ ansible_env.HOME }}/.config/systemd/user/{{ app_domain }}-scheduler.timer"
+    mode: "0644"

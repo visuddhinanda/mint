@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export CODE="palm-jammy"
+export CODE="mint-alpine"
 export NAME="$CODE-$USER"
 
 if podman container exists $NAME; then

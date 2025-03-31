@@ -20,5 +20,6 @@ podman image prune # removes all dangling images
 podman system reset # clean
 podman images # show images
 podman ps -a # show containers
-podman load -i tmp/mint-CODE-TIMESTAMP.tar.xz # import image
+# https://docs.podman.io/en/stable/markdown/podman.1.html#tmpdir-path
+TMPDIR=$HOME/tmp podman load -i images/mint-CODE-TIMESTAMP.tar.xz # import image
 ```

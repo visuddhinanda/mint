@@ -1,0 +1,29 @@
+- name: Upload script for worker-{{ zone_name }}-{{ worker_name }}
+  ansible.builtin.template:
+    src: containers/worker.sh.j2
+    dest: "{{ app_deploy_target }}/scripts/worker-{{ zone_name }}-{{ worker_name }}.sh"
+    mode: "0555"
+
+- name: Stop {{ zone_name }}-{{ worker_name }}
+  containers.podman.podman_container:
+    name: "{{ app_domain }}-worker-{{ zone_name }}-{{ worker_name }}"
+    state: absent
+
+- name: Create {{ zone_name }}-{{ worker_name }}
+  containers.podman.podman_container:
+    name: "{{ app_domain }}-worker-{{ zone_name }}-{{ worker_name }}"
+    image: "{{ app_mint_image_name }}"
+    command: "{{ app_deploy_target }}/scripts/worker-{{ zone_name }}-{{ worker_name }}.sh"
+    volumes:
+      - "{{ app_deploy_target }}:{{ app_deploy_target }}:z"
+    workdir: "{{ app_deploy_target }}"
+    state: present
+    # auto_remove: true
+    generate_systemd:
+      path: "{{ ansible_env.HOME }}/.config/systemd/user"
+      container_prefix: "{{ app_container_prefix }}"
+      new: true
+      names: true
+      restart_policy: always
+      restart_sec: 30
+      stop_timeout: 20
