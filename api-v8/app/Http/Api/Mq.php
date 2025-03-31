@@ -6,6 +6,7 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use PhpAmqpLib\Exchange\AMQPExchangeType;
 use PhpAmqpLib\Exception\AMQPTimeoutException;
+use PhpAmqpLib\Exception\AMQPProtocolChannelException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -216,6 +217,7 @@ class Mq
             try {
                 $channel->wait(null, false, $timeout);
             } catch (AMQPTimeoutException $e) {
+            } catch (AMQPProtocolChannelException $e) {
             }
         }
     }
