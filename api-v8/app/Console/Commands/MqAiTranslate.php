@@ -52,7 +52,7 @@ class MqAiTranslate extends Command
         $exchange = 'router';
         $queue = 'ai_translate';
         $this->info(" [*] Waiting for {$queue}. To exit press CTRL+C");
-        Log::debug("mq {$queue} start.");
+        Log::debug("mq worker {$queue} start.");
         Mq::worker($exchange, $queue, function ($message) use ($queue) {
             Log::debug('ai translate start', ['message' => $message]);
             //写入 model log
@@ -173,10 +173,10 @@ class MqAiTranslate extends Command
             ];
             $response = Http::timeout(10)->withToken($token)->post($url, $data);
             if ($response->failed()) {
-                Log::error($queue . ' discussion error', ['data' => $response->json()]);
+                Log::error($queue . ' discussion create topic error', ['data' => $response->json()]);
             } else {
-                Log::info($queue . ' discussion topic successful');
                 if (isset($response->json()['data']['id'])) {
+                    Log::info($queue . ' discussion create topic successful');
                     $data['parent'] = $response->json()['data']['id'];
                     unset($data['title']);
                     $topicChildren = [];
@@ -199,7 +199,7 @@ class MqAiTranslate extends Command
                         }
                     }
                 } else {
-                    Log::error($queue . 'discussion response is null');
+                    Log::error($queue . ' discussion create topic response is null');
                 }
             }
 

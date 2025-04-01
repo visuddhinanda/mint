@@ -174,7 +174,7 @@ class Mq
                             $GLOBALS[$key] = 1;
                         }
                         if ($GLOBALS[$key] >= $value) {
-                            Log::debug('mq exit loop=' . $GLOBALS[$key]);
+                            Log::debug("mq exit queue={$queue} loop=" . $GLOBALS[$key]);
                             $message->getChannel()->basic_cancel($message->getConsumerTag());
                         }
                     }
