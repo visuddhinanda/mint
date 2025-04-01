@@ -110,6 +110,9 @@ class TaskStatusController extends Controller
                 $task->executor_id = $user['user_uid'];
                 $this->pushChange('running', $task->id);
                 break;
+            case 'restarted':
+                $this->pushChange('restarted', $task->id);
+                break;
             case 'done':
                 $this->pushChange('done', $task->id);
                 $task->finished_at = now();
@@ -160,7 +163,7 @@ class TaskStatusController extends Controller
                     ->select('task_id')->get();
                 foreach ($preTasks as $key => $value) {
                     //$restartTask[] = $value->task_id;
-                    $this->pushChange('restart', $value->task_id);
+                    $this->pushChange('restarted', $value->task_id);
                 }
                 break;
         }
@@ -168,7 +171,8 @@ class TaskStatusController extends Controller
         $task->editor_id = $user['user_uid'];
         $task->save();
         # auto start with ai assistant
-        foreach ($this->getChange('published') as $taskId) {
+        $autoStart = array_merge($this->getChange('published'), $this->getChange('restarted'));
+        foreach ($autoStart as $taskId) {
             $taskAssignee = TaskAssignee::where('task_id', $taskId)
                 ->select('assignee_id')->get();
             $aiAssistant = AiModel::whereIn('uid', $taskAssignee)->first();
