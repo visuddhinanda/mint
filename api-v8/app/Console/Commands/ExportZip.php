@@ -116,6 +116,7 @@ class ExportZip extends Command
         $this->info(implode(' ', $command));
         Log::debug('export offline zip start', ['command' => $command, 'format' => $this->argument('format')]);
         $process = new Process($command);
+	$process->setTimeout(60*60*6);
         $process->run();
         $this->info($process->getOutput());
         $this->info('压缩完成');
