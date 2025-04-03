@@ -10,10 +10,10 @@ class TestAiTask extends Command
     /**
      * The name and signature of the console command.
      * php artisan test:ai.task c77af42f-ffb5-48ae-af71-4c32e1c30dab
-     * php artisan test:ai.task 41640b40-e153-407d-9d29-da631c5b88f8
+     * php artisan test:ai.task f42fa690-c590-400f-9de9-fbc81e838a5a
      * @var string
      */
-    protected $signature = 'test:ai.task {id}';
+    protected $signature = 'test:ai.task {id} {--test}';
 
     /**
      * The console command description.
@@ -40,8 +40,10 @@ class TestAiTask extends Command
     public function handle()
     {
         $taskId = $this->argument('id');
-        $params = AiTaskPrepare::translate($taskId, false);
+        $params = AiTaskPrepare::translate($taskId, !$this->option('test'));
         var_dump($params);
+        var_dump($this->option('test'));
+        $this->info('total:' . count($params));
         return 0;
     }
 }
