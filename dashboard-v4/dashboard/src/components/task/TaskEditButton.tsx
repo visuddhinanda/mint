@@ -4,7 +4,6 @@ import {
   CodeSandboxOutlined,
   DeleteOutlined,
   FieldTimeOutlined,
-  EditOutlined,
   ArrowRightOutlined,
 } from "@ant-design/icons";
 import { useIntl } from "react-intl";
@@ -19,10 +18,9 @@ interface IWidget {
   task?: ITaskData;
   studioName?: string;
   onChange?: (task: ITaskData[]) => void;
-  onEdit?: () => void;
   onPreTask?: (type: TRelation) => void;
 }
-const TaskEditButton = ({ task, onChange, onEdit, onPreTask }: IWidget) => {
+const TaskEditButton = ({ task, onChange, onPreTask }: IWidget) => {
   const intl = useIntl();
 
   const setValue = (setting: ITaskUpdateRequest) => {
@@ -39,11 +37,6 @@ const TaskEditButton = ({ task, onChange, onEdit, onPreTask }: IWidget) => {
   };
 
   const mainMenuItems: MenuProps["items"] = [
-    {
-      key: "edit",
-      label: intl.formatMessage({ id: "buttons.edit" }),
-      icon: <EditOutlined />,
-    },
     {
       key: "milestone",
       label: task?.is_milestone ? "取消里程碑" : "设为里程碑",
@@ -76,9 +69,6 @@ const TaskEditButton = ({ task, onChange, onEdit, onPreTask }: IWidget) => {
   ];
   const mainMenuClick: MenuProps["onClick"] = (e) => {
     switch (e.key) {
-      case "edit":
-        onEdit && onEdit();
-        break;
       case "milestone":
         if (task) {
           if (task.id) {
