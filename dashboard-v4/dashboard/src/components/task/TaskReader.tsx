@@ -22,7 +22,7 @@ const { Text } = Typography;
 export const Milestone = ({ task }: { task?: ITaskData }) => {
   return task?.is_milestone ? (
     <Tag icon={<CodeSandboxOutlined />} color="error">
-      里程碑
+      {intl.formatMessage({ id: "labels.milestone" })}
     </Tag>
   ) : null;
 };
