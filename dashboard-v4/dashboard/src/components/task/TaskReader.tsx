@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { Divider, Space, Tag, Typography, message } from "antd";
+import { Divider, Skeleton, Space, Tag, Typography, message } from "antd";
 import { CodeSandboxOutlined } from "@ant-design/icons";
 
 import { ITaskData, ITaskResponse, ITaskUpdateRequest } from "../api/task";
@@ -16,10 +16,13 @@ import TaskTitle from "./TaskTitle";
 import TaskStatus from "./TaskStatus";
 import Description from "./Description";
 import Category from "./Category";
+import { useIntl } from "react-intl";
 
 const { Text } = Typography;
 
 export const Milestone = ({ task }: { task?: ITaskData }) => {
+  const intl = useIntl();
+
   return task?.is_milestone ? (
     <Tag icon={<CodeSandboxOutlined />} color="error">
       {intl.formatMessage({ id: "labels.milestone" })}
@@ -30,21 +33,24 @@ export const Milestone = ({ task }: { task?: ITaskData }) => {
 interface IWidget {
   taskId?: string;
   onChange?: (data: ITaskData[]) => void;
-  onEdit?: () => void;
 }
-const TaskReader = ({ taskId, onChange, onEdit }: IWidget) => {
+const TaskReader = ({ taskId, onChange }: IWidget) => {
   const [openPreTask, setOpenPreTask] = useState(false);
   const [openNextTask, setOpenNextTask] = useState(false);
   const [task, setTask] = useState<ITaskData>();
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const url = `/v2/task/${taskId}`;
     console.info("task api request", url);
-    get<ITaskResponse>(url).then((json) => {
-      console.info("task api response", json);
-      if (json.ok) {
-        setTask(json.data);
-      }
-    });
+    setLoading(true);
+    get<ITaskResponse>(url)
+      .then((json) => {
+        console.info("task api response", json);
+        if (json.ok) {
+          setTask(json.data);
+        }
+      })
+      .finally(() => setLoading(false));
   }, [taskId]);
 
   const updatePreTask = (type: TRelation, data?: ITaskData | null) => {
@@ -96,7 +102,9 @@ const TaskReader = ({ taskId, onChange, onEdit }: IWidget) => {
       }
     });
   };
-  return (
+  return loading ? (
+    <Skeleton active />
+  ) : (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <Space>
@@ -132,7 +140,6 @@ const TaskReader = ({ taskId, onChange, onEdit }: IWidget) => {
               setTask(tasks.find((value) => value.id === taskId));
               onChange && onChange(tasks);
             }}
-            onEdit={onEdit}
             onPreTask={(type: TRelation) => {
               if (type === "pre") {
                 setOpenPreTask(true);
