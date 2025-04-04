@@ -5,6 +5,7 @@ import TaskTable from "../../components/task/TaskTable";
 import TaskRelation from "../../components/task/TaskRelation";
 import { useState } from "react";
 import { ITaskData } from "../../components/api/task";
+import { useIntl } from "react-intl";
 
 interface IWidget {
   studioName?: string;
@@ -20,13 +21,15 @@ const ProjectTask = ({
 }: IWidget) => {
   const [tasks, setTasks] = useState<ITaskData[]>([]);
   const [taskTree, setTaskTree] = useState<ITaskData[]>();
+  const intl = useIntl();
+
   return (
     <>
       <Tabs
         type="card"
         items={[
           {
-            label: "列表",
+            label: intl.formatMessage({ id: "labels.list" }),
             key: "list",
             children: (
               <TaskList
@@ -44,13 +47,13 @@ const ProjectTask = ({
             ),
           },
           {
-            label: "表格",
+            label: intl.formatMessage({ id: "labels.table" }),
             key: "table",
             children: <TaskTable tasks={tasks} />,
           },
           {
-            label: "关系图",
-            key: "relation",
+            label: intl.formatMessage({ id: "labels.flowchart" }),
+            key: "flowchart",
             children: <TaskRelation tasks={tasks} />,
           },
         ]}
