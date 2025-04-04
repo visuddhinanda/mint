@@ -94,6 +94,17 @@ class TaskStatusController extends Controller
             return $this->error('no status', 400, 400);
         }
 
+        $task->status = $request->get('status');
+        $task->editor_id = $user['user_uid'];
+        $task->save();
+        if ($task->type === 'workflow') {
+            return $this->ok(
+                [
+                    "rows" => TaskResource::collection(resource: [$task]),
+                    "count" => 1,
+                ]
+            );
+        }
         switch ($request->get('status')) {
             case 'published':
                 $this->pushChange('published', $id);
@@ -167,9 +178,7 @@ class TaskStatusController extends Controller
                 }
                 break;
         }
-        $task->status = $request->get('status');
-        $task->editor_id = $user['user_uid'];
-        $task->save();
+
         # auto start with ai assistant
         $autoStart = array_merge($this->getChange('published'), $this->getChange('restarted'));
         foreach ($autoStart as $taskId) {
