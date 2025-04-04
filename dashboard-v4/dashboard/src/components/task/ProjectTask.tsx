@@ -23,6 +23,12 @@ const ProjectTask = ({
   const [taskTree, setTaskTree] = useState<ITaskData[]>();
   const intl = useIntl();
 
+  const onDataChange = (treeData: ITaskData[]) => {
+    setTaskTree(treeData);
+    const listData = treeToList(treeData);
+    setTasks(listData);
+    onChange && onChange(listData);
+  };
   return (
     <>
       <Tabs
@@ -37,19 +43,14 @@ const ProjectTask = ({
                 studioName={studioName}
                 projectId={projectId}
                 taskTree={taskTree}
-                onChange={(treeData: ITaskData[]) => {
-                  setTaskTree(treeData);
-                  const listData = treeToList(treeData);
-                  setTasks(listData);
-                  onChange && onChange(listData);
-                }}
+                onChange={onDataChange}
               />
             ),
           },
           {
             label: intl.formatMessage({ id: "labels.table" }),
             key: "table",
-            children: <TaskTable tasks={tasks} />,
+            children: <TaskTable tasks={tasks} onChange={onDataChange} />,
           },
           {
             label: intl.formatMessage({ id: "labels.flowchart" }),
