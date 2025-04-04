@@ -37,7 +37,7 @@ const TaskStatus = ({ task }: IWidget) => {
       color = "default";
       break;
     case "published":
-      color = "default";
+      color = "orange";
       break;
     case "running":
       color = "processing";
