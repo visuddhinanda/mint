@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, message } from "antd";
+import { Button, message, Space } from "antd";
 import { EditOutlined, CheckOutlined } from "@ant-design/icons";
 
 import { ITaskData, ITaskResponse, ITaskUpdateRequest } from "../api/task";
@@ -7,6 +7,7 @@ import MdView from "../template/MdView";
 import MDEditor from "@uiw/react-md-editor";
 import "../article/article.css";
 import { patch } from "../../request";
+import { openDiscussion } from "../discussion/DiscussionButton";
 
 interface IWidget {
   task?: ITaskData;
@@ -30,14 +31,25 @@ const Description = ({ task, onChange }: IWidget) => {
         <span></span>
         <span>
           {mode === "read" ? (
-            <Button
-              ghost
-              type="primary"
-              icon={<EditOutlined />}
-              onClick={() => setMode("edit")}
-            >
-              编辑
-            </Button>
+            <Space>
+              <Button
+                key={1}
+                onClick={() => {
+                  task && openDiscussion(task?.id, "task", false);
+                }}
+              >
+                讨论
+              </Button>
+              <Button
+                key={2}
+                ghost
+                type="primary"
+                icon={<EditOutlined />}
+                onClick={() => setMode("edit")}
+              >
+                编辑
+              </Button>
+            </Space>
           ) : (
             <Button
               ghost
