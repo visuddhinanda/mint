@@ -56,7 +56,37 @@ class MqAiTranslate extends Command
         Mq::worker($exchange, $queue, function ($messages) use ($queue) {
             Log::debug('ai translate start', ['message' => count($messages)]);
             $this->info('ai translate task start task=' . count($messages));
+            if (!is_array($messages) || count($messages) === 0) {
+                Log::error('message is not array');
+                return 1;
+            }
+            //获取model token
+            $first = $messages[0];
+            Log::debug($queue . ' ai assistant token', ['user' => $first->model->uid]);
+            $modelToken = AuthController::getUserToken($first->model->uid);
+            Log::debug($queue . ' ai assistant token', ['token' => $modelToken]);
+            $discussionUrl = config('app.url') . '/api/v2/discussion';
+            $taskDiscussionData = [
+                'res_id' => $first->task->info->id,
+                'res_type' => 'task',
+                'title' => $first->task->info->title,
+                'content' => $first->task->info->category,
+                'content_type' => 'markdown',
+                'type' => 'discussion',
+                'notification' => false,
+            ];
+            $response = Http::timeout(10)->withToken($modelToken)->post($discussionUrl, $taskDiscussionData);
+            if ($response->failed()) {
+                Log::error($queue . ' discussion create topic error', ['data' => $response->json()]);
+            } else {
+                if (isset($response->json()['data']['id'])) {
+                    $taskDiscussionData['parent'] = $response->json()['data']['id'];
+                }
+            }
+
+
             foreach ($messages as $key => $message) {
+                $taskDiscussionContent = [];
                 //写入 model log
                 $modelLog = new ModelLog();
                 $modelLog->uid = Str::uuid();
@@ -86,7 +116,7 @@ class MqAiTranslate extends Command
                         ->post($message->model->url, $param);
 
                     $response->throw(); // 触发异常（如果请求失败）
-
+                    $taskDiscussionContent[] = '- LLM request successful';
                     Log::info($queue . ' LLM request successful');
                     $modelLog->request_headers = json_encode($response->handlerStats(), JSON_UNESCAPED_UNICODE);
                     $modelLog->response_headers = json_encode($response->headers(), JSON_UNESCAPED_UNICODE);
@@ -223,7 +253,22 @@ class MqAiTranslate extends Command
                 if ($response->failed()) {
                     Log::error($queue . ' task progress error', ['data' => $response->json()]);
                 } else {
+                    $taskDiscussionContent[] = "- progress=" . $response->json()['data']['progress'];
                     Log::info($queue . ' task progress successful progress=' . $response->json()['data']['progress']);
+                }
+
+                if (isset($taskDiscussionData['parent'])) {
+                    unset($taskDiscussionData['title']);
+                    $taskDiscussionData['content'] = implode('\n', $taskDiscussionContent);
+                    Log::debug($queue . ' task discussion child request', ['url' => $discussionUrl, 'data' => $data]);
+                    $response = Http::timeout(10)->withToken($token)->post($discussionUrl, $taskDiscussionData);
+                    if ($response->failed()) {
+                        Log::error($queue . ' task discussion error', ['data' => $response->json()]);
+                    } else {
+                        Log::info($queue . ' task discussion child successful');
+                    }
+                } else {
+                    Log::error('no task discussion root');
                 }
 
                 //任务完成 修改任务状态为 done
