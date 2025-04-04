@@ -16,7 +16,7 @@ import { currentUser as _currentUser } from "../../reducers/current-user";
 import { CommentOutlinedIcon, TemplateOutlinedIcon } from "../../assets/icon";
 import { ISentenceResponse } from "../api/Corpus";
 import { TDiscussionType } from "./Discussion";
-import { courseInfo, memberInfo } from "../../reducers/current-course";
+import { courseInfo } from "../../reducers/current-course";
 import { courseUser } from "../../reducers/course-user";
 import TimeShow from "../general/TimeShow";
 
@@ -26,7 +26,8 @@ export type TResType =
   | "chapter"
   | "sentence"
   | "wbw"
-  | "term";
+  | "term"
+  | "task";
 
 interface IWidget {
   resId?: string;
@@ -64,7 +65,6 @@ const DiscussionListCardWidget = ({
   const [canCreate, setCanCreate] = useState(false);
 
   const course = useAppSelector(courseInfo);
-  const courseMember = useAppSelector(memberInfo);
   const myCourse = useAppSelector(courseUser);
 
   const user = useAppSelector(_currentUser);
@@ -108,20 +108,32 @@ const DiscussionListCardWidget = ({
             render(dom, entity, index, action, schema) {
               return (
                 <>
-                  {entity.resId !== resId ? <LinkOutlined /> : <></>}
-                  <Button
-                    key={index}
-                    size="small"
-                    type="link"
-                    icon={entity.newTpl ? <TemplateOutlinedIcon /> : undefined}
-                    onClick={(event) => {
-                      if (typeof onSelect !== "undefined") {
-                        onSelect(event, entity);
+                  <div>
+                    {entity.resId !== resId ? <LinkOutlined /> : <></>}
+                    <Button
+                      key={index}
+                      size="small"
+                      type="link"
+                      icon={
+                        entity.newTpl ? <TemplateOutlinedIcon /> : undefined
                       }
-                    }}
-                  >
-                    {entity.title}
-                  </Button>
+                      onClick={(event) => {
+                        if (typeof onSelect !== "undefined") {
+                          onSelect(event, entity);
+                        }
+                      }}
+                    >
+                      {entity.title}
+                    </Button>
+                  </div>
+                  <Space>
+                    <TimeShow
+                      type="secondary"
+                      showIcon={false}
+                      createdAt={entity.createdAt}
+                      updatedAt={entity.updatedAt}
+                    />
+                  </Space>
                 </>
               );
             },
@@ -132,15 +144,9 @@ const DiscussionListCardWidget = ({
             render(dom, entity, index, action, schema) {
               return (
                 <div>
-                  <div key={index}>{entity.summary ?? entity.content}</div>
-                  <Space>
-                    {entity.user.nickName}
-                    <TimeShow
-                      type="secondary"
-                      createdAt={entity.createdAt}
-                      updatedAt={entity.updatedAt}
-                    />
-                  </Space>
+                  <div key={index}>
+                    {entity.summary ?? entity.content?.substring(0, 100)}
+                  </div>
                 </div>
               );
             },
