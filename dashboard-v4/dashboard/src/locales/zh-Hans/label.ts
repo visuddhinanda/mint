@@ -94,6 +94,9 @@ const items = {
   "labels.filters.or": "任一条件",
   "labels.task.workflows": "工作流",
   "labels.milestone": "里程碑",
+  "labels.flowchart": "流程图",
+  "labels.table": "表格",
+  "labels.list": "列表",
 };
 
 export default items;

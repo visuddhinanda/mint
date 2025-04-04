@@ -51,6 +51,10 @@ const DiscussionWidget = ({
     }
   }, [showTopicId]);
 
+  useEffect(() => {
+    setChildrenDrawer(false);
+  }, [resId]);
+
   const showChildrenDrawer = (comment: IComment) => {
     console.debug("discussion comment", comment);
     setChildrenDrawer(true);

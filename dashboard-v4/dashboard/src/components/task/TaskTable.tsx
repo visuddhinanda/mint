@@ -14,8 +14,9 @@ interface ITaskHeading {
 
 interface IWidget {
   tasks?: ITaskData[];
+  onChange?: (treeData: ITaskData[]) => void;
 }
-const TaskTable = ({ tasks }: IWidget) => {
+const TaskTable = ({ tasks, onChange }: IWidget) => {
   const [tasksTitle, setTasksTitle] = useState<ITaskHeading[][]>();
   const [dataHeading, setDataHeading] = useState<string[]>();
   const [projects, setProjects] = useState<IProject[]>();
@@ -142,7 +143,11 @@ const TaskTable = ({ tasks }: IWidget) => {
                         )}
                       </div>
                       <div>
-                        <TaskStatusButton type="tag" task={taskData} />
+                        <TaskStatusButton
+                          type="tag"
+                          task={taskData}
+                          onChange={onChange}
+                        />
                       </div>
                     </div>
                   </td>
