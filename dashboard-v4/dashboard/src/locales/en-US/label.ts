@@ -85,6 +85,7 @@ const items = {
   "labels.filters.and": "and",
   "labels.filters.or": "or",
   "labels.task.workflows": "Workflows",
+  "labels.milestone": "milestone",
 };
 
 export default items;

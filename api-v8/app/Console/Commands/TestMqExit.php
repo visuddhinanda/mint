@@ -3,24 +3,23 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Http\Api\AiTaskPrepare;
+use App\Http\Api\Mq;
 
-class TestAiTask extends Command
+class TestMqExit extends Command
 {
     /**
      * The name and signature of the console command.
-     * php artisan test:ai.task c77af42f-ffb5-48ae-af71-4c32e1c30dab
-     * php artisan test:ai.task f42fa690-c590-400f-9de9-fbc81e838a5a
+     * php artisan test:mq.exit
      * @var string
      */
-    protected $signature = 'test:ai.task {id} {--test}';
+    protected $signature = 'test:mq.exit';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'test ai task';
+    protected $description = 'Command description';
 
     /**
      * Create a new command instance.
@@ -39,11 +38,9 @@ class TestAiTask extends Command
      */
     public function handle()
     {
-        $taskId = $this->argument('id');
-        $params = AiTaskPrepare::translate($taskId, !$this->option('test'));
-        var_dump($params);
-        var_dump($this->option('test'));
-        $this->info('total:' . count($params));
+        for ($i = 0; $i < 10; $i++) {
+            Mq::publish('ai_translate', ['hello world']);
+        }
         return 0;
     }
 }

@@ -42,6 +42,8 @@ class AiAssistantApi
             } else {
                 $data['avatar'] = Storage::temporaryUrl($img, now()->addDays(6));
             }
+        } else {
+            $data['avatar'] = config('app.url') . '/assets/images/avatar/ai-assistant.png';
         }
         return $data;
     }

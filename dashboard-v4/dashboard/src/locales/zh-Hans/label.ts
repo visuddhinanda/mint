@@ -93,6 +93,7 @@ const items = {
   "labels.filters.and": "全部条件",
   "labels.filters.or": "任一条件",
   "labels.task.workflows": "工作流",
+  "labels.milestone": "里程碑",
 };
 
 export default items;

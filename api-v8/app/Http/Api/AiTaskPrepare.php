@@ -173,9 +173,9 @@ class AiTaskPrepare
                 ],
             ];
             array_push($mqData, $aiMqData);
-            if ($send) {
-                Mq::publish('ai_translate', $aiMqData);
-            }
+        }
+        if ($send) {
+            Mq::publish('ai_translate', $mqData);
         }
         return $mqData;
     }

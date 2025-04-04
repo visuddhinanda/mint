@@ -158,7 +158,7 @@ class Mq
                 }
 
                 if (\App\Tools\Tools::isStop()) {
-                    Log::debug('mq worker: .stop file exist. cancel the consumer.');
+                    Log::info('mq worker: .stop file exist. cancel the consumer.');
                     $message->getChannel()->basic_cancel($message->getConsumerTag());
                 }
             }
@@ -174,7 +174,7 @@ class Mq
                             $GLOBALS[$key] = 1;
                         }
                         if ($GLOBALS[$key] >= $value) {
-                            Log::debug("mq exit queue={$queue} loop=" . $GLOBALS[$key]);
+                            Log::info("mq exit queue={$queue} loop=" . $GLOBALS[$key]);
                             $message->getChannel()->basic_cancel($message->getConsumerTag());
                         }
                     }
