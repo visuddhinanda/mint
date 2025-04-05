@@ -121,8 +121,8 @@ const TaskTable = ({ tasks, onChange }: IWidget) => {
         <tbody>
           {projects?.map((row, index) => (
             <tr key={index}>
-              <td>{row.title}</td>
-              <td>{row.weight}</td>
+              <td key={"title"}>{row.title}</td>
+              <td key={"weight"}>{row.weight}</td>
               {dataHeading?.map((task, id) => {
                 const taskData = tasks?.find(
                   (value: ITaskData) =>
