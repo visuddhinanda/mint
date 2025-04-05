@@ -33,8 +33,9 @@ export const Milestone = ({ task }: { task?: ITaskData }) => {
 interface IWidget {
   taskId?: string;
   onChange?: (data: ITaskData[]) => void;
+  onDiscussion?: () => void;
 }
-const TaskReader = ({ taskId, onChange }: IWidget) => {
+const TaskReader = ({ taskId, onChange, onDiscussion }: IWidget) => {
   const [openPreTask, setOpenPreTask] = useState(false);
   const [openNextTask, setOpenNextTask] = useState(false);
   const [task, setTask] = useState<ITaskData>();
@@ -206,6 +207,7 @@ const TaskReader = ({ taskId, onChange }: IWidget) => {
           setTask(data[0]);
           onChange && onChange(data);
         }}
+        onDiscussion={onDiscussion}
       />
     </div>
   );
