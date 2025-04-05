@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 
 import { IProject, ITaskData } from "../api/task";
 import "../article/article.css";
-import User from "../auth/User";
-import Assignees from "./Assignees";
-import TaskStatusButton from "./TaskStatusButton";
+import TaskTableCell from "./TaskTableCell";
 
 interface ITaskHeading {
   id: string;
@@ -132,24 +130,7 @@ const TaskTable = ({ tasks, onChange }: IWidget) => {
                 );
                 return (
                   <td key={id}>
-                    <div>
-                      <div>
-                        {taskData?.executor ? (
-                          <User {...taskData.executor} />
-                        ) : taskData?.assignees ? (
-                          <Assignees task={taskData} />
-                        ) : (
-                          <></>
-                        )}
-                      </div>
-                      <div>
-                        <TaskStatusButton
-                          type="tag"
-                          task={taskData}
-                          onChange={onChange}
-                        />
-                      </div>
-                    </div>
+                    <TaskTableCell task={taskData} onChange={onChange} />
                   </td>
                 );
               })}
