@@ -30,6 +30,9 @@ const TaskEditDrawer = ({
 
   const onCloseDrawer = () => {
     setOpen(false);
+    if (document.getElementsByTagName("body")[0].hasAttribute("style")) {
+      document.getElementsByTagName("body")[0].removeAttribute("style");
+    }
     if (onClose) {
       onClose();
     }

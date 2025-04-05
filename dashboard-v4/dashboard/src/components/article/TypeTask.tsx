@@ -1,14 +1,7 @@
-import { useState } from "react";
-import { Modal } from "antd";
-import { ExclamationCircleOutlined } from "@ant-design/icons";
-import { IArticleDataResponse } from "../api/Article";
 import { ArticleMode, ArticleType } from "./Article";
-import TypeArticleReader from "./TypeArticleReader";
-import ArticleEdit from "./ArticleEdit";
-import TaskEdit from "../task/TaskEdit";
 import { ITaskData } from "../api/task";
-import TaskReader from "../task/TaskReader";
 import Task from "../task/Task";
+import { openDiscussion } from "../discussion/DiscussionButton";
 
 interface IWidget {
   type?: ArticleType;
@@ -30,7 +23,12 @@ const TypeTask = ({
 }: IWidget) => {
   return (
     <div>
-      <Task taskId={articleId} />
+      <Task
+        taskId={articleId}
+        onDiscussion={() => {
+          articleId && openDiscussion(articleId, "task", false);
+        }}
+      />
     </div>
   );
 };

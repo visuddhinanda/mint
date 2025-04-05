@@ -5,8 +5,9 @@ interface IWidget {
   taskId?: string;
   onLoad?: (task: ITaskData) => void;
   onChange?: (task: ITaskData[]) => void;
+  onDiscussion?: () => void;
 }
-const Task = ({ taskId, onLoad, onChange }: IWidget) => {
+const Task = ({ taskId, onLoad, onChange, onDiscussion }: IWidget) => {
   return (
     <div>
       <TaskReader
@@ -14,6 +15,7 @@ const Task = ({ taskId, onLoad, onChange }: IWidget) => {
         onChange={(data: ITaskData[]) => {
           onChange && onChange(data);
         }}
+        onDiscussion={onDiscussion}
       />
     </div>
   );

@@ -7,20 +7,28 @@ import MdView from "../template/MdView";
 import MDEditor from "@uiw/react-md-editor";
 import "../article/article.css";
 import { patch } from "../../request";
-import { openDiscussion } from "../discussion/DiscussionButton";
+import DiscussionDrawer from "../discussion/DiscussionDrawer";
 
 interface IWidget {
   task?: ITaskData;
   onChange?: (data: ITaskData[]) => void;
+  onDiscussion?: () => void;
 }
-const Description = ({ task, onChange }: IWidget) => {
+const Description = ({ task, onChange, onDiscussion }: IWidget) => {
   const [mode, setMode] = useState<"read" | "edit">("read");
   const [content, setContent] = useState(task?.description);
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => setContent(task?.description), [task]);
   return (
     <div>
+      <DiscussionDrawer
+        open={open}
+        onClose={() => setOpen(false)}
+        resId={task?.id}
+        resType="task"
+      />
       <div
         style={{
           display: "flex",
@@ -35,7 +43,11 @@ const Description = ({ task, onChange }: IWidget) => {
               <Button
                 key={1}
                 onClick={() => {
-                  task && openDiscussion(task?.id, "task", false);
+                  if (typeof onDiscussion === "undefined") {
+                    setOpen(true);
+                  } else {
+                    onDiscussion();
+                  }
                 }}
               >
                 讨论
