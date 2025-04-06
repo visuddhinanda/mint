@@ -1,5 +1,6 @@
 import { DropdownButtonType } from "antd/lib/dropdown/dropdown-button";
 import {
+  Button,
   Dropdown,
   MenuProps,
   message,
@@ -200,21 +201,30 @@ const TaskStatusButton = ({
       cancelText="No"
     >
       <Dropdown.Button
-        disabled={task?.type === "workflow"}
         type={buttonType}
         trigger={["click"]}
         icon={<DownOutlined />}
         menu={menuProps}
-      >
-        {loading ? (
-          <LoadingOutlined />
-        ) : newStatus === "done" ? (
-          <CheckOutlined />
-        ) : (
-          <></>
-        )}
-        {buttonText}
-      </Dropdown.Button>
+        buttonsRender={([leftButton, rightButton]) => {
+          return [
+            <Button
+              disabled={task?.type === "workflow"}
+              icon={
+                loading ? (
+                  <LoadingOutlined />
+                ) : newStatus === "done" ? (
+                  <CheckOutlined />
+                ) : (
+                  <></>
+                )
+              }
+            >
+              {buttonText}
+            </Button>,
+            rightButton,
+          ];
+        }}
+      />
     </Popconfirm>
   ) : (
     <Dropdown placement="bottomLeft" menu={menuProps}>
