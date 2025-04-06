@@ -95,7 +95,7 @@ const TypeArticleReaderToolbarWidget = ({
                 {
                   label: intl.formatMessage({
                     id: "buttons.open.in.new.tab",
-                  }),
+                  },{item:''}),
                   key: "open_in_tab",
                   icon: <TabIcon />,
                 },

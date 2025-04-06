@@ -55,9 +55,12 @@ const DiscussionDrawerWidget = ({
         extra={
           <Space>
             <Link to={`/discussion/show/${resType}/${resId}`} target="_blank">
-              {intl.formatMessage({
-                id: "buttons.open.in.new.tab",
-              })}
+              {intl.formatMessage(
+                {
+                  id: "buttons.open.in.new.tab",
+                },
+                { item: "" }
+              )}
             </Link>
             {drawerWidth === drawerMinWidth ? (
               <Button
