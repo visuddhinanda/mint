@@ -159,7 +159,7 @@ const NissayaCardWidget = ({
           <Link to={`/nissaya/ending/${term?.word}`} target="_blank">
             {intl.formatMessage({
               id: "buttons.open.in.new.tab",
-            })}
+            },{item:''})}
           </Link>
           <Button
             type="link"

@@ -60,9 +60,12 @@ const TaskEditDrawer = ({
               window.open(fullUrl(`/article/task/${taskId}`), "_blank");
             }}
           >
-            {intl.formatMessage({
-              id: "buttons.open.in.new.tab",
-            })}
+            {intl.formatMessage(
+              {
+                id: "buttons.open.in.new.tab",
+              },
+              { item: intl.formatMessage({ id: "labels.task" }) }
+            )}
           </Button>
         }
       >

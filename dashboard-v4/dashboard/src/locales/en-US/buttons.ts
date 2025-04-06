@@ -82,7 +82,7 @@ const items = {
   "buttons.relate": "relate",
   "buttons.convert": "convert",
   "buttons.copy.tpl": "copy template",
-  "buttons.open.in.new.tab": "Open in New Tab",
+  "buttons.open.in.new.tab": "Open {item} in New Tab",
   "buttons.add_to_anthology": "Add to Anthology",
   "buttons.open.in.studio": "Open in Studio",
   "buttons.admin": "admin",
@@ -101,6 +101,10 @@ const items = {
   "buttons.task.status.change.to.restarted": "重做",
   "buttons.task.status.change.to.requested_restart": "请求重做",
   "buttons.access-token.get": "access token",
+  "buttons.task.add.pre-task": "pre task",
+  "buttons.task.add.next-task": "next task",
+  "buttons.remove.milestone": "remove milestone",
+  "buttons.set.milestone": "set as milestone",
 };
 
 export default items;

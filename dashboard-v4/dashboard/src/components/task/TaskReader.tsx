@@ -164,7 +164,9 @@ const TaskReader = ({ taskId, onChange, onDiscussion }: IWidget) => {
           <TimeShow updatedAt={task?.updated_at} />
           <Like resId={task?.id} resType="task" />
         </Space>
-        <Space>
+        <Space
+          style={{ display: task?.type === "workflow" ? "none" : "unset" }}
+        >
           <Text type="secondary" key={"2"}>
             执行人
           </Text>

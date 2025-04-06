@@ -106,9 +106,12 @@ export const ArticleCtl = ({
 
   const OpenLink = (
     <Link to={articleLink} target="_blank">
-      {intl.formatMessage({
-        id: "buttons.open.in.new.tab",
-      })}
+      {intl.formatMessage(
+        {
+          id: "buttons.open.in.new.tab",
+        },
+        { item: "" }
+      )}
     </Link>
   );
   switch (style) {

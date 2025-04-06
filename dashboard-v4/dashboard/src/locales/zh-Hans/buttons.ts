@@ -82,7 +82,7 @@ const items = {
   "buttons.relate": "关联",
   "buttons.convert": "转换",
   "buttons.copy.tpl": "复制模版",
-  "buttons.open.in.new.tab": "在新标签页中打开",
+  "buttons.open.in.new.tab": "在新标签页中打开{item}",
   "buttons.add_to_anthology": "添加到文集",
   "buttons.open.in.studio": "在Studio中打开",
   "buttons.admin": "后台管理",
@@ -102,6 +102,10 @@ const items = {
   "buttons.task.status.change.to.restarted": "重做",
   "buttons.task.status.change.to.requested_restart": "请求重做",
   "buttons.access-token.get": "获取访问口令",
+  "buttons.task.add.pre-task": "添加前置任务",
+  "buttons.task.add.next-task": "添加后置任务",
+  "buttons.remove.milestone": "移除里程碑",
+  "buttons.set.milestone": "设置为里程碑",
 };
 
 export default items;

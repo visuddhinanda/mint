@@ -22,16 +22,18 @@ const ChannelSelectWithToken = ({ channelsId, type, onChange }: IWidget) => {
         allowClear={true}
         label={false}
         placeholder={"选择一个channel"}
-        onChange={(value: string) => {
-          console.debug(value);
-          setChannel(value);
-          let output = value;
-          if (value) {
-            if (power) {
-              output += "@" + power;
+        fieldProps={{
+          onChange(value, option) {
+            console.debug(value);
+            setChannel(value);
+            let output = value;
+            if (value) {
+              if (power) {
+                output += "@" + power;
+              }
             }
-          }
-          onChange && onChange(output);
+            onChange && onChange(output);
+          },
         }}
         request={async ({ keyWords }) => {
           if (!channelsId) {
@@ -70,16 +72,18 @@ const ChannelSelectWithToken = ({ channelsId, type, onChange }: IWidget) => {
         allowClear={true}
         label={false}
         placeholder={"选择访问权限"}
-        onChange={(value: string) => {
-          console.debug(value);
-          setPower(value);
-          let output = channel;
-          if (channel) {
-            if (value) {
-              output += "@" + value;
+        fieldProps={{
+          onChange(value, option) {
+            console.debug(value);
+            setPower(value);
+            let output = channel;
+            if (channel) {
+              if (value) {
+                output += "@" + value;
+              }
             }
-          }
-          onChange && onChange(output);
+            onChange && onChange(output);
+          },
         }}
       />
     </Space>
