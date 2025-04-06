@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, message, Space } from "antd";
+import { Button, message, Space, Typography } from "antd";
 import { EditOutlined, CheckOutlined } from "@ant-design/icons";
 
 import { ITaskData, ITaskResponse, ITaskUpdateRequest } from "../api/task";
@@ -8,6 +8,8 @@ import MDEditor from "@uiw/react-md-editor";
 import "../article/article.css";
 import { patch } from "../../request";
 import DiscussionDrawer from "../discussion/DiscussionDrawer";
+import { useIntl } from "react-intl";
+const { Text } = Typography;
 
 interface IWidget {
   task?: ITaskData;
@@ -15,6 +17,8 @@ interface IWidget {
   onDiscussion?: () => void;
 }
 const Description = ({ task, onChange, onDiscussion }: IWidget) => {
+  const intl = useIntl();
+
   const [mode, setMode] = useState<"read" | "edit">("read");
   const [content, setContent] = useState(task?.description);
   const [loading, setLoading] = useState(false);
@@ -36,7 +40,9 @@ const Description = ({ task, onChange, onDiscussion }: IWidget) => {
           padding: 8,
         }}
       >
-        <span></span>
+        <span>
+          <Text strong>任务描述</Text>
+        </span>
         <span>
           {mode === "read" ? (
             <Space>
@@ -50,7 +56,7 @@ const Description = ({ task, onChange, onDiscussion }: IWidget) => {
                   }
                 }}
               >
-                讨论
+                {intl.formatMessage({ id: "buttons.discussion" })}
               </Button>
               <Button
                 key={2}
@@ -59,7 +65,7 @@ const Description = ({ task, onChange, onDiscussion }: IWidget) => {
                 icon={<EditOutlined />}
                 onClick={() => setMode("edit")}
               >
-                编辑
+                {intl.formatMessage({ id: "buttons.edit" })}
               </Button>
             </Space>
           ) : (
