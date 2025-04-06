@@ -7,7 +7,11 @@ import {
   PopconfirmProps,
 } from "antd";
 import { useIntl } from "react-intl";
-import { CheckOutlined, LoadingOutlined } from "@ant-design/icons";
+import {
+  CheckOutlined,
+  LoadingOutlined,
+  DownOutlined,
+} from "@ant-design/icons";
 
 import {
   ITaskData,
@@ -195,8 +199,20 @@ const TaskStatusButton = ({
       okText="Yes"
       cancelText="No"
     >
-      <Dropdown.Button type={buttonType} trigger={["click"]} menu={menuProps}>
-        {loading ? <LoadingOutlined /> : <CheckOutlined />}
+      <Dropdown.Button
+        disabled={task?.type === "workflow"}
+        type={buttonType}
+        trigger={["click"]}
+        icon={<DownOutlined />}
+        menu={menuProps}
+      >
+        {loading ? (
+          <LoadingOutlined />
+        ) : newStatus === "done" ? (
+          <CheckOutlined />
+        ) : (
+          <></>
+        )}
         {buttonText}
       </Dropdown.Button>
     </Popconfirm>
