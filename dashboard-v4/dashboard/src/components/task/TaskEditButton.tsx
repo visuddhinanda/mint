@@ -39,29 +39,31 @@ const TaskEditButton = ({ task, onChange, onPreTask }: IWidget) => {
   const mainMenuItems: MenuProps["items"] = [
     {
       key: "milestone",
-      label: task?.is_milestone ? "取消里程碑" : "设为里程碑",
+      label: task?.is_milestone
+        ? intl.formatMessage({ id: "buttons.remove.milestone" })
+        : intl.formatMessage({ id: "buttons.set.milestone" }),
       icon: <CodeSandboxOutlined />,
     },
     {
       key: "pre-task",
-      label: "设置前置任务",
+      label: intl.formatMessage({ id: "buttons.task.add.pre-task" }),
       icon: <ArrowLeftOutlined />,
     },
     {
       key: "next-task",
-      label: "设置后置任务",
+      label: intl.formatMessage({ id: "buttons.task.add.next-task" }),
       icon: <ArrowRightOutlined />,
     },
     {
       type: "divider",
     },
     {
-      label: "历史记录",
+      label: intl.formatMessage({ id: "buttons.timeline" }),
       key: "timeline",
       icon: <FieldTimeOutlined />,
     },
     {
-      label: "删除",
+      label: intl.formatMessage({ id: "buttons.delete" }),
       key: "delete",
       icon: <DeleteOutlined />,
       danger: true,
