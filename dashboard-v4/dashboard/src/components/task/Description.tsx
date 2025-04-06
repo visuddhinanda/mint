@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button, message, Space, Typography } from "antd";
-import { EditOutlined, CheckOutlined } from "@ant-design/icons";
+import { EditOutlined, SaveOutlined } from "@ant-design/icons";
 
 import { ITaskData, ITaskResponse, ITaskUpdateRequest } from "../api/task";
 import MdView from "../template/MdView";
@@ -72,7 +72,7 @@ const Description = ({ task, onChange, onDiscussion }: IWidget) => {
             <Button
               ghost
               type="primary"
-              icon={<CheckOutlined />}
+              icon={<SaveOutlined />}
               loading={loading}
               onClick={() => {
                 if (!task) {
@@ -100,7 +100,7 @@ const Description = ({ task, onChange, onDiscussion }: IWidget) => {
                   .finally(() => setLoading(false));
               }}
             >
-              完成
+              {intl.formatMessage({ id: "buttons.save" })}
             </Button>
           )}
         </span>
