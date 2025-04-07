@@ -617,7 +617,7 @@ const TaskList = ({
               tiger={<Button type="primary">从模版创建任务</Button>}
               studioName={studioName}
               onData={(data) => {
-                if (!projectId || !project) {
+                if (!projectId || !project || !data) {
                   return;
                 }
                 const url = "/v2/task-group";
