@@ -23,8 +23,9 @@ const ChannelSelectWithToken = ({ channelsId, type, onChange }: IWidget) => {
         label={false}
         placeholder={"选择一个channel"}
         fieldProps={{
-          onChange(value, option) {
+          onChange(value: string, option) {
             console.debug(value);
+
             setChannel(value);
             let output = value;
             if (value) {
@@ -73,7 +74,7 @@ const ChannelSelectWithToken = ({ channelsId, type, onChange }: IWidget) => {
         label={false}
         placeholder={"选择访问权限"}
         fieldProps={{
-          onChange(value, option) {
+          onChange(value: string, option) {
             console.debug(value);
             setPower(value);
             let output = channel;
