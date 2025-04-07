@@ -32,6 +32,7 @@ import {
   TPower,
 } from "../api/token";
 import ProjectWithTasks from "./ProjectWithTasks";
+import { useIntl } from "react-intl";
 const { Text, Paragraph } = Typography;
 
 interface IModal {
@@ -88,6 +89,8 @@ const TaskBuilderChapter = ({
   style,
   channels,
 }: IWidget) => {
+  const intl = useIntl();
+
   const [current, setCurrent] = useState(0);
   const [workflow, setWorkflow] = useState<ITaskData[]>();
   const [chapter, setChapter] = useState<IChapterToc[]>();
@@ -395,7 +398,7 @@ const TaskBuilderChapter = ({
             disabled={current === 0}
             onClick={() => prev()}
           >
-            Previous
+            {intl.formatMessage({ id: "buttons.previous" })}
           </Button>
         ) : (
           <></>
@@ -407,7 +410,7 @@ const TaskBuilderChapter = ({
             disabled={current === 1 && typeof workflow === "undefined"}
             onClick={() => next()}
           >
-            Next
+            {intl.formatMessage({ id: "buttons.next" })}
           </Button>
         )}
         {current === steps.length - 2 && (
