@@ -105,6 +105,8 @@ const items = {
   "buttons.task.add.next-task": "next task",
   "buttons.remove.milestone": "remove milestone",
   "buttons.set.milestone": "set as milestone",
+  "buttons.next": "Next",
+  "buttons.previous": "Previous",
 };
 
 export default items;
