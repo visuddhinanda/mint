@@ -5,12 +5,13 @@ import ProjectTask from "./ProjectTask";
 import { Button, Card, Modal, Tree } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Key } from "antd/es/table/interface";
+import { useIntl } from "react-intl";
 
 interface IModal {
   tiger?: React.ReactNode;
   studioName?: string;
-  onSelect?: (data: IProjectData) => void;
-  onData?: (data: ITaskData[]) => void;
+  onSelect?: (data: IProjectData | undefined) => void;
+  onData?: (data: ITaskData[] | undefined) => void;
 }
 export const WorkflowModal = ({
   tiger,
@@ -44,7 +45,11 @@ export const WorkflowModal = ({
         onOk={handleOk}
         onCancel={handleCancel}
       >
-        <Workflow studioName={studioName} onData={(data) => setData(data)} />
+        <Workflow
+          studioName={studioName}
+          onData={(data) => setData(data)}
+          onSelect={onSelect}
+        />
       </Modal>
     </>
   );
@@ -52,13 +57,20 @@ export const WorkflowModal = ({
 
 interface IWidget {
   studioName?: string;
-  onSelect?: (data: IProjectData) => void;
-  onData?: (data: ITaskData[]) => void;
+  onSelect?: (data: IProjectData | undefined) => void;
+  onData?: (data: ITaskData[] | undefined) => void;
 }
 
 const Workflow = ({ studioName, onSelect, onData }: IWidget) => {
+  const intl = useIntl();
+
   const [project, setProject] = useState<IProjectData>();
   const [view, setView] = useState<TView>("studio");
+
+  const selectWorkflow = (selected: IProjectData | undefined) => {
+    onSelect && onSelect(selected);
+    setProject(selected);
+  };
   return (
     <div style={{ display: "flex" }}>
       <div style={{ minWidth: 200, flex: 1 }}>
@@ -66,15 +78,23 @@ const Workflow = ({ studioName, onSelect, onData }: IWidget) => {
           multiple={false}
           defaultSelectedKeys={["studio"]}
           treeData={[
-            { title: "my", key: "studio" },
-            { title: "shared", key: "shared" },
-            { title: "community", key: "community" },
-            { title: "authors", key: "authors" },
+            {
+              title: intl.formatMessage({ id: "labels.this-studio" }),
+              key: "studio",
+            },
+            {
+              title: intl.formatMessage({ id: "labels.shared" }),
+              key: "shared",
+            },
+            {
+              title: intl.formatMessage({ id: "labels.community" }),
+              key: "community",
+            },
           ]}
           onSelect={(selectedKeys: Key[]) => {
             console.debug("selectedKeys", selectedKeys);
             if (selectedKeys.length > 0) {
-              setProject(undefined);
+              selectWorkflow(undefined);
               setView(selectedKeys[0].toString() as TView);
             }
           }}
@@ -89,7 +109,9 @@ const Workflow = ({ studioName, onSelect, onData }: IWidget) => {
                   <Button
                     type="link"
                     icon={<ArrowLeftOutlined />}
-                    onClick={() => setProject(undefined)}
+                    onClick={() => {
+                      selectWorkflow(undefined);
+                    }}
                   />
                   {project.title}
                 </>
@@ -116,7 +138,7 @@ const Workflow = ({ studioName, onSelect, onData }: IWidget) => {
             view={view}
             type="workflow"
             readonly
-            onSelect={(data: IProjectData) => setProject(data)}
+            onSelect={(data: IProjectData) => selectWorkflow(data)}
           />
         </div>
       </div>
