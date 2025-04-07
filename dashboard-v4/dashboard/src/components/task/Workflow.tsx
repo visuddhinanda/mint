@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IProjectData, ITaskData } from "../api/task";
 import ProjectList, { TView } from "./ProjectList";
 import ProjectTask from "./ProjectTask";
@@ -10,28 +10,42 @@ import { useIntl } from "react-intl";
 interface IModal {
   tiger?: React.ReactNode;
   studioName?: string;
+  open?: boolean;
+  onClose?: () => void;
   onSelect?: (data: IProjectData | undefined) => void;
-  onData?: (data: ITaskData[] | undefined) => void;
+  onOk?: (data: ITaskData[] | undefined) => void;
 }
 export const WorkflowModal = ({
   tiger,
   studioName,
+  open,
   onSelect,
-  onData,
+  onOk,
+  onClose,
 }: IModal) => {
-  const [open, setOpen] = useState(false);
+  const [openModal, setOpenModal] = useState(open);
   const [data, setData] = useState<ITaskData[]>();
+
+  useEffect(() => setOpenModal(open), [open]);
+
   const showModal = () => {
-    setOpen(true);
+    setOpenModal(true);
   };
 
   const handleOk = () => {
-    onData && data && onData(data);
-    setOpen(false);
+    if (onOk) {
+      onOk(data);
+    } else {
+      setOpenModal(false);
+    }
   };
 
   const handleCancel = () => {
-    setOpen(false);
+    if (onClose) {
+      onClose();
+    } else {
+      setOpenModal(false);
+    }
   };
   return (
     <>
@@ -41,7 +55,7 @@ export const WorkflowModal = ({
         width={1200}
         style={{ top: 10 }}
         title={""}
-        open={open}
+        open={openModal}
         onOk={handleOk}
         onCancel={handleCancel}
       >
