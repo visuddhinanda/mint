@@ -3,6 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Api\StudioApi;
+
+use App\Models\UserInfo;
+use App\Models\Wbw;
+use App\Models\Sentence;
+use App\Models\DhammaTerm;
+use App\Models\Course;
+
 
 class UserMilestoneController extends Controller
 {
@@ -39,35 +47,38 @@ class UserMilestoneController extends Controller
         $user_uid = StudioApi::getIdByName($studioName);
 
         $milestone = [];
-        $milestone[] = ['date'=>UserInfo::where('userid',$user_uid)->value('created_at'),'event'=>'sign-in'] ;
-        if(Wbw::where('creator_uid',$user_uid)->exists()){
-            $milestone[] = ['date'=>Wbw::where('creator_uid',$user_uid)
-                                       ->orderBy('created_at')
-                                       ->value('created_at'),
-                                       'event'=>'first-wbw'
-                           ] ;
+        $milestone[] = ['date' => UserInfo::where('userid', $user_uid)->value('created_at'), 'event' => 'sign-in'];
+        if (Wbw::where('creator_uid', $user_uid)->exists()) {
+            $milestone[] = [
+                'date' => Wbw::where('creator_uid', $user_uid)
+                    ->orderBy('created_at')
+                    ->value('created_at'),
+                'event' => 'first-wbw'
+            ];
         }
-        if(Sentence::where('editor_uid',$user_uid)->exists()){
-            $milestone[] = ['date'=>Sentence::where('editor_uid',$user_uid)
-                                            ->orderBy('created_at')
-                                            ->value('created_at'),
-                                            'event'=>'first-translation'
-                            ] ;
+        if (Sentence::where('editor_uid', $user_uid)->exists()) {
+            $milestone[] = [
+                'date' => Sentence::where('editor_uid', $user_uid)
+                    ->orderBy('created_at')
+                    ->value('created_at'),
+                'event' => 'first-translation'
+            ];
         }
-        if(DhammaTerm::where('owner',$user_uid)->exists()){
-            $milestone[] = ['date'=>DhammaTerm::where('owner',$user_uid)
-                                              ->orderBy('created_at')
-                                              ->value('created_at'),
-                                              'event'=>'first-term'
-                        ] ;
-
+        if (DhammaTerm::where('owner', $user_uid)->exists()) {
+            $milestone[] = [
+                'date' => DhammaTerm::where('owner', $user_uid)
+                    ->orderBy('created_at')
+                    ->value('created_at'),
+                'event' => 'first-term'
+            ];
         }
-        if(Course::where('studio_id',$user_uid)->exists()){
-            $milestone[] = ['date'=>Course::where('studio_id',$user_uid)
-                                           ->orderBy('created_at')
-                                           ->value('created_at'),
-                                           'event'=>'first-course'
-                                           ] ;
+        if (Course::where('studio_id', $user_uid)->exists()) {
+            $milestone[] = [
+                'date' => Course::where('studio_id', $user_uid)
+                    ->orderBy('created_at')
+                    ->value('created_at'),
+                'event' => 'first-course'
+            ];
         }
 
 
