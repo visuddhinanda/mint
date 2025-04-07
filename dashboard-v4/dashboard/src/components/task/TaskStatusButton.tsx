@@ -191,23 +191,24 @@ const TaskStatusButton = ({
     defaultMessage: "unknown",
   });
   return type === "button" ? (
-    <Popconfirm
-      title={intl.formatMessage(
-        { id: "message.task.status.change" },
-        { status: newStatus }
-      )}
-      onConfirm={confirm}
-      okText="Yes"
-      cancelText="No"
-    >
-      <Dropdown.Button
-        type={buttonType}
-        trigger={["click"]}
-        icon={<DownOutlined />}
-        menu={menuProps}
-        buttonsRender={([leftButton, rightButton]) => {
-          return [
+    <Dropdown.Button
+      type={buttonType}
+      trigger={["click"]}
+      icon={<DownOutlined />}
+      menu={menuProps}
+      buttonsRender={([leftButton, rightButton]) => {
+        return [
+          <Popconfirm
+            title={intl.formatMessage(
+              { id: "message.task.status.change" },
+              { status: newStatus }
+            )}
+            onConfirm={confirm}
+            okText="Yes"
+            cancelText="No"
+          >
             <Button
+              type={buttonType}
               disabled={task?.type === "workflow"}
               icon={
                 loading ? (
@@ -220,12 +221,12 @@ const TaskStatusButton = ({
               }
             >
               {buttonText}
-            </Button>,
-            rightButton,
-          ];
-        }}
-      />
-    </Popconfirm>
+            </Button>
+          </Popconfirm>,
+          rightButton,
+        ];
+      }}
+    />
   ) : (
     <Dropdown placement="bottomLeft" menu={menuProps}>
       <span>{loading ? <LoadingOutlined /> : <TaskStatus task={task} />}</span>
