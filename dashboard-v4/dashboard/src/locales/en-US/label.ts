@@ -85,10 +85,12 @@ const items = {
   "labels.filters.and": "and",
   "labels.filters.or": "or",
   "labels.task.workflows": "Workflows",
-  "labels.milestone": "milestone",
-  "labels.flowchart": "flowchart",
-  "labels.table": "table",
-  "labels.list": "list",
+  "labels.milestone": "Milestone",
+  "labels.flowchart": "Flowchart",
+  "labels.table": "Table",
+  "labels.list": "List",
+  "labels.shared": "Shared",
+  "labels.community": "Community",
 };
 
 export default items;
