@@ -17,7 +17,7 @@ class AiAssistantApi
     public static function userInfo($user)
     {
         if (!$user) {
-            Log::error('$user=null;');
+            Log::warning('$user=null;');
             return [
                 'id' => 0,
                 'nickName' => 'unknown',
