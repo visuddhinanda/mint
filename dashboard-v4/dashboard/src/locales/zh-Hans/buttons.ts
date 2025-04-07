@@ -106,6 +106,8 @@ const items = {
   "buttons.task.add.next-task": "添加后置任务",
   "buttons.remove.milestone": "移除里程碑",
   "buttons.set.milestone": "设置为里程碑",
+  "buttons.next": "下一步",
+  "buttons.previous": "上一步",
 };
 
 export default items;

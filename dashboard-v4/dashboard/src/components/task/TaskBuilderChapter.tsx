@@ -32,6 +32,7 @@ import {
   TPower,
 } from "../api/token";
 import ProjectWithTasks from "./ProjectWithTasks";
+import { useIntl } from "react-intl";
 const { Text, Paragraph } = Typography;
 
 interface IModal {
@@ -88,6 +89,8 @@ const TaskBuilderChapter = ({
   style,
   channels,
 }: IWidget) => {
+  const intl = useIntl();
+
   const [current, setCurrent] = useState(0);
   const [workflow, setWorkflow] = useState<ITaskData[]>();
   const [chapter, setChapter] = useState<IChapterToc[]>();
@@ -98,6 +101,7 @@ const TaskBuilderChapter = ({
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState<IProjectTreeData[]>();
   const [done, setDone] = useState(false);
+
   const steps = [
     {
       title: "选择章节",
@@ -162,7 +166,15 @@ const TaskBuilderChapter = ({
       content: (
         <Workflow
           studioName={studioName}
-          onData={(data) => setWorkflow(data)}
+          onSelect={(data) => {
+            if (typeof data === "undefined") {
+              setWorkflow(undefined);
+            }
+          }}
+          onData={(data) => {
+            console.debug("workflow", data);
+            setWorkflow(data);
+          }}
         />
       ),
     },
@@ -386,15 +398,19 @@ const TaskBuilderChapter = ({
             disabled={current === 0}
             onClick={() => prev()}
           >
-            Previous
+            {intl.formatMessage({ id: "buttons.previous" })}
           </Button>
         ) : (
           <></>
         )}
 
         {current < steps.length - 2 && (
-          <Button type="primary" onClick={() => next()}>
-            Next
+          <Button
+            type="primary"
+            disabled={current === 1 && typeof workflow === "undefined"}
+            onClick={() => next()}
+          >
+            {intl.formatMessage({ id: "buttons.next" })}
           </Button>
         )}
         {current === steps.length - 2 && (

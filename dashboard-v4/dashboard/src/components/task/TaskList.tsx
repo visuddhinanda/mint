@@ -9,8 +9,6 @@ import {
   IProjectData,
   IProjectResponse,
   ITaskData,
-  ITaskGroupInsertRequest,
-  ITaskGroupResponse,
   ITaskListResponse,
   ITaskResponse,
   ITaskUpdateRequest,
@@ -22,11 +20,11 @@ import { GroupIcon } from "../../assets/icon";
 import Options, { IMenu } from "./Options";
 import Filter from "./Filter";
 import { Milestone } from "./TaskReader";
-import { WorkflowModal } from "./Workflow";
 import Assignees from "./Assignees";
 import TaskStatusButton from "./TaskStatusButton";
 import Executors from "./Executors";
 import Category from "./Category";
+import TaskListAdd from "./TaskListAdd";
 
 const { Text } = Typography;
 
@@ -406,19 +404,7 @@ const TaskList = ({
         }}
         actionRef={actionRef}
         // 关闭默认的新建按钮
-        recordCreatorProps={
-          editable && project
-            ? {
-                record: () => ({
-                  id: generateUUID(),
-                  title: "新建任务",
-                  type: project.type === "workflow" ? "workflow" : "instance",
-                  is_milestone: false,
-                  status: "pending",
-                }),
-              }
-            : false
-        }
+        recordCreatorProps={false}
         columns={columns}
         request={async (params = {}, sorter, filter) => {
           let url = `/v2/task?a=a`;
@@ -612,51 +598,27 @@ const TaskList = ({
               actionRef.current?.reload();
             }}
           />,
-          editable && (
-            <WorkflowModal
-              tiger={<Button type="primary">从模版创建任务</Button>}
-              studioName={studioName}
-              onData={(data) => {
-                if (!projectId || !project) {
-                  return;
-                }
-                const url = "/v2/task-group";
-                const values: ITaskGroupInsertRequest = {
-                  data: [
-                    {
-                      project_id: projectId,
-                      tasks: data.map((item) => {
-                        return {
-                          id: item.id,
-                          title: item.title,
-                          type:
-                            project.type === "workflow"
-                              ? "workflow"
-                              : "instance",
-                          order: item.order,
-                          status: item.status,
-                          parent_id: item.parent_id,
-                          project_id: projectId,
-                          is_milestone: item.is_milestone,
-                        };
-                      }),
-                    },
-                  ],
-                };
-                console.info("api request", url, values);
-                post<ITaskGroupInsertRequest, ITaskGroupResponse>(
-                  url,
-                  values
-                ).then((json) => {
-                  console.info("api response", json);
-                  if (json.ok) {
-                    message.success("ok");
-                    actionRef.current?.reload();
-                  }
+          <TaskListAdd
+            studioName={studioName}
+            projectId={projectId}
+            project={project}
+            readonly={!editable}
+            onAddNew={() => {
+              if (project) {
+                actionRef.current?.addEditRecord?.({
+                  id: generateUUID(),
+                  title: "新建任务",
+                  type: project.type === "workflow" ? "workflow" : "instance",
+                  is_milestone: false,
+                  status: "pending",
                 });
-              }}
-            />
-          ),
+              }
+            }}
+            onWorkflow={() => {
+              message.success("ok");
+              actionRef.current?.reload();
+            }}
+          />,
         ]}
       />
       <TaskEditDrawer

@@ -97,6 +97,8 @@ const items = {
   "labels.flowchart": "流程图",
   "labels.table": "表格",
   "labels.list": "列表",
+  "labels.shared": "共享",
+  "labels.community": "社区",
 };
 
 export default items;
