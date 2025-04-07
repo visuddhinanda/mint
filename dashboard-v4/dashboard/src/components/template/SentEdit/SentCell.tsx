@@ -490,7 +490,10 @@ const SentCellWidget = ({
         open={copyOpen}
         onClose={() => setCopyOpen(false)}
       />
-      <Collapse bordered={false} style={{ backgroundColor: "unset" }}>
+      <Collapse
+        bordered={false}
+        style={{ display: "none", backgroundColor: "unset" }}
+      >
         <Collapse.Panel
           header={"attachment"}
           key="parent2"
