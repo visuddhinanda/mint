@@ -98,6 +98,7 @@ const TaskBuilderChapter = ({
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState<IProjectTreeData[]>();
   const [done, setDone] = useState(false);
+
   const steps = [
     {
       title: "选择章节",
@@ -162,7 +163,15 @@ const TaskBuilderChapter = ({
       content: (
         <Workflow
           studioName={studioName}
-          onData={(data) => setWorkflow(data)}
+          onSelect={(data) => {
+            if (typeof data === "undefined") {
+              setWorkflow(undefined);
+            }
+          }}
+          onData={(data) => {
+            console.debug("workflow", data);
+            setWorkflow(data);
+          }}
         />
       ),
     },
@@ -393,7 +402,11 @@ const TaskBuilderChapter = ({
         )}
 
         {current < steps.length - 2 && (
-          <Button type="primary" onClick={() => next()}>
+          <Button
+            type="primary"
+            disabled={current === 1 && typeof workflow === "undefined"}
+            onClick={() => next()}
+          >
             Next
           </Button>
         )}
