@@ -108,6 +108,7 @@ const items = {
   "buttons.set.milestone": "设置为里程碑",
   "buttons.next": "下一步",
   "buttons.previous": "上一步",
+  "buttons.clone": "克隆",
 };
 
 export default items;

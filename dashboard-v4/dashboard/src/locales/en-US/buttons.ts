@@ -107,6 +107,7 @@ const items = {
   "buttons.set.milestone": "set as milestone",
   "buttons.next": "Next",
   "buttons.previous": "Previous",
+  "buttons.clone": "Clone",
 };
 
 export default items;
