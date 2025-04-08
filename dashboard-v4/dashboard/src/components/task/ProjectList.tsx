@@ -18,6 +18,7 @@ import User from "../auth/User";
 import TimeShow from "../general/TimeShow";
 import ShareModal from "../share/ShareModal";
 import { EResType } from "../share/Share";
+import ProjectClone from "./ProjectClone";
 
 export interface IResNumberResponse {
   ok: boolean;
@@ -89,6 +90,7 @@ const ProjectListWidget = ({
   useEffect(() => {
     ref.current?.reload();
   }, [view]);
+
   return (
     <>
       <ProList<IProjectData>
@@ -138,11 +140,21 @@ const ProjectListWidget = ({
                   setOpen(true);
                 }}
               >
-                编辑
+                {intl.formatMessage({
+                  id: "buttons.edit",
+                })}
               </Button>,
-              <Button size="small" type="link" key="clone">
-                克隆
-              </Button>,
+              <ProjectClone
+                projectId={row.id}
+                studioName={studioName}
+                trigger={
+                  <Button size="small" type="link" key="clone">
+                    {intl.formatMessage({
+                      id: "buttons.clone",
+                    })}
+                  </Button>
+                }
+              />,
               <ShareModal
                 trigger={
                   <Button type="link" size="small">
