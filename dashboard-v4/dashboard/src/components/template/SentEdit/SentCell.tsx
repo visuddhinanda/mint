@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { useIntl } from "react-intl";
-import {
-  Divider,
-  message as AntdMessage,
-  Modal,
-  Collapse,
-  CollapseProps,
-} from "antd";
+import { Divider, message as AntdMessage, Modal, Collapse } from "antd";
 import { ExclamationCircleOutlined, LoadingOutlined } from "@ant-design/icons";
 
 import { ISentence } from "../SentEdit";
