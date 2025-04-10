@@ -1,92 +1,98 @@
-import { ProFormSelect } from "@ant-design/pro-components";
-import { Space } from "antd";
-import { IApiResponseChannelList } from "../api/Channel";
-import { get } from "../../request";
 import { useState } from "react";
+import { Button, Input, Space, Typography } from "antd";
+import {
+  FolderOpenOutlined,
+  CheckOutlined,
+  LoadingOutlined,
+} from "@ant-design/icons";
+
+import { TChannelType } from "../api/Channel";
+import { post } from "../../request";
+import ChannelTableModal from "./ChannelTableModal";
+import { IChannel } from "./Channel";
+import {
+  IPayload,
+  ITokenCreate,
+  ITokenCreateResponse,
+  TPower,
+} from "../api/token";
+
+const { Text } = Typography;
+
+interface IData {
+  value: string;
+  label: string;
+}
 
 interface IWidget {
   channelsId?: string[];
-  type?: string;
+  type?: TChannelType;
+  power?: TPower;
   onChange?: (channel?: string | null) => void;
 }
-const ChannelSelectWithToken = ({ channelsId, type, onChange }: IWidget) => {
-  const [channel, setChannel] = useState<string>("");
-  const [power, setPower] = useState<string>();
+const ChannelSelectWithToken = ({
+  channelsId,
+  type,
+  power,
+  onChange,
+}: IWidget) => {
+  const [curr, setCurr] = useState<IData>();
+  const [access, setAccess] = useState<boolean>();
+  const [loading, setLoading] = useState(false);
   return (
     <Space>
-      <ProFormSelect
-        options={[]}
-        initialValue="translation"
-        width="md"
-        name="channel"
-        allowClear={true}
-        label={false}
-        placeholder={"选择一个channel"}
-        fieldProps={{
-          onChange(value: string, option) {
-            console.debug(value);
-
-            setChannel(value);
-            let output = value;
-            if (value) {
-              if (power) {
-                output += "@" + power;
-              }
-            }
-            onChange && onChange(output);
-          },
+      <Input
+        allowClear
+        value={curr?.label}
+        placeholder="选择一个版本"
+        onChange={(event) => {
+          if (event.target.value.trim().length === 0) {
+            setCurr(undefined);
+            setAccess(undefined);
+            onChange && onChange(undefined);
+          }
         }}
-        request={async ({ keyWords }) => {
-          if (!channelsId) {
-            return [];
+      />
+      <ChannelTableModal
+        channelType={type}
+        trigger={<Button icon={<FolderOpenOutlined />} type="text" />}
+        onSelect={(channel: IChannel) => {
+          setCurr({ value: channel.id, label: channel.name });
+          //验证权限
+          if (power) {
+            setLoading(true);
+            let payload: IPayload[] = [];
+            payload.push({
+              res_id: channel.id,
+              res_type: "channel",
+              power: power,
+            });
+            const url = "/v2/access-token";
+            const values = { payload: payload };
+            console.info("token api request", url, values);
+            post<ITokenCreate, ITokenCreateResponse>(url, values)
+              .then((json) => {
+                console.info("token api response", json);
+                if (json.ok) {
+                  if (json.data.count > 0) {
+                    setAccess(true);
+                  }
+                }
+              })
+              .finally(() => setLoading(false));
           }
 
-          const url = `/v2/channel?view=id&id=` + channelsId?.join(",");
-          console.info("api request", url);
-          const json = await get<IApiResponseChannelList>(url);
-          console.info("api response", json, type);
-          const textbookList = json.data.rows.map((item) => {
-            return {
-              value: item.uid,
-              label: item.name,
-            };
-          });
-          const current = json.data.rows.filter((value) => {
-            if (type) {
-              return value.type === type;
-            } else {
-              return true;
-            }
-          });
-          console.log("json", textbookList);
-          return textbookList;
+          onChange && onChange(channel.id + (power ? "@" + power : ""));
         }}
       />
-      <ProFormSelect
-        options={[
-          { value: "readonly", label: "readonly" },
-          { value: "edit", label: "edit" },
-        ]}
-        initialValue="null"
-        width="xs"
-        name="power"
-        allowClear={true}
-        label={false}
-        placeholder={"选择访问权限"}
-        fieldProps={{
-          onChange(value: string, option) {
-            console.debug(value);
-            setPower(value);
-            let output = channel;
-            if (channel) {
-              if (value) {
-                output += "@" + value;
-              }
-            }
-            onChange && onChange(output);
-          },
-        }}
-      />
+      <Text type="secondary">{power}</Text>
+      {loading ? (
+        <LoadingOutlined />
+      ) : access ? (
+        <CheckOutlined style={{ color: "green" }} />
+      ) : (
+        <></>
+      )}
     </Space>
   );
 };
