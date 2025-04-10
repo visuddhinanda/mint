@@ -77,6 +77,11 @@ export const renderBadge = (count: number, active = false) => {
   );
 };
 
+interface IChapter {
+  book: number;
+  paragraph: number;
+}
+
 interface IChannelItem {
   id: number;
   uid: string;
@@ -94,6 +99,7 @@ interface IWidget {
   type?: string;
   disableChannels?: string[];
   channelType?: TChannelType;
+  chapter?: IChapter;
   onSelect?: Function;
 }
 
@@ -102,6 +108,7 @@ const ChannelTableWidget = ({
   disableChannels,
   channelType,
   type,
+  chapter,
   onSelect,
 }: IWidget) => {
   const intl = useIntl();
@@ -122,7 +129,7 @@ const ChannelTableWidget = ({
 
   useEffect(() => {
     /**
-     * 获取各种课程的数量
+     * 获取各种channel的数量
      */
     const url = `/v2/channel-my-number?studio=${studioName}`;
     console.log("url", url);
@@ -324,6 +331,7 @@ const ChannelTableWidget = ({
             key: "option",
             width: 100,
             valueType: "option",
+            hideInTable: activeKey !== "my",
             render: (text, row, index, action) => {
               return [
                 <Dropdown.Button
@@ -387,46 +395,17 @@ const ChannelTableWidget = ({
             },
           },
         ]}
-        /*
-        rowSelection={{
-          // 自定义选择项参考: https://ant.design/components/table-cn/#components-table-demo-row-selection-custom
-          // 注释该行则默认不显示下拉选项
-          selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
-        }}
-        tableAlertRender={({
-          selectedRowKeys,
-          selectedRows,
-          onCleanSelected,
-        }) => (
-          <Space size={24}>
-            <span>
-              {intl.formatMessage({ id: "buttons.selected" })}
-              {selectedRowKeys.length}
-              <Button
-                type="link"
-                style={{ marginInlineStart: 8 }}
-                onClick={onCleanSelected}
-              >
-                {intl.formatMessage({ id: "buttons.unselect" })}
-              </Button>
-            </span>
-          </Space>
-        )}
-        tableAlertOptionRender={() => {
-          return (
-            <Space size={16}>
-              <Button type="link">
-                {intl.formatMessage({
-                  id: "buttons.delete.all",
-                })}
-              </Button>
-            </Space>
-          );
-        }}
-        */
         request={async (params = {}, sorter, filter) => {
           console.log(params, sorter, filter);
-          let url = `/v2/channel?view=studio&view2=${activeKey}&name=${studioName}`;
+          let url = `/v2/channel?`;
+          if (activeKey === "community") {
+            url += `view=public`;
+          } else {
+            url += `view=studio&view2=${activeKey}&name=${studioName}`;
+          }
+          if (chapter) {
+            url += `&chapter=${chapter.book}-${chapter.paragraph}`;
+          }
           const offset =
             ((params.current ? params.current : 1) - 1) *
             (params.pageSize ? params.pageSize : 20);
@@ -520,6 +499,18 @@ const ChannelTableWidget = ({
                     {renderBadge(
                       collaborationNumber,
                       activeKey === "collaboration"
+                    )}
+                  </span>
+                ),
+              },
+              {
+                key: "community",
+                label: (
+                  <span>
+                    {intl.formatMessage({ id: "labels.community" })}
+                    {renderBadge(
+                      collaborationNumber,
+                      activeKey === "community"
                     )}
                   </span>
                 ),
