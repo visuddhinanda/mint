@@ -128,34 +128,6 @@ const TaskBuilderChapter = ({
                   setTitle(data[0].text);
                 }
               }
-              //获取channel token
-              let payload: IPayload[] = [];
-              channels?.forEach((channel) => {
-                data.forEach((chapter) => {
-                  const power: TPower[] = ["readonly", "edit"];
-                  payload = payload.concat(
-                    power.map((item) => {
-                      return {
-                        res_id: channel,
-                        res_type: "channel",
-                        book: chapter.book,
-                        para_start: chapter.paragraph,
-                        para_end: chapter.paragraph + chapter.chapter_len,
-                        power: item,
-                      };
-                    })
-                  );
-                });
-              });
-              const url = "/v2/access-token";
-              const values = { payload: payload };
-              console.info("api request", url, values);
-              post<ITokenCreate, ITokenCreateResponse>(url, values).then(
-                (json) => {
-                  console.info("api response", json);
-                  setTokens(json.data.rows);
-                }
-              );
             }}
           />
         </div>
