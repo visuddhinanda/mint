@@ -29,9 +29,17 @@ export interface IProp {
 interface IWidget {
   workflow?: ITaskData[];
   channelsId?: string[];
+  book?: number;
+  para?: number;
   onChange?: (data: IProp[] | undefined) => void;
 }
-const TaskBuilderProp = ({ workflow, channelsId, onChange }: IWidget) => {
+const TaskBuilderProp = ({
+  workflow,
+  channelsId,
+  book,
+  para,
+  onChange,
+}: IWidget) => {
   //console.debug("TaskBuilderProp render");
   const [prop, setProp] = useState<IProp[]>();
   useEffect(() => {
@@ -144,6 +152,8 @@ const TaskBuilderProp = ({ workflow, channelsId, onChange }: IWidget) => {
     ) : (
       <ChannelSelectWithToken
         channelsId={channelsId}
+        book={book}
+        para={para}
         type={channelType as TChannelType}
         power={power ? (power as TPower) : undefined}
         onChange={(e) => {
