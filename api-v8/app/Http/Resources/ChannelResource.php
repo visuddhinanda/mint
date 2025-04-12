@@ -27,7 +27,10 @@ class ChannelResource extends JsonResource
             "created_at" => $this->created_at,
             "updated_at" => $this->updated_at,
         ];
-        if(isset($this->role)){
+        if (isset($this->progress)) {
+            $data["progress"] = $this->progress;
+        }
+        if (isset($this->role)) {
             $data["role"] = $this->role;
         }
         return $data;
