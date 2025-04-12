@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Button, Input, Space, Typography } from "antd";
+import { Button, Input, Space, Tooltip, Typography } from "antd";
 import {
   FolderOpenOutlined,
-  CheckOutlined,
+  CheckCircleTwoTone,
   LoadingOutlined,
+  WarningTwoTone,
 } from "@ant-design/icons";
 
 import { TChannelType } from "../api/Channel";
@@ -27,12 +28,16 @@ interface IData {
 interface IWidget {
   channelsId?: string[];
   type?: TChannelType;
+  book?: number;
+  para?: number;
   power?: TPower;
   onChange?: (channel?: string | null) => void;
 }
 const ChannelSelectWithToken = ({
   channelsId,
   type,
+  book,
+  para,
   power,
   onChange,
 }: IWidget) => {
@@ -54,6 +59,7 @@ const ChannelSelectWithToken = ({
         }}
       />
       <ChannelTableModal
+        chapter={book && para ? { book: book, paragraph: para } : undefined}
         channelType={type}
         trigger={<Button icon={<FolderOpenOutlined />} type="text" />}
         onSelect={(channel: IChannel) => {
@@ -88,8 +94,14 @@ const ChannelSelectWithToken = ({
       <Text type="secondary">{power}</Text>
       {loading ? (
         <LoadingOutlined />
-      ) : access ? (
-        <CheckOutlined style={{ color: "green" }} />
+      ) : typeof access !== "undefined" ? (
+        access ? (
+          <CheckCircleTwoTone twoToneColor="#52c41a" />
+        ) : (
+          <Tooltip title="无法获取指定的权限">
+            <WarningTwoTone twoToneColor="#eb2f96" />
+          </Tooltip>
+        )
       ) : (
         <></>
       )}
