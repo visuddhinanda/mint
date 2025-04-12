@@ -33,6 +33,7 @@ export interface IApiResponseChannelData {
   lang: string;
   status: number;
   is_system: boolean;
+  progress?: number;
   created_at: string;
   updated_at: string;
   role?: TRole;

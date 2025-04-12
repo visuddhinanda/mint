@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Modal } from "antd";
 
 import { ArticleType } from "../article/Article";
-import ChannelTable from "./ChannelTable";
+import ChannelTable, { IChapter } from "./ChannelTable";
 import { useAppSelector } from "../../hooks";
 import { currentUser as _currentUser } from "../../reducers/current-user";
 import { IChannel } from "./Channel";
@@ -17,6 +17,7 @@ interface IWidget {
   multiSelect?: boolean;
   disableChannels?: string[];
   open?: boolean;
+  chapter?: IChapter;
   onClose?: Function;
   onSelect?: Function;
 }
@@ -28,6 +29,7 @@ const ChannelTableModalWidget = ({
   disableChannels,
   channelType,
   open = false,
+  chapter,
   onClose,
   onSelect,
 }: IWidget) => {
@@ -64,6 +66,7 @@ const ChannelTableModalWidget = ({
         title={intl.formatMessage({
           id: "buttons.select.channel",
         })}
+        destroyOnClose
         footer={false}
         open={isModalOpen}
         onOk={handleOk}
@@ -73,6 +76,7 @@ const ChannelTableModalWidget = ({
           <ChannelTable
             studioName={user?.realName}
             type={type}
+            chapter={chapter}
             channelType={channelType}
             disableChannels={disableChannels}
             onSelect={(channel: IChannel) => {

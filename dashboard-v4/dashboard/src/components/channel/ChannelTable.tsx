@@ -1,7 +1,7 @@
 import { ActionType, ProTable } from "@ant-design/pro-components";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
-import { Alert, Badge, message, Modal, Typography } from "antd";
+import { Alert, Badge, message, Modal, Progress, Typography } from "antd";
 import { Button, Dropdown, Popover } from "antd";
 import {
   PlusOutlined,
@@ -77,7 +77,7 @@ export const renderBadge = (count: number, active = false) => {
   );
 };
 
-interface IChapter {
+export interface IChapter {
   book: number;
   paragraph: number;
 }
@@ -91,6 +91,7 @@ interface IChannelItem {
   role?: TRole;
   studio?: IStudio;
   publicity: number;
+  progress?: number;
   created_at: string;
 }
 
@@ -240,6 +241,22 @@ const ChannelTableWidget = ({
                     </div>
                   ) : undefined}
                 </>
+              );
+            },
+          },
+          {
+            title: intl.formatMessage({
+              id: "dict.fields.createdAt.label",
+            }),
+            key: "progress",
+            hideInTable: typeof chapter === "undefined",
+            render(dom, entity, index, action, schema) {
+              return (
+                <Progress
+                  size="small"
+                  percent={Math.floor((entity.progress ?? 0) * 100)}
+                  style={{ width: 150 }}
+                />
               );
             },
           },
@@ -404,7 +421,7 @@ const ChannelTableWidget = ({
             url += `view=studio&view2=${activeKey}&name=${studioName}`;
           }
           if (chapter) {
-            url += `&chapter=${chapter.book}-${chapter.paragraph}`;
+            url += `&book=${chapter.book}&paragraph=${chapter.paragraph}`;
           }
           const offset =
             ((params.current ? params.current : 1) - 1) *
@@ -414,7 +431,12 @@ const ChannelTableWidget = ({
           url += collaborator ? "&collaborator=" + collaborator : "";
           url += params.keyword ? "&search=" + params.keyword : "";
           url += channelType ? "&type=" + channelType : "";
-          url += getSorterUrl(sorter);
+          if (chapter && activeKey === "community") {
+            url += "&order=progress";
+          } else {
+            url += getSorterUrl(sorter);
+          }
+
           console.log("url", url);
           const res: IApiResponseChannelList = await get(url);
           const items: IChannelItem[] = res.data.rows.map((item, id) => {
@@ -425,6 +447,7 @@ const ChannelTableWidget = ({
               summary: item.summary,
               type: item.type,
               role: item.role,
+              progress: item.progress,
               studio: item.studio,
               publicity: item.status,
               created_at: item.created_at,
