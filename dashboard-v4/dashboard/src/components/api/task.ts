@@ -37,12 +37,14 @@ export interface IProject {
 
 export type TTaskCategory =
   | "translate"
+  | "suggest"
   | "vocabulary"
   | "team"
   | "review"
   | "proofread";
 export const ATaskCategory: TTaskCategory[] = [
   "translate",
+  "suggest",
   "vocabulary",
   "team",
   "review",

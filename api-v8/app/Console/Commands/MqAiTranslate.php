@@ -184,6 +184,35 @@ class MqAiTranslate extends Command
                         Log::info("{$queue} sentence update {$count} successful");
                     }
                 }
+                if ($message->task->info->category === 'suggest') {
+                    //写入pr
+                    $url = config('app.url') . '/api/v2/sentpr';
+                    Log::info($queue . " sentence update {$url}");
+                    $response = Http::timeout(10)->withToken($token)->post($url, [
+                        'book' => $message->sentence->book_id,
+                        'para' => $message->sentence->paragraph,
+                        'begin' => $message->sentence->word_start,
+                        'end' => $message->sentence->word_end,
+                        'channel' => $message->sentence->channel_uid,
+                        'text' => $responseContent
+                    ]);
+                    if ($response->failed()) {
+                        Log::error($queue . ' sentence update failed', [
+                            'url' => $url,
+                            'data' => $response->json(),
+                        ]);
+                        continue;
+                    } else {
+                        if ($response->json()['ok']) {
+                            Log::info("{$queue} sentence suggest update successful");
+                        } else {
+                            Log::error("{$queue} sentence suggest update failed", [
+                                'url' => $url,
+                                'data' => $response->json(),
+                            ]);
+                        }
+                    }
+                }
 
                 //写入discussion
                 #获取句子id

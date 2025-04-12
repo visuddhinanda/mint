@@ -75,6 +75,7 @@ const items = {
   "labels.task.category.team": "team",
   "labels.task.category.review": "review",
   "labels.task.category.proofread": "proofread",
+  "labels.task.category.suggest": "suggest",
   "labels.ai-assistant": "AI Assistant",
   "labels.filters.includes": "includes",
   "labels.filters.not-includes": "not includes",

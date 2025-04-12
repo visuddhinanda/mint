@@ -1,7 +1,7 @@
 import { ActionType, ProTable } from "@ant-design/pro-components";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
-import { Alert, Badge, message, Modal, Typography } from "antd";
+import { Alert, Badge, message, Modal, Progress, Typography } from "antd";
 import { Button, Dropdown, Popover } from "antd";
 import {
   PlusOutlined,
@@ -77,6 +77,11 @@ export const renderBadge = (count: number, active = false) => {
   );
 };
 
+export interface IChapter {
+  book: number;
+  paragraph: number;
+}
+
 interface IChannelItem {
   id: number;
   uid: string;
@@ -86,6 +91,7 @@ interface IChannelItem {
   role?: TRole;
   studio?: IStudio;
   publicity: number;
+  progress?: number;
   created_at: string;
 }
 
@@ -94,6 +100,7 @@ interface IWidget {
   type?: string;
   disableChannels?: string[];
   channelType?: TChannelType;
+  chapter?: IChapter;
   onSelect?: Function;
 }
 
@@ -102,6 +109,7 @@ const ChannelTableWidget = ({
   disableChannels,
   channelType,
   type,
+  chapter,
   onSelect,
 }: IWidget) => {
   const intl = useIntl();
@@ -122,7 +130,7 @@ const ChannelTableWidget = ({
 
   useEffect(() => {
     /**
-     * 获取各种课程的数量
+     * 获取各种channel的数量
      */
     const url = `/v2/channel-my-number?studio=${studioName}`;
     console.log("url", url);
@@ -238,6 +246,22 @@ const ChannelTableWidget = ({
           },
           {
             title: intl.formatMessage({
+              id: "dict.fields.createdAt.label",
+            }),
+            key: "progress",
+            hideInTable: typeof chapter === "undefined",
+            render(dom, entity, index, action, schema) {
+              return (
+                <Progress
+                  size="small"
+                  percent={Math.floor((entity.progress ?? 0) * 100)}
+                  style={{ width: 150 }}
+                />
+              );
+            },
+          },
+          {
+            title: intl.formatMessage({
               id: "forms.fields.summary.label",
             }),
             dataIndex: "summary",
@@ -324,6 +348,7 @@ const ChannelTableWidget = ({
             key: "option",
             width: 100,
             valueType: "option",
+            hideInTable: activeKey !== "my",
             render: (text, row, index, action) => {
               return [
                 <Dropdown.Button
@@ -387,46 +412,17 @@ const ChannelTableWidget = ({
             },
           },
         ]}
-        /*
-        rowSelection={{
-          // 自定义选择项参考: https://ant.design/components/table-cn/#components-table-demo-row-selection-custom
-          // 注释该行则默认不显示下拉选项
-          selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
-        }}
-        tableAlertRender={({
-          selectedRowKeys,
-          selectedRows,
-          onCleanSelected,
-        }) => (
-          <Space size={24}>
-            <span>
-              {intl.formatMessage({ id: "buttons.selected" })}
-              {selectedRowKeys.length}
-              <Button
-                type="link"
-                style={{ marginInlineStart: 8 }}
-                onClick={onCleanSelected}
-              >
-                {intl.formatMessage({ id: "buttons.unselect" })}
-              </Button>
-            </span>
-          </Space>
-        )}
-        tableAlertOptionRender={() => {
-          return (
-            <Space size={16}>
-              <Button type="link">
-                {intl.formatMessage({
-                  id: "buttons.delete.all",
-                })}
-              </Button>
-            </Space>
-          );
-        }}
-        */
         request={async (params = {}, sorter, filter) => {
           console.log(params, sorter, filter);
-          let url = `/v2/channel?view=studio&view2=${activeKey}&name=${studioName}`;
+          let url = `/v2/channel?`;
+          if (activeKey === "community") {
+            url += `view=public`;
+          } else {
+            url += `view=studio&view2=${activeKey}&name=${studioName}`;
+          }
+          if (chapter) {
+            url += `&book=${chapter.book}&paragraph=${chapter.paragraph}`;
+          }
           const offset =
             ((params.current ? params.current : 1) - 1) *
             (params.pageSize ? params.pageSize : 20);
@@ -435,7 +431,12 @@ const ChannelTableWidget = ({
           url += collaborator ? "&collaborator=" + collaborator : "";
           url += params.keyword ? "&search=" + params.keyword : "";
           url += channelType ? "&type=" + channelType : "";
-          url += getSorterUrl(sorter);
+          if (chapter && activeKey === "community") {
+            url += "&order=progress";
+          } else {
+            url += getSorterUrl(sorter);
+          }
+
           console.log("url", url);
           const res: IApiResponseChannelList = await get(url);
           const items: IChannelItem[] = res.data.rows.map((item, id) => {
@@ -446,6 +447,7 @@ const ChannelTableWidget = ({
               summary: item.summary,
               type: item.type,
               role: item.role,
+              progress: item.progress,
               studio: item.studio,
               publicity: item.status,
               created_at: item.created_at,
@@ -520,6 +522,18 @@ const ChannelTableWidget = ({
                     {renderBadge(
                       collaborationNumber,
                       activeKey === "collaboration"
+                    )}
+                  </span>
+                ),
+              },
+              {
+                key: "community",
+                label: (
+                  <span>
+                    {intl.formatMessage({ id: "labels.community" })}
+                    {renderBadge(
+                      collaborationNumber,
+                      activeKey === "community"
                     )}
                   </span>
                 ),

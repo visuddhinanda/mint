@@ -36,22 +36,30 @@ class ChannelController extends Controller
         //
         $result = false;
         $indexCol = [
-            'uid',
+            'channels.uid',
             'name',
-            'summary',
+            'channels.summary',
             'type',
             'owner_uid',
-            'lang',
+            'channels.lang',
             'status',
             'is_system',
-            'updated_at',
-            'created_at'
+            'channels.updated_at',
+            'channels.created_at'
         ];
+        if ($request->has("book")) {
+            $indexCol[] = 'progress_chapters.progress';
+        }
         switch ($request->get('view')) {
             case 'public':
                 $table = Channel::select($indexCol)
                     ->where('status', 30);
-
+                /*
+                if ($request->has("book")) {
+                    $table = $table->leftJoin('progress_chapters', 'channels.uid', '=', 'progress_chapters.channel_id',)
+                        ->where('progress_chapters.book', $request->get("book"))
+                        ->where('progress_chapters.para', $request->get("paragraph"));
+                }*/
                 break;
             case 'studio':
                 # 获取studio内所有channel
@@ -75,7 +83,7 @@ class ChannelController extends Controller
                     foreach ($resList as $res) {
                         $resId[] = $res['res_id'];
                     }
-                    $table = $table->whereIn('uid', $resId);
+                    $table = $table->whereIn('channels.uid', $resId);
                     if ($request->get('collaborator', 'all') !== 'all') {
                         $table = $table->where('owner_uid', $request->get('collaborator'));
                     } else {
@@ -179,6 +187,24 @@ class ChannelController extends Controller
                 $table = Channel::select($indexCol)
                     ->whereIn('uid', explode(',', $request->get("id")));
         }
+
+        if ($request->has("book")) {
+            if ($request->get("view") === "public") {
+                $table = $table->leftJoin('progress_chapters', 'channels.uid', '=', 'progress_chapters.channel_id',)
+                    ->where('progress_chapters.book', $request->get("book"))
+                    ->where('progress_chapters.para', $request->get("paragraph"));
+            } else {
+                $table = $table->leftJoin('progress_chapters', function ($join) use ($request) {
+                    $join->on('channels.uid', '=', 'progress_chapters.channel_id')
+                        ->where('progress_chapters.book', $request->get("book"))
+                        ->where('progress_chapters.para', $request->get("paragraph")); // 条件写在这里！
+                });
+            }
+
+            /* leftJoin('progress_chapters', 'channels.uid', '=', 'progress_chapters.channel_id',)
+                ->where('progress_chapters.book', $request->get("book"))
+                ->where('progress_chapters.para', $request->get("paragraph"));*/
+        }
         //处理搜索
         if (!empty($request->get("search"))) {
             $table = $table->where('name', 'like', "%" . $request->get("search") . "%");
@@ -202,6 +228,7 @@ class ChannelController extends Controller
         //处理分页
         $table = $table->skip($request->get("offset", 0))
             ->take($request->get("limit", 200));
+        Log::debug('channel sql ' . $table->toSql());
         //获取数据
         $result = $table->get();
         //TODO 将下面代码转移到resource

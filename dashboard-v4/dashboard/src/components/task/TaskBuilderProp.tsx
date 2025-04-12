@@ -4,6 +4,8 @@ import { ITaskData } from "../api/task";
 import "../article/article.css";
 import { useEffect, useState } from "react";
 import ChannelSelectWithToken from "../channel/ChannelSelectWithToken";
+import { TChannelType } from "../api/Channel";
+import { TPower } from "../api/token";
 
 type TParamType =
   | "number"
@@ -27,9 +29,17 @@ export interface IProp {
 interface IWidget {
   workflow?: ITaskData[];
   channelsId?: string[];
+  book?: number;
+  para?: number;
   onChange?: (data: IProp[] | undefined) => void;
 }
-const TaskBuilderProp = ({ workflow, channelsId, onChange }: IWidget) => {
+const TaskBuilderProp = ({
+  workflow,
+  channelsId,
+  book,
+  para,
+  onChange,
+}: IWidget) => {
   //console.debug("TaskBuilderProp render");
   const [prop, setProp] = useState<IProp[]>();
   useEffect(() => {
@@ -113,8 +123,8 @@ const TaskBuilderProp = ({ workflow, channelsId, onChange }: IWidget) => {
 
   const Value = (item: IParam, taskId: number, paramId: number) => {
     let channelType: string | undefined;
+    const [key, channel, power] = item.key.replaceAll("%", "").split("@");
     if (item.key.includes("@channel")) {
-      const [_, channel] = item.key.split("@");
       if (channel.includes(":")) {
         channelType = channel.split(":")[1].replaceAll("%", "");
       }
@@ -142,7 +152,10 @@ const TaskBuilderProp = ({ workflow, channelsId, onChange }: IWidget) => {
     ) : (
       <ChannelSelectWithToken
         channelsId={channelsId}
-        type={channelType}
+        book={book}
+        para={para}
+        type={channelType as TChannelType}
+        power={power ? (power as TPower) : undefined}
         onChange={(e) => {
           console.debug("channel select onChange", e);
           change(taskId, paramId, e ?? "", item.initValue, item.step);

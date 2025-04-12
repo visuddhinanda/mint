@@ -44,13 +44,16 @@ class AccessTokenController extends Controller
             //鉴权
             switch ($value['res_type']) {
                 case 'channel':
+                    if (!isset($value['power']) || !isset($value['res_id'])) {
+                        continue 2;
+                    }
                     if ($value['power'] === 'edit') {
                         if (!ChannelApi::userCanEdit($user['user_uid'], $value['res_id'])) {
-                            continue;
+                            continue 2;
                         }
                     } else {
                         if (!ChannelApi::userCanRead($user['user_uid'], $value['res_id'])) {
-                            continue;
+                            continue 2;
                         }
                     }
                     break;

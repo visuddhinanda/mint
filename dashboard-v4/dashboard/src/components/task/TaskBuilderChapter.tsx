@@ -128,34 +128,6 @@ const TaskBuilderChapter = ({
                   setTitle(data[0].text);
                 }
               }
-              //获取channel token
-              let payload: IPayload[] = [];
-              channels?.forEach((channel) => {
-                data.forEach((chapter) => {
-                  const power: TPower[] = ["readonly", "edit"];
-                  payload = payload.concat(
-                    power.map((item) => {
-                      return {
-                        res_id: channel,
-                        res_type: "channel",
-                        book: chapter.book,
-                        para_start: chapter.paragraph,
-                        para_end: chapter.paragraph + chapter.chapter_len,
-                        power: item,
-                      };
-                    })
-                  );
-                });
-              });
-              const url = "/v2/access-token";
-              const values = { payload: payload };
-              console.info("api request", url, values);
-              post<ITokenCreate, ITokenCreateResponse>(url, values).then(
-                (json) => {
-                  console.info("api response", json);
-                  setTokens(json.data.rows);
-                }
-              );
             }}
           />
         </div>
@@ -183,11 +155,50 @@ const TaskBuilderChapter = ({
       content: (
         <div>
           <TaskBuilderProp
+            book={book}
+            para={para}
             workflow={workflow}
             channelsId={channels}
             onChange={(data: IProp[] | undefined) => {
               console.info("prop value", data);
               setProp(data);
+              let channels = new Map<string, number>();
+              data?.forEach((value) => {
+                value.param?.forEach((param) => {
+                  if (param.type.includes("channel")) {
+                    channels.set(param.value, 1);
+                  }
+                });
+              });
+              //获取channel token
+              let payload: IPayload[] = [];
+              if (chapter) {
+                channels.forEach((value, key) => {
+                  const [channelId, power] = key.split("@");
+                  payload = payload.concat(
+                    chapter.map((item) => {
+                      return {
+                        res_id: channelId,
+                        res_type: "channel",
+                        book: item.book,
+                        para_start: item.paragraph,
+                        para_end: item.paragraph + item.chapter_len,
+                        power: power as TPower,
+                      };
+                    })
+                  );
+                });
+
+                const url = "/v2/access-token";
+                const values = { payload: payload };
+                console.info("api request", url, values);
+                post<ITokenCreate, ITokenCreateResponse>(url, values).then(
+                  (json) => {
+                    console.info("api response", json);
+                    setTokens(json.data.rows);
+                  }
+                );
+              }
             }}
           />
         </div>
