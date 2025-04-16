@@ -54,7 +54,7 @@ const TaskReader = ({ taskId, onChange, onDiscussion }: IWidget) => {
       .finally(() => setLoading(false));
   }, [taskId]);
 
-  const updatePreTask = (type: TRelation, data?: ITaskData | null) => {
+  const updatePreTask = (type: TRelation, data: ITaskData, has: boolean) => {
     if (!taskId || !data) {
       return;
     }
@@ -63,31 +63,19 @@ const TaskReader = ({ taskId, onChange, onDiscussion }: IWidget) => {
       studio_name: "",
     };
     if (type === "pre") {
-      const hasPre = task?.pre_task?.find((value) => value.id === data.id);
-      if (hasPre) {
-        setting.pre_task_id = task?.pre_task
-          ?.filter((value) => value.id !== data.id)
-          .map((item) => item.id)
-          .join();
-      } else {
-        const newRelation = task?.pre_task
-          ? [...task.pre_task.map((item) => item.id), data.id]
-          : [data.id];
-        setting.pre_task_id = newRelation.join();
+      let newPre =
+        task?.pre_task?.filter((value) => value.id !== data.id) ?? [];
+      if (has) {
+        newPre = [...newPre, data];
       }
+      setting.pre_task_id = newPre?.map((item) => item.id).join();
     } else if (type === "next") {
-      const hasPre = task?.next_task?.find((value) => value.id === data.id);
-      if (hasPre) {
-        setting.next_task_id = task?.next_task
-          ?.filter((value) => value.id !== data.id)
-          .map((item) => item.id)
-          .join();
-      } else {
-        const newRelation = task?.next_task
-          ? [...task.next_task.map((item) => item.id), data.id]
-          : [data.id];
-        setting.next_task_id = newRelation.join();
+      let newNext =
+        task?.next_task?.filter((value) => value.id !== data.id) ?? [];
+      if (has) {
+        newNext = [...newNext, data];
       }
+      setting.next_task_id = newNext?.map((item) => item.id).join();
     }
 
     const url = `/v2/task/${setting.id}`;
@@ -115,8 +103,8 @@ const TaskReader = ({ taskId, onChange, onDiscussion }: IWidget) => {
             task={task}
             open={openPreTask}
             type="pre"
-            onClick={(data) => {
-              updatePreTask("pre", data);
+            onChange={(data, has) => {
+              updatePreTask("pre", data, has);
               setOpenPreTask(false);
             }}
             onTagClick={() => setOpenPreTask(true)}
@@ -126,8 +114,8 @@ const TaskReader = ({ taskId, onChange, onDiscussion }: IWidget) => {
             task={task}
             open={openNextTask}
             type="next"
-            onClick={(data) => {
-              updatePreTask("next", data);
+            onChange={(data, has) => {
+              updatePreTask("next", data, has);
               setOpenNextTask(false);
             }}
             onClose={() => setOpenNextTask(false)}

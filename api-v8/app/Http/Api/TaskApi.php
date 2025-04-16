@@ -61,6 +61,7 @@ class TaskApi
             $task1 = 'next_task_id';
             $task2 = 'task_id';
         }
+        TaskApi::removeTaskRelationRedisKey($taskId, $relation);
         $delete = TaskRelation::where($where, $taskId)
             ->delete();
         foreach ($relationTasksId as $key => $id) {
@@ -82,7 +83,9 @@ class TaskApi
     public static function getRelationTasks($taskId, $relation = 'pre')
     {
         $key = TaskApi::taskRelationRedisKey($taskId, $relation);
+        Log::debug('task redis key=' . $key . ' has=' . RedisClusters::has($key));
         $data = RedisClusters::remember($key, 3 * 24 * 3600, function () use ($taskId, $relation) {
+            Log::debug('getRelationTasks task=' . $taskId . ' relation=' . $relation);
             if ($relation === 'pre') {
                 $where = 'next_task_id';
                 $select = 'task_id';
@@ -116,6 +119,7 @@ class TaskApi
             ->orWhere('next_task_id', $taskId)
             ->select('task_id', 'next_task_id')->get();
         $relationsId = [];
+        $relationsId[$taskId] = 1;
         foreach ($relations as $key => $value) {
             $relationsId[$value->task_id] = 1;
             $relationsId[$value->next_task_id] = 1;
