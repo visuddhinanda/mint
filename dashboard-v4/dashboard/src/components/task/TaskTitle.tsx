@@ -1,5 +1,6 @@
-import { Typography } from "antd";
-import { ITaskData } from "../api/task";
+import { message, Typography } from "antd";
+import { ITaskData, ITaskResponse, ITaskUpdateRequest } from "../api/task";
+import { patch } from "../../request";
 
 const { Title } = Typography;
 
@@ -9,7 +10,40 @@ interface IWidget {
 }
 const TaskTitle = ({ task, onChange }: IWidget) => {
   return (
-    <Title level={3} editable onChange={(e) => {}}>
+    <Title
+      level={3}
+      editable={{
+        onChange(value) {
+          console.debug("title change", value);
+          if (!task) {
+            console.error("no task");
+            return;
+          }
+          if (value === "") {
+            message.error("标题不能为空");
+            return;
+          }
+          let setting: ITaskUpdateRequest = {
+            id: task.id,
+            studio_name: "",
+            title: value,
+          };
+          const url = `/v2/task/${task.id}`;
+          console.info("api request", url, setting);
+          patch<ITaskUpdateRequest, ITaskResponse>(url, setting).then(
+            (json) => {
+              console.info("api response", json);
+              if (json.ok) {
+                message.success("Success");
+                onChange && onChange([json.data]);
+              } else {
+                message.error(json.message);
+              }
+            }
+          );
+        },
+      }}
+    >
       {task?.title}
     </Title>
   );
