@@ -108,18 +108,14 @@ const TaskList = ({
   const [currFilter, setCurrFilter] = useState(filters);
 
   console.info("render");
-  const getChildren = (
-    record: ITaskData,
-    findIn: ITaskData[]
-  ): ITaskData[] | undefined => {
+  const getChildren = (record: ITaskData, findIn: ITaskData[]): ITaskData[] => {
     const children = findIn
       .filter((item) => item.parent_id === record.id)
       .map((item) => {
         return { ...item, children: getChildren(item, findIn) };
       });
 
-    if (children.length > 0) {
-      return children;
+    return children;
   };
 
   useEffect(() => {
