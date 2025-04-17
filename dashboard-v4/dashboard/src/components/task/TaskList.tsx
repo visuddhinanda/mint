@@ -120,8 +120,6 @@ const TaskList = ({
 
     if (children.length > 0) {
       return children;
-    }
-    return undefined;
   };
 
   useEffect(() => {
