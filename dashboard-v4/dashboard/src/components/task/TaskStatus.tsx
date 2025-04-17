@@ -52,6 +52,7 @@ const TaskStatus = ({ task }: IWidget) => {
       color = "warning";
       break;
   }
+
   return (
     <>
       <Tag color={color}>
@@ -61,9 +62,15 @@ const TaskStatus = ({ task }: IWidget) => {
         })}
       </Tag>
       {task?.status === "running" ? (
-        <div style={{ display: "inline-block", width: 80 }}>
-          <Progress percent={progress} size="small" showInfo={false} />
-        </div>
+        progress && progress > 0 ? (
+          <div style={{ display: "inline-block", width: 80 }}>
+            <Progress percent={progress} size="small" showInfo={false} />
+          </div>
+        ) : task?.executor?.roles?.includes("ai") ? (
+          <>任务排队中</>
+        ) : (
+          <></>
+        )
       ) : (
         <></>
       )}
