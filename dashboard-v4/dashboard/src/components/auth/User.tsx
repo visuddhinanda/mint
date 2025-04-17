@@ -8,6 +8,7 @@ export interface IUser {
   nickName: string;
   userName: string;
   avatar?: string;
+  roles?: string[];
 }
 
 interface IWidget {
