@@ -87,11 +87,12 @@ const ProjectClone = ({ trigger, studioName, projectId }: IWidget) => {
       }}
     >
       <Alert
+        key={1}
         message={message}
         type="error"
         style={{ display: message ? "unset" : "none" }}
       />
-      <ProForm.Group>
+      <ProForm.Group key={2}>
         <ProFormText
           width="md"
           name="title"

@@ -145,6 +145,7 @@ const ProjectListWidget = ({
                 })}
               </Button>,
               <ProjectClone
+                key="clone"
                 projectId={row.id}
                 studioName={studioName}
                 trigger={
@@ -156,6 +157,7 @@ const ProjectListWidget = ({
                 }
               />,
               <ShareModal
+                key="share"
                 trigger={
                   <Button type="link" size="small">
                     {intl.formatMessage({
