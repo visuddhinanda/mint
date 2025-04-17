@@ -1,4 +1,4 @@
-import { Progress, Tag } from "antd";
+import { Progress, Tag, Tooltip } from "antd";
 import { ITaskData, ITaskResponse } from "../api/task";
 import { useIntl } from "react-intl";
 import { useEffect, useState } from "react";
@@ -64,7 +64,9 @@ const TaskStatus = ({ task }: IWidget) => {
       {task?.status === "running" ? (
         progress && progress > 0 ? (
           <div style={{ display: "inline-block", width: 80 }}>
-            <Progress percent={progress} size="small" showInfo={false} />
+            <Tooltip title={`${progress}%`}>
+              <Progress percent={progress} size="small" showInfo={false} />
+            </Tooltip>
           </div>
         ) : task?.executor?.roles?.includes("ai") ? (
           <>任务排队中</>
