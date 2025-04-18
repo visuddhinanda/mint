@@ -43,6 +43,17 @@ class ExportAiTrainingData extends Command
     public function handle()
     {
         Log::debug('task export offline sentence-table start');
+        //创建文件夹
+        $exportDir = storage_path('app/tmp/export/offline');
+        if (!is_dir($exportDir)) {
+            $res = mkdir($exportDir, 0755, true);
+            if (!$res) {
+                $this->error('mkdir fail path=' . $exportDir);
+                return 1;
+            } else {
+                $this->info('make dir successful ' . $exportDir);
+            }
+        }
         $filename = 'wikipali-offline-ai-training-' . date("Y-m-d") . '.tsv';
         $exportFile = storage_path('app/tmp/export/offline/' . $filename);
         $fp = fopen($exportFile, 'w');
