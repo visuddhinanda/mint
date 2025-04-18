@@ -40,7 +40,6 @@ class ExportAiPaliWordToken extends Command
      */
     public function handle()
     {
-        $this->info('export ai pali word token');
         Log::debug('export ai pali word token');
 
         if (\App\Tools\Tools::isStop()) {
@@ -50,16 +49,16 @@ class ExportAiPaliWordToken extends Command
         if (!is_dir($exportDir)) {
             $res = mkdir($exportDir, 0755, true);
             if (!$res) {
-                $this->error('mkdir fail path=' . $exportDir);
+                Log::error('mkdir fail path=' . $exportDir);
                 return 1;
             } else {
-                $this->info('make dir successful ' . $exportDir);
+                Log::info('make dir successful ' . $exportDir);
             }
         }
 
         $dict_id = DictApi::getSysDict('system_preference');
         if (!$dict_id) {
-            $this->error('没有找到 system_preference 字典');
+            Log::error('没有找到 system_preference 字典');
             return 1;
         }
 
@@ -67,7 +66,7 @@ class ExportAiPaliWordToken extends Command
         $exportFile = $exportDir . '/' . $filename;
         $fp = fopen($exportFile, 'w');
         if ($fp === false) {
-            $this->error('无法创建文件');
+            Log::error('无法创建文件');
             return 1;
         }
 
@@ -87,7 +86,7 @@ class ExportAiPaliWordToken extends Command
             }
         }
         fclose($fp);
-        $this->info((time() - $start) . ' seconds');
+        Log::info((time() - $start) . ' seconds');
 
         $this->call('export:zip', [
             'id' => 'ai-pali-word-token',
