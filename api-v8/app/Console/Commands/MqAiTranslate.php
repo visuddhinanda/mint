@@ -194,7 +194,9 @@ class MqAiTranslate extends Command
                         'begin' => $message->sentence->word_start,
                         'end' => $message->sentence->word_end,
                         'channel' => $message->sentence->channel_uid,
-                        'text' => $responseContent
+                        'text' => $responseContent,
+                        'notification' => false,
+                        'webhook' => false,
                     ]);
                     if ($response->failed()) {
                         Log::error($queue . ' sentence update failed', [
