@@ -1,25 +1,11 @@
 import { Link } from "react-router-dom";
 import { useIntl } from "react-intl";
-import {
-  Button,
-  Popover,
-  Typography,
-  Dropdown,
-  Modal,
-  message,
-  Tag,
-  Space,
-} from "antd";
+import { Button, Popover, Modal, message, Tag, Space } from "antd";
 import { ActionType, ProList } from "@ant-design/pro-components";
-import {
-  PlusOutlined,
-  DeleteOutlined,
-  ExclamationCircleOutlined,
-} from "@ant-design/icons";
+import { PlusOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 
 import { delete_, get } from "../../request";
 
-import { RoleValueEnum } from "../../components/studio/table";
 import { IDeleteResponse } from "../../components/api/Article";
 import { useRef, useState } from "react";
 
@@ -29,8 +15,6 @@ import AiModelCreate from "./AiModelCreate";
 import PublicityIcon from "../studio/PublicityIcon";
 import ShareModal from "../share/ShareModal";
 import { EResType } from "../share/Share";
-
-const { Text } = Typography;
 
 interface IWidget {
   studioName?: string;
