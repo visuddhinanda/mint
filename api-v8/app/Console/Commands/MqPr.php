@@ -89,79 +89,84 @@ class MqPr extends Command
 
             $result = 0;
             //发送站内信
-            try {
-                $sendTo = array();
-                if ($prData->editor->id !== $prData->channel->studio_id) {
-                    $sendTo[] = $prData->channel->studio_id;
-                }
-                if ($orgText) {
-                    //原文作者
-                    if (
-                        !in_array($orgText->editor_uid, $sendTo) &&
-                        $orgText->editor_uid !== $prData->editor->id
-                    ) {
-                        $sendTo[] = $orgText->editor_uid;
-                    }
-                    //原文采纳者
-                    if (
-                        !empty($orgText->acceptor_uid) &&
-                        !in_array($orgText->acceptor_uid, $sendTo) &&
-                        $orgText->acceptor_uid !== $prData->editor->id
-                    ) {
-                        $sendTo[] = $orgText->acceptor_uid;
-                    }
-                }
-                if (count($sendTo) > 0) {
-                    $sendCount = NotificationController::insert(
-                        from: $prData->editor->id,
-                        to: $sendTo,
-                        res_type: 'suggestion',
-                        res_id: $prData->uid,
-                        channel: $prData->channel->id
-                    );
-                }
+            if ($message->webhook) {
 
-                $this->info("send notification success to [" . count($sendTo) . '] users');
-            } catch (\Exception $e) {
-                $this->error('send notification failed');
-                Log::error('send notification failed', ['exception' => $e]);
+                try {
+                    $sendTo = array();
+                    if ($prData->editor->id !== $prData->channel->studio_id) {
+                        $sendTo[] = $prData->channel->studio_id;
+                    }
+                    if ($orgText) {
+                        //原文作者
+                        if (
+                            !in_array($orgText->editor_uid, $sendTo) &&
+                            $orgText->editor_uid !== $prData->editor->id
+                        ) {
+                            $sendTo[] = $orgText->editor_uid;
+                        }
+                        //原文采纳者
+                        if (
+                            !empty($orgText->acceptor_uid) &&
+                            !in_array($orgText->acceptor_uid, $sendTo) &&
+                            $orgText->acceptor_uid !== $prData->editor->id
+                        ) {
+                            $sendTo[] = $orgText->acceptor_uid;
+                        }
+                    }
+                    if (count($sendTo) > 0) {
+                        $sendCount = NotificationController::insert(
+                            from: $prData->editor->id,
+                            to: $sendTo,
+                            res_type: 'suggestion',
+                            res_id: $prData->uid,
+                            channel: $prData->channel->id
+                        );
+                    }
+
+                    $this->info("send notification success to [" . count($sendTo) . '] users');
+                } catch (\Exception $e) {
+                    $this->error('send notification failed');
+                    Log::error('send notification failed', ['exception' => $e]);
+                }
             }
 
             //发送webhook
+            if ($message->webhook) {
+                $webhooks = WebHook::where('res_id', $prData->channel->id)
+                    ->where('status', 'active')
+                    ->get();
 
-            $webhooks = WebHook::where('res_id', $prData->channel->id)
-                ->where('status', 'active')
-                ->get();
 
-
-            foreach ($webhooks as $key => $hook) {
-                $event = json_decode($hook->event);
-                if (!in_array('pr', $event)) {
-                    continue;
-                }
-                $command = '';
-                $whSend = new WebHookSend;
-                switch ($hook->receiver) {
-                    case 'dingtalk':
-                        $ok = $whSend->dingtalk($hook->url, $msgTitle, $msgContent);
-                        break;
-                    case 'wechat':
-                        $ok = $whSend->wechat($hook->url, null, $msgContent);
-                        break;
-                    default:
-                        $ok = 2;
-                        break;
-                }
-                $this->info("{$command}  ok={$ok}");
-                $result += $ok;
-                if ($ok === 0) {
-                    Log::debug('mq:pr: send success {url}', ['url' => $hook->url]);
-                    WebHook::where('id', $hook->id)->increment('success');
-                } else {
-                    Log::error('mq:pr: send fail {url}', ['url' => $hook->url]);
-                    WebHook::where('id', $hook->id)->increment('fail');
+                foreach ($webhooks as $key => $hook) {
+                    $event = json_decode($hook->event);
+                    if (!in_array('pr', $event)) {
+                        continue;
+                    }
+                    $command = '';
+                    $whSend = new WebHookSend;
+                    switch ($hook->receiver) {
+                        case 'dingtalk':
+                            $ok = $whSend->dingtalk($hook->url, $msgTitle, $msgContent);
+                            break;
+                        case 'wechat':
+                            $ok = $whSend->wechat($hook->url, null, $msgContent);
+                            break;
+                        default:
+                            $ok = 2;
+                            break;
+                    }
+                    $this->info("{$command}  ok={$ok}");
+                    $result += $ok;
+                    if ($ok === 0) {
+                        Log::debug('mq:pr: send success {url}', ['url' => $hook->url]);
+                        WebHook::where('id', $hook->id)->increment('success');
+                    } else {
+                        Log::error('mq:pr: send fail {url}', ['url' => $hook->url]);
+                        WebHook::where('id', $hook->id)->increment('fail');
+                    }
                 }
             }
+
             return $result;
         });
         return 0;
