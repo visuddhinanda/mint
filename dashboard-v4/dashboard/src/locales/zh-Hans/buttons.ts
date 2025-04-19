@@ -109,6 +109,8 @@ const items = {
   "buttons.next": "下一步",
   "buttons.previous": "上一步",
   "buttons.clone": "克隆",
+  "buttons.general": "常规",
+  "buttons.ai-models": "AI模型",
 };
 
 export default items;

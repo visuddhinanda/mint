@@ -108,6 +108,8 @@ const items = {
   "buttons.next": "Next",
   "buttons.previous": "Previous",
   "buttons.clone": "Clone",
+  "buttons.general": "General",
+  "buttons.ai-models": "AI Models",
 };
 
 export default items;
