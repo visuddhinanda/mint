@@ -45,7 +45,6 @@ class ExportZip extends Command
     public function handle()
     {
         Log::debug('export offline: 开始压缩');
-        $this->info('export offline: 开始压缩');
         $defaultExportPath = storage_path('app/public/export/offline');
         $exportFile = $this->argument('filename');
         $filename = basename($exportFile);
@@ -116,7 +115,7 @@ class ExportZip extends Command
         $this->info(implode(' ', $command));
         Log::debug('export offline zip start', ['command' => $command, 'format' => $this->argument('format')]);
         $process = new Process($command);
-	$process->setTimeout(60*60*6);
+        $process->setTimeout(60 * 60 * 6);
         $process->run();
         $this->info($process->getOutput());
         $this->info('压缩完成');
