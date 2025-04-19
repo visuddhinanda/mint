@@ -138,23 +138,6 @@ class Mq
                         'message_id' => $message->get('message_id'),
                         'exception' => $e
                     ]);
-
-                    // push to issues
-                    /*
-                    $channelName = 'issues';
-                    $channelIssues = $connection->channel();
-                    $channelIssues->queue_declare($channelName, false, true, false, false);
-
-                    $msg = new AMQPMessage(json_encode([
-                        'exchange' => $exchange,
-                        'channel' => $queue,
-                        'message' => json_decode($message->body),
-                        'result' => 0,
-                        'error' => $e,
-                    ], JSON_UNESCAPED_UNICODE));
-                    $channelIssues->basic_publish($msg, '', $channelName);
-                    $channelIssues->close();
-                    */
                 }
 
                 if (\App\Tools\Tools::isStop()) {
