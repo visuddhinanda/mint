@@ -19,6 +19,8 @@ import { getSorterUrl } from "../../utils";
 import { TransferOutLinedIcon } from "../../assets/icon";
 import { IProjectData, IProjectListResponse } from "../api/task";
 import ProjectCreate from "./ProjectCreate";
+import ShareModal from "../share/ShareModal";
+import { EResType } from "../share/Share";
 
 export interface IResNumberResponse {
   ok: boolean;
@@ -47,20 +49,20 @@ interface IWidget {
   studioName?: string;
   type?: string;
   disableChannels?: string[];
-  channelType?: TChannelType;
   onSelect?: Function;
 }
 
-const ProjectListWidget = ({
+const ProjectTableWidget = ({
   studioName,
   disableChannels,
-  channelType,
   type,
   onSelect,
 }: IWidget) => {
   const intl = useIntl();
-  const [activeKey, setActiveKey] = useState<React.Key | undefined>("instance");
+  const [activeKey, setActiveKey] = useState<React.Key | undefined>("studio");
   const [openCreate, setOpenCreate] = useState(false);
+  const [shareId, setShareId] = useState<string>();
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     ref.current?.reload();
@@ -107,6 +109,17 @@ const ProjectListWidget = ({
 
   return (
     <>
+      {shareId ? (
+        <ShareModal
+          open={shareOpen}
+          onClose={() => setShareOpen(false)}
+          resId={shareId}
+          resType={EResType.project}
+        />
+      ) : (
+        <></>
+      )}
+
       <ProTable<IProjectData>
         actionRef={ref}
         columns={[
@@ -187,6 +200,12 @@ const ProjectListWidget = ({
                         icon: <TransferOutLinedIcon />,
                       },
                       {
+                        key: "share",
+                        label: intl.formatMessage({
+                          id: "buttons.share",
+                        }),
+                      },
+                      {
                         key: "remove",
                         label: intl.formatMessage({
                           id: "buttons.delete",
@@ -199,6 +218,10 @@ const ProjectListWidget = ({
                       switch (e.key) {
                         case "remove":
                           showDeleteConfirm(row.id, row.title);
+                          break;
+                        case "share":
+                          setShareId(row.id);
+                          setShareOpen(true);
                           break;
                         default:
                           break;
@@ -218,7 +241,7 @@ const ProjectListWidget = ({
         ]}
         request={async (params = {}, sorter, filter) => {
           console.log(params, sorter, filter);
-          let url = `/v2/project?view=studio&type=${activeKey}`;
+          let url = `/v2/project?view=${activeKey}&type=instance`;
           url += `&studio=${studioName}`;
           const offset =
             ((params.current ? params.current : 1) - 1) *
@@ -226,7 +249,6 @@ const ProjectListWidget = ({
           url += `&limit=${params.pageSize}&offset=${offset}`;
 
           url += params.keyword ? "&keyword=" + params.keyword : "";
-          url += channelType ? "&type=" + channelType : "";
           url += getSorterUrl(sorter);
           console.log("project list api request", url);
           const res = await get<IProjectListResponse>(url);
@@ -252,7 +274,7 @@ const ProjectListWidget = ({
             content={
               <ProjectCreate
                 studio={studioName}
-                type={activeKey === "workflow" ? "workflow" : "instance"}
+                type={"instance"}
                 onCreate={() => {
                   setOpenCreate(false);
                   ref.current?.reload();
@@ -276,12 +298,12 @@ const ProjectListWidget = ({
             activeKey,
             items: [
               {
-                key: "instance",
-                label: "项目",
+                key: "studio",
+                label: "我的项目",
               },
               {
-                key: "workflow",
-                label: intl.formatMessage({ id: "labels.workflow" }),
+                key: "shared",
+                label: intl.formatMessage({ id: "labels.shared" }),
               },
             ],
             onChange(key) {
@@ -296,4 +318,4 @@ const ProjectListWidget = ({
   );
 };
 
-export default ProjectListWidget;
+export default ProjectTableWidget;
