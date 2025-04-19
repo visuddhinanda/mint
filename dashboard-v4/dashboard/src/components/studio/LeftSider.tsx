@@ -89,6 +89,34 @@ const LeftSiderWidget = ({ selectedKeys = "", openKeys }: IWidgetHeadBar) => {
           ),
           key: "analysis",
         },
+        {
+          label: intl.formatMessage({
+            id: "columns.studio.setting.title",
+          }),
+          key: "setting",
+          children: [
+            {
+              label: (
+                <Link to={linkSetting}>
+                  {intl.formatMessage({
+                    id: "buttons.general",
+                  })}
+                </Link>
+              ),
+              key: "general",
+            },
+            {
+              label: (
+                <Link to={`${urlBase}/ai/models/list`}>
+                  {intl.formatMessage({
+                    id: "buttons.ai-models",
+                  })}
+                </Link>
+              ),
+              key: "models",
+            },
+          ],
+        },
       ],
     },
     {
@@ -143,16 +171,6 @@ const LeftSiderWidget = ({ selectedKeys = "", openKeys }: IWidgetHeadBar) => {
                 </Link>
               ),
               key: "task_workflows",
-            },
-          ],
-        },
-        {
-          label: "AI",
-          key: "ai",
-          children: [
-            {
-              label: <Link to={`${urlBase}/ai/models/list`}>{"models"}</Link>,
-              key: "models",
             },
           ],
         },
@@ -226,16 +244,6 @@ const LeftSiderWidget = ({ selectedKeys = "", openKeys }: IWidgetHeadBar) => {
             </Link>
           ),
           key: "tag",
-        },
-        {
-          label: (
-            <Link to={linkSetting}>
-              {intl.formatMessage({
-                id: "columns.studio.setting.title",
-              })}
-            </Link>
-          ),
-          key: "setting",
         },
       ].filter((value) => value.disabled !== true),
     },
