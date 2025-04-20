@@ -29,6 +29,24 @@ const ProjectTask = ({
     setTasks(listData);
     onChange && onChange(listData);
   };
+
+  // 更新 origin 中的函数
+  function update(input: ITaskData[], target: ITaskData[]): void {
+    for (const newItem of input) {
+      const match = target.findIndex((item) => item.id === newItem.id);
+      if (match >= 0) {
+        // 更新当前项的属性
+        target[match] = newItem;
+      } else {
+        // 如果没有找到，递归检查子项
+        for (const item of target) {
+          if (item.children) {
+            update([newItem], item.children);
+          }
+        }
+      }
+    }
+  }
   return (
     <>
       <Tabs
@@ -50,7 +68,18 @@ const ProjectTask = ({
           {
             label: intl.formatMessage({ id: "labels.table" }),
             key: "table",
-            children: <TaskTable tasks={tasks} onChange={onDataChange} />,
+            children: (
+              <TaskTable
+                tasks={tasks}
+                onChange={(data: ITaskData[]) => {
+                  if (origin) {
+                    let origin = JSON.parse(JSON.stringify(taskTree));
+                    update(data, origin);
+                    onDataChange(origin);
+                  }
+                }}
+              />
+            ),
           },
           {
             label: intl.formatMessage({ id: "labels.flowchart" }),
