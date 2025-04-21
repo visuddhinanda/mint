@@ -15,6 +15,9 @@ const TaskStatus = ({ task }: IWidget) => {
     if (!task?.id) {
       return;
     }
+    if (task.status !== "running") {
+      return;
+    }
     const query = () => {
       const url = `/v2/task/${task?.id}`;
       console.info("api request", url);
@@ -25,11 +28,12 @@ const TaskStatus = ({ task }: IWidget) => {
         }
       });
     };
+
     let timer = setInterval(query, 1000 * (60 + Math.random() * 10));
     return () => {
       clearInterval(timer);
     };
-  }, [task?.id]);
+  }, [task]);
 
   let color = "";
   switch (task?.status) {
