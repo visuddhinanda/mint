@@ -141,7 +141,6 @@ const Widget = ({ token }: IWidget) => {
             name="password"
             fieldProps={{
               type: "password",
-
               iconRender: (visible) =>
                 visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />,
             }}
