@@ -55,6 +55,7 @@ export const TaskBuilderChapterModal = ({
     <>
       <Modal
         destroyOnClose={true}
+        maskClosable={false}
         width={1400}
         style={{ top: 10 }}
         title={""}

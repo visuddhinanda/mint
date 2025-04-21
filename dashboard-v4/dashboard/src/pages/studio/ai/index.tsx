@@ -10,7 +10,7 @@ const Widget = () => {
   return (
     <Layout>
       <Layout>
-        <LeftSider openKeys={["ai"]} />
+        <LeftSider openKeys={["setting"]} />
         <Content style={styleStudioContent}>
           <Outlet />
         </Content>

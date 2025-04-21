@@ -119,6 +119,7 @@ class TaskStatusController extends Controller
             case 'running':
                 $task->started_at = now();
                 $task->executor_id = $user['user_uid'];
+                $task->save();
                 $this->pushChange('running', $task->id);
                 break;
             case 'restarted':

@@ -10,7 +10,7 @@ const Widget = () => {
   return (
     <Layout>
       <Layout>
-        <LeftSider selectedKeys="setting" />
+        <LeftSider selectedKeys="setting" openKeys={["setting"]} />
         <Content style={styleStudioContent}>
           <SettingArticle />
         </Content>

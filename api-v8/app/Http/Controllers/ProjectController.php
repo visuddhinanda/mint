@@ -43,7 +43,8 @@ class ProjectController extends Controller
                     ->orWhereJsonContains('path', $request->get('project_id'));
                 break;
             case 'shared':
-                $resList = ShareApi::getResList($studioId, 6);
+                $type = $request->get('type', 'instance');
+                $resList = ShareApi::getResList($studioId, $type === 'instance' ? 7 : 6);
                 $resId = [];
                 foreach ($resList as $res) {
                     $resId[] = $res['res_id'];

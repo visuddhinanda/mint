@@ -17,6 +17,7 @@ export enum EResType {
   article = 3,
   collection = 4,
   workflow = 6,
+  project = 7,
   modal = 8,
 }
 interface IWidget {
