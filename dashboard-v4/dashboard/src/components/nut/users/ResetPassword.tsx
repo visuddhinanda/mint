@@ -132,7 +132,7 @@ const Widget = ({ token }: IWidget) => {
             label={intl.formatMessage({
               id: "forms.fields.username.label",
             })}
-            rules={[{ required: true, max: 255, min: 6 }]}
+            rules={[{ required: true, max: 255, min: 2 }]}
           />
         </ProForm.Group>
         <ProForm.Group>
