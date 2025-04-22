@@ -77,6 +77,13 @@ class TaskController extends Controller
                 ->select('task_id')->get();
             $table = $table->whereNotIn('id', $assigneesTasks);
         }
+        //指派给
+        if ($request->has('assignees_id_null')) {
+            $table = $table->doesntHave('task_assignees');
+        }
+        if ($request->has('assignees_id_not-null')) {
+            $table = $table->has('task_assignees');
+        }
 
         if ($request->get('sign_up_equals') === 'true') {
             $table = $table->whereNull('assignees_id')
