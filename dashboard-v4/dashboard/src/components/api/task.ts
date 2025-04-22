@@ -30,6 +30,7 @@ export type TTaskType = "instance" | "workflow" | "group";
 
 export interface IProject {
   id: string;
+  sn: number;
   title: string;
   description: string | null;
   weight: number;
