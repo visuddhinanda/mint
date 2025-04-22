@@ -1,11 +1,9 @@
 import { Collapse } from "antd";
 import { IProject, ITaskData } from "../api/task";
-
-import "../article/article.css";
-
-import Mermaid from "../general/Mermaid";
 import TaskFlowchart from "./TaskFlowchart";
+
 const { Panel } = Collapse;
+
 interface IWidget {
   projectId?: string;
   tasks?: ITaskData[];
@@ -19,6 +17,7 @@ const TaskRelation = ({ tasks }: IWidget) => {
   projects.forEach((value: IProject, key: string) => {
     flowcharts.push(value);
   });
+
   return (
     <Collapse
       defaultActiveKey={Array.from({ length: flowcharts.length }, (_, i) => i)}
