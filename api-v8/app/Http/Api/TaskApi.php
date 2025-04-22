@@ -83,7 +83,7 @@ class TaskApi
     public static function getRelationTasks($taskId, $relation = 'pre')
     {
         $key = TaskApi::taskRelationRedisKey($taskId, $relation);
-        Log::debug('task redis key=' . $key . ' has=' . RedisClusters::has($key));
+        //Log::debug('task redis key=' . $key . ' has=' . RedisClusters::has($key));
         $data = RedisClusters::remember($key, 3 * 24 * 3600, function () use ($taskId, $relation) {
             Log::debug('getRelationTasks task=' . $taskId . ' relation=' . $relation);
             if ($relation === 'pre') {
