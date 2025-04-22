@@ -5,6 +5,7 @@ import { useIntl } from "react-intl";
 import UserSelect from "../template/UserSelect";
 import {
   ProForm,
+  ProFormDependency,
   ProFormInstance,
   ProFormSelect,
 } from "@ant-design/pro-components";
@@ -19,6 +20,7 @@ interface IProps {
 }
 const FilterItem = ({ item, sn, onRemove }: IProps) => {
   const intl = useIntl();
+  const [operator, setOperator] = useState<string | null>(item.operator);
   return (
     <ProForm.Group>
       <ProFormSelect
@@ -42,6 +44,12 @@ const FilterItem = ({ item, sn, onRemove }: IProps) => {
       />
       <ProFormSelect
         initialValue={item.operator}
+        fieldProps={{
+          value: operator,
+          onChange(value, option) {
+            setOperator(value);
+          },
+        }}
         name={`operator_${sn}`}
         style={{ width: 120 }}
         options={[
@@ -64,6 +72,7 @@ const FilterItem = ({ item, sn, onRemove }: IProps) => {
         initialValue={item.value}
         required={false}
         hiddenTitle
+        hidden={operator === "null" || operator === "not-null"}
       />
       <Button type="link" icon={<DeleteOutlined />} danger onClick={onRemove} />
     </ProForm.Group>

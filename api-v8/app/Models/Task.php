@@ -20,4 +20,10 @@ class Task extends Model
         'started_at',
         'finished_at',
     ];
+
+    // app/Models/User.php
+    public function task_assignees()
+    {
+        return $this->hasMany(TaskAssignee::class, 'task_id', 'id');
+    }
 }

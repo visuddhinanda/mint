@@ -13,9 +13,9 @@ const Widget = () => {
       status={["published"]}
       filters={[
         {
-          field: "sign_up",
-          operator: "equals",
-          value: "true",
+          field: "assignees_id",
+          operator: "null",
+          value: "",
         },
       ]}
     />
