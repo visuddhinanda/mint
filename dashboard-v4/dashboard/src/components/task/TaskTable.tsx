@@ -119,23 +119,25 @@ const TaskTable = ({ tasks, onChange }: IWidget) => {
           })}
         </thead>
         <tbody>
-          {projects?.map((row, index) => (
-            <tr key={index}>
-              <td key={"title"}>{row.title}</td>
-              <td key={"weight"}>{row.weight}</td>
-              {dataHeading?.map((task, id) => {
-                const taskData = tasks?.find(
-                  (value: ITaskData) =>
-                    value.title === task && value.project_id === row.id
-                );
-                return (
-                  <td key={id}>
-                    <TaskTableCell task={taskData} onChange={onChange} />
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
+          {projects
+            ?.sort((a, b) => a.sn - b.sn)
+            .map((row, index) => (
+              <tr key={index}>
+                <td key={"title"}>{row.title}</td>
+                <td key={"weight"}>{row.weight}</td>
+                {dataHeading?.map((task, id) => {
+                  const taskData = tasks?.find(
+                    (value: ITaskData) =>
+                      value.title === task && value.project_id === row.id
+                  );
+                  return (
+                    <td key={id}>
+                      <TaskTableCell task={taskData} onChange={onChange} />
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
         </tbody>
       </table>
     </div>

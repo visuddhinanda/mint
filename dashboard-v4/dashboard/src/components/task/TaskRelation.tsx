@@ -22,15 +22,17 @@ const TaskRelation = ({ tasks }: IWidget) => {
     <Collapse
       defaultActiveKey={Array.from({ length: flowcharts.length }, (_, i) => i)}
     >
-      {flowcharts.map((item, id) => {
-        return (
-          <Panel header={item.title} key={id}>
-            <TaskFlowchart
-              tasks={tasks?.filter((value) => value.project_id === item.id)}
-            />
-          </Panel>
-        );
-      })}
+      {flowcharts
+        .sort((a, b) => a.sn - b.sn)
+        .map((item, id) => {
+          return (
+            <Panel header={item.title} key={id}>
+              <TaskFlowchart
+                tasks={tasks?.filter((value) => value.project_id === item.id)}
+              />
+            </Panel>
+          );
+        })}
     </Collapse>
   );
 };

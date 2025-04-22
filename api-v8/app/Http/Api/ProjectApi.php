@@ -17,6 +17,7 @@ class ProjectApi
         if ($project) {
             return [
                 'id' => $id,
+                'sn' => $project->id,
                 'title' => $project->title,
                 'type' => $project->type,
                 'weight' => $project->weight,
@@ -39,6 +40,7 @@ class ProjectApi
                 if ($project->uid === $id) {
                     $output[] = [
                         'id' => $id,
+                        'sn' => $project->id,
                         'title' => $project->title,
                         'type' => $project->type,
                         'weight' => $project->weight,
