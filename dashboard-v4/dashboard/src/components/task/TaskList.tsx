@@ -25,6 +25,7 @@ import TaskStatusButton from "./TaskStatusButton";
 import Executors from "./Executors";
 import Category from "./Category";
 import TaskListAdd from "./TaskListAdd";
+import { update, updateNode } from "./ProjectTask";
 
 const { Text } = Typography;
 
@@ -164,7 +165,7 @@ const TaskList = ({
   });
 
   const changeData = (data: ITaskData[]) => {
-    console.debug("task change", data);
+    /*    console.debug("task change", data);
     const update = (item: ITaskData): ITaskData => {
       item.children = item.children?.map(update);
       const found = data.find((t) => t.id === item.id);
@@ -173,10 +174,15 @@ const TaskList = ({
       }
       return item;
     };
-    const newData = dataSource.map(update);
-    setRawData(treeToList(newData));
-    setDataSource(newData);
-    onChange && onChange(JSON.parse(JSON.stringify(newData)));
+    const newData = dataSource.map(update);*/
+    let origin = JSON.parse(JSON.stringify(dataSource));
+    data.forEach((value) => {
+      updateNode(origin, value);
+    });
+    console.debug("TaskList change", dataSource, origin);
+    setRawData(treeToList(origin));
+    setDataSource(origin);
+    onChange && onChange(origin);
   };
 
   const columns: ProColumns<ITaskData>[] = [
