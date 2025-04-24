@@ -75,6 +75,7 @@ const items = {
   "labels.task.status.closed": "已关闭",
   "labels.task.status.canceled": "已取消",
   "labels.task.status.expired": "已过期",
+  "labels.task.status.queue": "排队中",
   "labels.filter": "过滤器",
   "labels.participants": "参与者",
   "labels.task.category": "任务类型",
