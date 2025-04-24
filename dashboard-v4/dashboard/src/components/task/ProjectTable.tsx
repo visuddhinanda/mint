@@ -1,7 +1,7 @@
 import { ActionType, ProTable } from "@ant-design/pro-components";
 import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
-import { Alert, Badge, Button, message, Modal, Popover } from "antd";
+import { Badge, Button, message, Modal, Popover } from "antd";
 import { Dropdown } from "antd";
 import {
   ExclamationCircleOutlined,
@@ -10,7 +10,6 @@ import {
 } from "@ant-design/icons";
 
 import { delete_, get } from "../../request";
-import { TChannelType } from "../api/Channel";
 import { PublicityValueEnum } from "../studio/table";
 import { IDeleteResponse } from "../api/Article";
 import { useEffect, useRef, useState } from "react";
