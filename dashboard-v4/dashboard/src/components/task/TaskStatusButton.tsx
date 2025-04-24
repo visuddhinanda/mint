@@ -18,6 +18,7 @@ import {
   ITaskData,
   ITaskListResponse,
   ITaskUpdateRequest,
+  StatusButtons,
   TTaskStatus,
 } from "../api/task";
 import { patch } from "../../request";
@@ -88,6 +89,7 @@ const TaskStatusButton = ({
     case "running":
       menuEnable = [
         "done",
+        "stop",
         requested_restart_enable ? "requested_restart" : "done",
       ];
       break;
@@ -100,52 +102,22 @@ const TaskStatusButton = ({
     case "requested_restart":
       menuEnable = ["done"];
       break;
+    case "queue":
+      menuEnable = ["stop"];
+      break;
   }
-  const items: IStatusMenu[] = [
-    {
+
+  const items: IStatusMenu[] = StatusButtons.map((item) => {
+    return {
       key: "pending",
       label: intl.formatMessage({
-        id: "buttons.task.status.change.to.pending",
-      }),
-      disabled: task?.type === "instance" && !menuEnable.includes("pending"),
-    },
-    {
-      key: "published",
-      label: intl.formatMessage({
-        id: "buttons.task.status.change.to.published",
-      }),
-      disabled: task?.type === "instance" && !menuEnable.includes("published"),
-    },
-    {
-      key: "running",
-      label: intl.formatMessage({
-        id: `buttons.task.status.change.to.running`,
-      }),
-      disabled: task?.type === "instance" && !menuEnable.includes("running"),
-    },
-    {
-      key: "done",
-      label: intl.formatMessage({
-        id: `buttons.task.status.change.to.done`,
-      }),
-      disabled: task?.type === "instance" && !menuEnable.includes("done"),
-    },
-    {
-      key: "restarted",
-      label: intl.formatMessage({
-        id: `buttons.task.status.change.to.restarted`,
-      }),
-      disabled: task?.type === "instance" && !menuEnable.includes("restarted"),
-    },
-    {
-      key: "requested_restart",
-      label: intl.formatMessage({
-        id: `buttons.task.status.change.to.requested_restart`,
+        id: `buttons.task.status.change.to.${item}`,
       }),
       disabled:
-        task?.type === "instance" && !menuEnable.includes("requested_restart"),
-    },
-  ];
+        task?.type === "instance" && !menuEnable.includes(item as TTaskStatus),
+    };
+  });
+
   const menuProps = {
     items: items,
     onClick: handleMenuClick,
