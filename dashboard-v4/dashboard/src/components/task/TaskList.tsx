@@ -25,7 +25,7 @@ import TaskStatusButton from "./TaskStatusButton";
 import Executors from "./Executors";
 import Category from "./Category";
 import TaskListAdd from "./TaskListAdd";
-import { update, updateNode } from "./ProjectTask";
+import { updateNode } from "./ProjectTask";
 
 const { Text } = Typography;
 
