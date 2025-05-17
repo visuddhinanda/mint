@@ -100,7 +100,6 @@ class MqAiTranslate extends Command
                         ["role" => "system", "content" => $message->model->system_prompt ?? ''],
                         ["role" => "user", "content" => $message->prompt],
                     ],
-                    'prompt' => $message->prompt,
                     "temperature" => 0.7,
                     "stream" => false
                 ];
