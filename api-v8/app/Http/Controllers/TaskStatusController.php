@@ -193,7 +193,7 @@ class TaskStatusController extends Controller
                 $aiTask->save();
                 $this->pushChange('queue', $taskId);
                 $params = AiTaskPrepare::translate($taskId);
-                //Log::debug('ai running', ['params' => $params]);
+                Log::debug('ai task', ['message' => count($params)]);
             }
         }
 
