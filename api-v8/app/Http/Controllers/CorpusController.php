@@ -771,7 +771,7 @@ class CorpusController extends Controller
                             ];
                             $mdRender = new MdRender($options);
                             $newSent['html'] = $mdRender->convert($row->content, [$row->channel_uid]);
-                            Log::debug('md render', ['content' => $row->content, 'options' => $options, 'render' => $newSent['html']]);
+                            //Log::debug('md render', ['content' => $row->content, 'options' => $options, 'render' => $newSent['html']]);
                             break;
                     }
                 }
