@@ -65,6 +65,9 @@ class MqAiTranslate extends Command
             Log::debug($queue . ' ai assistant token', ['user' => $first->model->uid]);
             $modelToken = AuthController::getUserToken($first->model->uid);
             Log::debug($queue . ' ai assistant token', ['token' => $modelToken]);
+
+            $this->setTaskStatus($first->task->info->id, 'running', $modelToken);
+
             $discussionUrl = config('app.url') . '/api/v2/discussion';
             $taskDiscussionData = [
                 'res_id' => $first->task->info->id,
@@ -97,7 +100,6 @@ class MqAiTranslate extends Command
                         ["role" => "system", "content" => $message->model->system_prompt ?? ''],
                         ["role" => "user", "content" => $message->prompt],
                     ],
-                    'prompt' => $message->prompt,
                     "temperature" => 0.7,
                     "stream" => false
                 ];
@@ -158,10 +160,7 @@ class MqAiTranslate extends Command
                     Log::debug($queue . ' reasoning=' . $reasoningContent);
                 }
 
-                //获取model token
-                Log::debug($queue . ' ai assistant token', ['user' => $message->model->uid]);
-                $token = AuthController::getUserToken($message->model->uid);
-                Log::debug($queue . ' ai assistant token', ['token' => $token]);
+
 
                 if ($message->task->info->category === 'translate') {
                     //写入句子库
@@ -170,7 +169,7 @@ class MqAiTranslate extends Command
                     $message->sentence->content = $responseContent;
                     $sentData[] = $message->sentence;
                     Log::info($queue . " sentence update {$url}");
-                    $response = Http::timeout(10)->withToken($token)->post($url, [
+                    $response = Http::timeout(10)->withToken($modelToken)->post($url, [
                         'sentences' => $sentData,
                     ]);
                     if ($response->failed()) {
@@ -188,7 +187,7 @@ class MqAiTranslate extends Command
                     //写入pr
                     $url = config('app.url') . '/api/v2/sentpr';
                     Log::info($queue . " sentence update {$url}");
-                    $response = Http::timeout(10)->withToken($token)->post($url, [
+                    $response = Http::timeout(10)->withToken($modelToken)->post($url, [
                         'book' => $message->sentence->book_id,
                         'para' => $message->sentence->paragraph,
                         'begin' => $message->sentence->word_start,
@@ -234,7 +233,7 @@ class MqAiTranslate extends Command
                     'type' => 'discussion',
                     'notification' => false,
                 ];
-                $response = Http::timeout(10)->withToken($token)->post($url, $data);
+                $response = Http::timeout(10)->withToken($modelToken)->post($url, $data);
                 if ($response->failed()) {
                     Log::error($queue . ' discussion create topic error', ['data' => $response->json()]);
                 } else {
@@ -254,7 +253,7 @@ class MqAiTranslate extends Command
                         foreach ($topicChildren as  $content) {
                             $data['content'] = $content;
                             Log::debug($queue . ' discussion child request', ['url' => $url, 'data' => $data]);
-                            $response = Http::timeout(10)->withToken($token)->post($url, $data);
+                            $response = Http::timeout(10)->withToken($modelToken)->post($url, $data);
                             if ($response->failed()) {
                                 Log::error($queue . ' discussion error', ['data' => $response->json()]);
                             } else {
@@ -280,7 +279,7 @@ class MqAiTranslate extends Command
                     'progress' => $progress,
                 ];
                 Log::debug($queue . ' task progress request', ['url' => $url, 'data' => $data]);
-                $response = Http::timeout(10)->withToken($token)->patch($url, $data);
+                $response = Http::timeout(10)->withToken($modelToken)->patch($url, $data);
                 if ($response->failed()) {
                     Log::error($queue . ' task progress error', ['data' => $response->json()]);
                 } else {
@@ -292,7 +291,7 @@ class MqAiTranslate extends Command
                     unset($taskDiscussionData['title']);
                     $taskDiscussionData['content'] = implode('\n', $taskDiscussionContent);
                     Log::debug($queue . ' task discussion child request', ['url' => $discussionUrl, 'data' => $data]);
-                    $response = Http::timeout(10)->withToken($token)->post($discussionUrl, $taskDiscussionData);
+                    $response = Http::timeout(10)->withToken($modelToken)->post($discussionUrl, $taskDiscussionData);
                     if ($response->failed()) {
                         Log::error($queue . ' task discussion error', ['data' => $response->json()]);
                     } else {
@@ -304,23 +303,27 @@ class MqAiTranslate extends Command
 
                 //任务完成 修改任务状态为 done
                 if ($progress === 100) {
-                    $url = config('app.url') . '/api/v2/task-status/' . $message->task->info->id;
-                    $data = [
-                        'status' => 'done',
-                    ];
-                    Log::debug($queue . ' task status request', ['url' => $url, 'data' => $data]);
-                    $response = Http::timeout(10)->withToken($token)->patch($url, $data);
-                    //判断状态码
-                    if ($response->failed()) {
-                        Log::error($queue . ' task status error', ['data' => $response->json()]);
-                    } else {
-                        Log::info($queue . ' task status done');
-                    }
+                    $this->setTaskStatus($message->task->info->id, 'done', $modelToken);
                 }
             }
             $this->info('ai translate task complete');
             return 0;
         });
         return 0;
+    }
+    private function setTaskStatus($taskId, $status, $token)
+    {
+        $url = config('app.url') . '/api/v2/task-status/' . $taskId;
+        $data = [
+            'status' => 'done',
+        ];
+        Log::debug('ai_translate task status request', ['url' => $url, 'data' => $data]);
+        $response = Http::timeout(10)->withToken($token)->patch($url, $data);
+        //判断状态码
+        if ($response->failed()) {
+            Log::error('ai_translate task status error', ['data' => $response->json()]);
+        } else {
+            Log::info('ai_translate task status done');
+        }
     }
 }

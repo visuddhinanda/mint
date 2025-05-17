@@ -25,7 +25,17 @@ export type TTaskStatus =
   | "requested_restart"
   | "closed"
   | "canceled"
-  | "expired";
+  | "expired"
+  | "queue"
+  | "stop";
+export const StatusButtons: TTaskStatus[] = [
+  "pending",
+  "published",
+  "running",
+  "done",
+  "restarted",
+  "requested_restart",
+];
 export type TTaskType = "instance" | "workflow" | "group";
 
 export interface IProject {

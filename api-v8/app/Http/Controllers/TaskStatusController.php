@@ -189,11 +189,11 @@ class TaskStatusController extends Controller
             if ($aiAssistant) {
                 $aiTask = Task::find($taskId);
                 $aiTask->executor_id = $aiAssistant->uid;
-                $aiTask->status = 'running';
+                $aiTask->status = 'queue';
                 $aiTask->save();
-                $this->pushChange('running', $taskId);
+                $this->pushChange('queue', $taskId);
                 $params = AiTaskPrepare::translate($taskId);
-                Log::debug('ai running', ['params' => $params]);
+                Log::debug('ai task', ['message' => count($params)]);
             }
         }
 

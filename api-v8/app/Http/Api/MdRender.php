@@ -3,13 +3,7 @@
 namespace App\Http\Api;
 
 use Illuminate\Support\Str;
-use mustache\mustache;
-use App\Models\DhammaTerm;
-use App\Models\PaliText;
 use App\Models\Channel;
-use App\Http\Controllers\CorpusController;
-use Illuminate\Support\Facades\Cache;
-use App\Tools\RedisClusters;
 use Illuminate\Support\Facades\Log;
 use App\Tools\Markdown;
 

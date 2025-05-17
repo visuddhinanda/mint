@@ -65,18 +65,12 @@ const TaskStatus = ({ task }: IWidget) => {
           defaultMessage: "unknown",
         })}
       </Tag>
-      {task?.status === "running" ? (
-        progress && progress > 0 ? (
-          <div style={{ display: "inline-block", width: 80 }}>
-            <Tooltip title={`${progress}%`}>
-              <Progress percent={progress} size="small" showInfo={false} />
-            </Tooltip>
-          </div>
-        ) : task?.executor?.roles?.includes("ai") ? (
-          <>任务排队中</>
-        ) : (
-          <></>
-        )
+      {task?.status === "running" && task?.executor?.roles?.includes("ai") ? (
+        <div style={{ display: "inline-block", width: 80 }}>
+          <Tooltip title={`${progress}%`}>
+            <Progress percent={progress} size="small" showInfo={false} />
+          </Tooltip>
+        </div>
       ) : (
         <></>
       )}

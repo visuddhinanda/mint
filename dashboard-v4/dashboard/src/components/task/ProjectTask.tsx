@@ -24,7 +24,21 @@ export function update(input: ITaskData[], target: ITaskData[]): void {
     }
   }
 }
-
+// 更新函数
+export function updateNode(tree: ITaskData[], changed: ITaskData): boolean {
+  for (let i = 0; i < tree.length; i++) {
+    if (tree[i].id === changed.id) {
+      tree[i] = { ...tree[i], ...changed };
+      return true;
+    }
+    if (tree[i].children) {
+      const updated = updateNode(tree[i].children!, changed);
+      updated && console.debug("TaskList children", tree[i].children);
+      if (updated) return true;
+    }
+  }
+  return false;
+}
 interface IWidget {
   studioName?: string;
   projectId?: string;
