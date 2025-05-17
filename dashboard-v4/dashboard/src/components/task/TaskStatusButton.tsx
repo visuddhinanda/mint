@@ -109,7 +109,7 @@ const TaskStatusButton = ({
 
   const items: IStatusMenu[] = StatusButtons.map((item) => {
     return {
-      key: "pending",
+      key: item,
       label: intl.formatMessage({
         id: `buttons.task.status.change.to.${item}`,
       }),
