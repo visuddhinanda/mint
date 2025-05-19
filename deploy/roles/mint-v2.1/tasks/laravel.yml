@@ -30,7 +30,7 @@
     volumes:
       - "{{ app_deploy_target }}:{{ app_deploy_target }}:z"
     workdir: "{{ app_deploy_target }}"
-    # auto_remove: true
+    auto_remove: true
 
 - name: Setup background worker
   ansible.builtin.include_tasks: workers.yml
