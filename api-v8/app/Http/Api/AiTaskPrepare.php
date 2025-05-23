@@ -12,6 +12,7 @@ use App\Http\Api\Mq;
 use App\Http\Api\ChannelApi;
 
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\AuthController;
 
 class AiTaskPrepare
 {
@@ -113,6 +114,8 @@ class AiTaskPrepare
 
         # ai model
         $aiModel = AiModel::findOrFail($task->executor_id);
+        $modelToken = AuthController::getUserToken($aiModel->uid);
+        $aiModel['token'] = $modelToken;
         $sumLen = 0;
         $mqData = [];
         foreach ($sentences as $key => $sentence) {
