@@ -6,12 +6,7 @@ use Illuminate\Console\Command;
 use App\Http\Api\Mq;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
 use Illuminate\Http\Client\RequestException;
-
-use App\Http\Controllers\AuthController;
-use App\Models\Sentence;
-use App\Models\ModelLog;
 
 class MqAiTranslate extends Command
 {
@@ -63,7 +58,7 @@ class MqAiTranslate extends Command
             //获取model token
             $first = $messages[0];
             Log::debug($queue . ' ai assistant token', ['user' => $first->model->uid]);
-            $modelToken = AuthController::getUserToken($first->model->uid);
+            $modelToken = $first->model->token;
             Log::debug($queue . ' ai assistant token', ['token' => $modelToken]);
 
             $this->setTaskStatus($first->task->info->id, 'running', $modelToken);
@@ -90,9 +85,7 @@ class MqAiTranslate extends Command
 
             foreach ($messages as $key => $message) {
                 $taskDiscussionContent = [];
-                //写入 model log
-                $modelLog = new ModelLog();
-                $modelLog->uid = Str::uuid();
+
 
                 $param = [
                     "model" => $message->model->model,
@@ -109,9 +102,14 @@ class MqAiTranslate extends Command
                     'url' => $message->model->url,
                     'data' => $param
                 ]);
-                $modelLog->model_id = $message->model->uid;
-                $modelLog->request_at = now();
-                $modelLog->request_data = json_encode($param, JSON_UNESCAPED_UNICODE);
+
+                //写入 model log
+                $modelLogData = [
+                    'model_id' => $message->model->uid,
+                    'request_at' => now(),
+                    'request_data' => json_encode($param, JSON_UNESCAPED_UNICODE),
+                ];
+
                 try {
                     $response = Http::withToken($message->model->key)
                         ->timeout(300)
@@ -120,10 +118,12 @@ class MqAiTranslate extends Command
                     $response->throw(); // 触发异常（如果请求失败）
                     $taskDiscussionContent[] = '- LLM request successful';
                     Log::info($queue . ' LLM request successful');
-                    $modelLog->request_headers = json_encode($response->handlerStats(), JSON_UNESCAPED_UNICODE);
-                    $modelLog->response_headers = json_encode($response->headers(), JSON_UNESCAPED_UNICODE);
-                    $modelLog->status = $response->status();
-                    $modelLog->response_data = json_encode($response->json(), JSON_UNESCAPED_UNICODE);
+
+                    $modelLogData['request_headers'] = json_encode($response->handlerStats(), JSON_UNESCAPED_UNICODE);
+                    $modelLogData['response_headers'] = json_encode($response->headers(), JSON_UNESCAPED_UNICODE);
+                    $modelLogData['status'] = $response->status();
+                    $modelLogData['response_data'] = json_encode($response->json(), JSON_UNESCAPED_UNICODE);
+                    self::saveModelLog($modelToken, $modelLogData);
                     /*
                 if ($response->failed()) {
                     $modelLog->success = false;
@@ -134,18 +134,17 @@ class MqAiTranslate extends Command
                 } catch (RequestException $e) {
                     Log::error($queue . ' LLM request exception: ' . $e->getMessage());
                     $failResponse = $e->response;
-                    $modelLog->request_headers = json_encode($failResponse->handlerStats(), JSON_UNESCAPED_UNICODE);
-                    $modelLog->response_headers = json_encode($failResponse->headers(), JSON_UNESCAPED_UNICODE);
-                    $modelLog->status = $failResponse->status();
-                    $modelLog->response_data = $response->body();
-                    $modelLog->success = false;
-                    $modelLog->save();
+
+                    $modelLogData['request_headers'] = json_encode($failResponse->handlerStats(), JSON_UNESCAPED_UNICODE);
+                    $modelLogData['response_headers'] = json_encode($failResponse->headers(), JSON_UNESCAPED_UNICODE);
+                    $modelLogData['status'] = $failResponse->status();
+                    $modelLogData['response_data'] = $response->body();
+                    $modelLogData['success'] = false;
+                    self::saveModelLog($modelToken, $modelLogData);
                     continue;
                 }
-
-
-                $modelLog->save();
                 Log::info($queue . ' model log saved');
+
                 $aiData = $response->json();
                 Log::debug($queue . ' LLM http response', ['data' => $response->json()]);
                 $responseContent = $aiData['choices'][0]['message']['content'];
@@ -217,12 +216,21 @@ class MqAiTranslate extends Command
 
                 //写入discussion
                 #获取句子id
-                $sUid = Sentence::where('book_id', $message->sentence->book_id)
-                    ->where('paragraph', $message->sentence->paragraph)
-                    ->where('word_start', $message->sentence->word_start)
-                    ->where('word_end', $message->sentence->word_end)
-                    ->where('channel_uid', $message->sentence->channel_uid)
-                    ->value('uid');
+                $url = config('app.url') . '/api/v2/sentence-info/aa';
+                Log::info('ai translate', ['url' => $url]);
+                $response = Http::timeout(10)->withToken($modelToken)->get($url, [
+                    'book' => $message->sentence->book_id,
+                    'par' => $message->sentence->paragraph,
+                    'start' => $message->sentence->word_start,
+                    'end' => $message->sentence->word_end,
+                    'channel' => $message->sentence->channel_uid
+                ]);
+                if ($response->json()['ok']) {
+                    $sUid = $response->json()['data']['id'];
+                } else {
+                    Log::error($queue . ' sentence id error', ['data' => $response->json()]);
+                    return 1;
+                }
                 $url = config('app.url') . '/api/v2/discussion';
                 $data = [
                     'res_id' => $sUid,
@@ -325,5 +333,17 @@ class MqAiTranslate extends Command
         } else {
             Log::info('ai_translate task status done');
         }
+    }
+
+    private function saveModelLog($token, $data)
+    {
+        $url = config('app.url') . '/api/v2/model-log';
+
+        $response = Http::timeout(10)->withToken($token)->post($url, $data);
+        if ($response->failed()) {
+            Log::error('ai-translate model log create failed', ['data' => $response->json()]);
+            return false;
+        }
+        return true;
     }
 }

@@ -43,7 +43,19 @@ class AiAssistantApi
                 $data['avatar'] = Storage::temporaryUrl($img, now()->addDays(6));
             }
         } else {
-            $data['avatar'] = config('app.url') . '/assets/images/avatar/ai-assistant.png';
+            $logo = null;
+            foreach (config('mint.ai.logo') as $key => $value) {
+                if (strpos($user->model, $key) !== false) {
+                    $logo = $value;
+                    break;
+                }
+            }
+            $base = config('app.url') . '/assets/images/avatar/';
+            if ($logo === null) {
+                $data['avatar'] = $base . 'ai-assistant.png';
+            } else {
+                $data['avatar'] = $base . $logo;
+            }
         }
         return $data;
     }

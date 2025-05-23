@@ -36,7 +36,9 @@ const UserWidget = ({
         <Avatar
           size={"small"}
           src={avatar}
-          style={{ backgroundColor: getAvatarColor(nickName) }}
+          style={
+            avatar ? undefined : { backgroundColor: getAvatarColor(nickName) }
+          }
         >
           {nickName?.slice(0, 2)}
         </Avatar>
@@ -56,7 +58,11 @@ const UserWidget = ({
             <Avatar
               size="large"
               src={avatar}
-              style={{ backgroundColor: getAvatarColor(nickName) }}
+              style={
+                avatar
+                  ? undefined
+                  : { backgroundColor: getAvatarColor(nickName) }
+              }
             >
               {nickName?.slice(0, 2)}
             </Avatar>

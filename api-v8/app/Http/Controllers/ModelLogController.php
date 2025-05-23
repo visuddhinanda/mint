@@ -6,6 +6,7 @@ use App\Models\ModelLog;
 use Illuminate\Http\Request;
 use App\Http\Api\AuthApi;
 use App\Http\Resources\ModelLogResource;
+use Illuminate\Support\Str;
 
 class ModelLogController extends Controller
 {
@@ -56,6 +57,18 @@ class ModelLogController extends Controller
     public function store(Request $request)
     {
         //
+        $modelLog = new ModelLog();
+        $modelLog->uid = Str::uuid();
+        $modelLog->model_id = $request->get('model_id');
+        $modelLog->request_at = $request->get('request_at');
+        $modelLog->request_headers = $request->get('request_headers');
+        $modelLog->request_data = $request->get('request_data');
+        $modelLog->response_headers = $request->get('response_headers');
+        $modelLog->response_data = $request->get('response_data');
+        $modelLog->status = $request->get('status');
+        $modelLog->success = $request->get('success', true);
+        $modelLog->save();
+        return $this->ok(new ModelLogResource($modelLog));
     }
 
     /**

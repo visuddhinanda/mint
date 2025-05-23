@@ -102,6 +102,14 @@ return [
     'ai' => [
         'assistant' => 'test161',
         'default' => 'kimi',
+        'logo' => [
+            'gemini' => 'gemini-color.png',
+            'grok' => 'grok.png',
+            'Claude' => 'claude-color.png',
+            'api.openai.com' => 'openai.png',
+            'qwen' => 'qwen-color.png',
+            'deepseek' => 'deepseek-color.png'
+        ]
     ],
     'mq' => [
         'loop_limit' => [
