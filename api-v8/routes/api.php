@@ -289,4 +289,5 @@ Route::group(['prefix' => 'v2'], function () {
     Route::apiResource('model-log', ModelLogController::class);
     Route::apiResource('sentence-attachment', SentenceAttachmentController::class);
     Route::apiResource('email-certification', EmailCertificationController::class);
+    Route::apiResource('sentence-info', SentenceInfoController::class);
 });
