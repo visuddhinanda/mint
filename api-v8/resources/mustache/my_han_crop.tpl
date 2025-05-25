@@ -68,6 +68,13 @@
                 background: #555;
             }
         </style>
+        <script>
+            function copy(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert(text + " 已经拷贝到剪贴板");
+                });
+            }
+        </script>
     </head>
     <body>
         <h3>Page {{ page }}</h3>
@@ -84,7 +91,10 @@
                     {{#words}}
                     <tr>
                         <td class="word">{{ index }}</td>
-                        <td class="word">{{ word }}</td>
+                        <td class="word">
+                            {{ word }}
+                            <button onclick="copy('{{ word }}')">复制</button>
+                        </td>
                         <td class="word-img">
                             <img src="img/{{ word }}.png" />
                         </td>
