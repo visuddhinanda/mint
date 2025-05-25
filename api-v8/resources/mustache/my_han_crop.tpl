@@ -4,20 +4,31 @@
         <style type="text/css">
             .img {
                 max-height: 27.5%;
-                max-width: 85%;
-                overflow: auto;
-                border-width: 1px;
+                /*max-width: 85%;*/
+                overflow-x: auto;
+                overflow-y: auto;
+                border-width: 1px 0 1px 0;
                 border-style: dashed;
                 border-color: transparent;
                 resize: vertical;
-                overflow: auto;
                 position: relative;
             }
 
+            .img:hover {
+                border-color: black;
+            }
             .dict {
                 width: 45vw;
             }
 
+            .crop_a {
+                clip-path: inset(0 0 0 15%);
+                margin-left: -15%;
+            }
+            .crop_b {
+                clip-path: inset(0 15% 0 0);
+                margin-right: -15%;
+            }
             .word {
                 width: 10vw;
             }
@@ -64,7 +75,7 @@
             <div>
                 {{#dict}}
                 <div class="img">
-                    <img class="dict" src="{{ img }}" />
+                    <img class="dict crop_{{ index }}" src="{{ img }}" />
                 </div>
                 {{/dict}}
             </div>
@@ -72,8 +83,11 @@
                 <table>
                     {{#words}}
                     <tr>
-                        <td class="word">{{.}}</td>
-                        <td class="word-img"><img src="img/{{.}}.png" /></td>
+                        <td class="word">{{ index }}</td>
+                        <td class="word">{{ word }}</td>
+                        <td class="word-img">
+                            <img src="img/{{ word }}.png" />
+                        </td>
                     </tr>
                     {{/words}}
                 </table>
