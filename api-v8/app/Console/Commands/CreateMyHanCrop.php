@@ -103,6 +103,7 @@ class CreateMyHanCrop extends Command
             // 创建目录]
             $dir = '/tmp/export/myhan_crop/' . $page;
             Storage::disk('local')->makeDirectory($dir);
+            Storage::disk('local')->makeDirectory($dir . '/img');
             Storage::disk('local')->put($dir . "/index.html", $content);
             $this->info("page={$page} word=" . count($words));
         } else {
