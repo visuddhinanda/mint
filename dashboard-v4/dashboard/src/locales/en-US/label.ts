@@ -93,6 +93,7 @@ const items = {
   "labels.list": "List",
   "labels.shared": "Shared",
   "labels.community": "Community",
+  "labels.task.prev.executors": "Prev Executors",
 };
 
 export default items;
