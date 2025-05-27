@@ -101,6 +101,7 @@ const items = {
   "labels.list": "列表",
   "labels.shared": "共享",
   "labels.community": "社区",
+  "labels.task.prev.executors": "前置执行者",
 };
 
 export default items;

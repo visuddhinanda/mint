@@ -42,6 +42,7 @@ class TaskApi
                         'id' => $id,
                         'title' => $task->title,
                         'description' => $task->description,
+                        "executor" => UserApi::getByUuid($task->executor_id)
                     ];
                     continue;
                 };
@@ -84,7 +85,7 @@ class TaskApi
     {
         $key = TaskApi::taskRelationRedisKey($taskId, $relation);
         //Log::debug('task redis key=' . $key . ' has=' . RedisClusters::has($key));
-        $data = RedisClusters::remember($key, 3 * 24 * 3600, function () use ($taskId, $relation) {
+        $data = RedisClusters::remember($key,  24 * 3600, function () use ($taskId, $relation) {
             Log::debug('getRelationTasks task=' . $taskId . ' relation=' . $relation);
             if ($relation === 'pre') {
                 $where = 'next_task_id';

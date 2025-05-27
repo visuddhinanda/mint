@@ -26,6 +26,7 @@ import Executors from "./Executors";
 import Category from "./Category";
 import TaskListAdd from "./TaskListAdd";
 import { updateNode } from "./ProjectTask";
+import User from "../auth/User";
 
 const { Text } = Typography;
 
@@ -254,6 +255,30 @@ const TaskList = ({
       readonly: true,
       render(dom, entity, index, action, schema) {
         return <Assignees task={entity} onChange={changeData} />;
+      },
+    },
+    {
+      title: intl.formatMessage({
+        id: "labels.task.prev.executors",
+      }),
+      key: "prev_executor",
+      dataIndex: "executor",
+      search: false,
+      readonly: true,
+      render(dom, entity, index, action, schema) {
+        return (
+          <div>
+            {entity.pre_task?.map((item, id) => {
+              return (
+                <User
+                  {...item.executor}
+                  key={id}
+                  showName={entity.pre_task?.length === 1}
+                />
+              );
+            })}
+          </div>
+        );
       },
     },
     {

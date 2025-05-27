@@ -122,7 +122,7 @@ class Mq
             ]);
             if ($callback !== null) {
                 try {
-                    $result = $callback(json_decode($message->getBody()));
+                    $result = $callback(json_decode($message->getBody()), $message->get('message_id'));
                     Log::debug(
                         'mq done',
                         [

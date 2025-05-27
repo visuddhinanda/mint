@@ -40,6 +40,10 @@ const FilterItem = ({ item, sn, onRemove }: IProps) => {
             value: "participants_id",
             label: intl.formatMessage({ id: "labels.participants" }),
           },
+          {
+            value: "prev_executors_id",
+            label: intl.formatMessage({ id: "labels.task.prev.executors" }),
+          },
         ]}
       />
       <ProFormSelect

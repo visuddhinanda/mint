@@ -68,7 +68,7 @@ const TaskStatus = ({ task }: IWidget) => {
       {task?.status === "running" && task?.executor?.roles?.includes("ai") ? (
         <div style={{ display: "inline-block", width: 80 }}>
           <Tooltip title={`${progress}%`}>
-            <Progress percent={progress} size="small" showInfo={false} />
+            <Progress percent={progress ?? 0} size="small" showInfo={false} />
           </Tooltip>
         </div>
       ) : (

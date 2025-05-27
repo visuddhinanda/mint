@@ -7,6 +7,7 @@ use App\Http\Api\Mq;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\RequestException;
+use App\Tools\RedisClusters;
 
 class MqAiTranslate extends Command
 {
@@ -48,15 +49,25 @@ class MqAiTranslate extends Command
         $queue = 'ai_translate';
         $this->info(" [*] Waiting for {$queue}. To exit press CTRL+C");
         Log::debug("mq worker {$queue} start.");
-        Mq::worker($exchange, $queue, function ($messages) use ($queue) {
+        Mq::worker($exchange, $queue, function ($messages, $messageId) use ($queue) {
             Log::debug('ai translate start', ['message' => count($messages)]);
             $this->info('ai translate task start task=' . count($messages));
             if (!is_array($messages) || count($messages) === 0) {
                 Log::error('message is not array');
                 return 1;
             }
+
             //获取model token
             $first = $messages[0];
+            $taskId = $first->task->info->id;
+            RedisClusters::put("/task/{$taskId}/message_id", $messageId);
+            $pointerKey = "/message/{$messageId}/pointer";
+            $pointer = 0;
+            if (RedisClusters::has($pointerKey)) {
+                //回到上次中断的点
+                $pointer = RedisClusters::get($pointerKey);
+            }
+
             Log::debug($queue . ' ai assistant token', ['user' => $first->model->uid]);
             $modelToken = $first->model->token;
             Log::debug($queue . ' ai assistant token', ['token' => $modelToken]);
@@ -82,11 +93,10 @@ class MqAiTranslate extends Command
                 }
             }
 
-
-            foreach ($messages as $key => $message) {
+            for ($i = $pointer; $i < count($messages); $i++) {
+                RedisClusters::put($pointerKey, $i);
+                $message = $messages[$i];
                 $taskDiscussionContent = [];
-
-
                 $param = [
                     "model" => $message->model->model,
                     "messages" => [
@@ -314,6 +324,7 @@ class MqAiTranslate extends Command
                     $this->setTaskStatus($message->task->info->id, 'done', $modelToken);
                 }
             }
+            RedisClusters::forget($pointerKey);
             $this->info('ai translate task complete');
             return 0;
         });
