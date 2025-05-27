@@ -19,7 +19,7 @@
     volumes:
       - "{{ app_deploy_target }}:{{ app_deploy_target }}:z"
     workdir: "{{ app_deploy_target }}"
-    # auto_remove: true
+    auto_remove: true
     state: present
     generate_systemd:
       path: "{{ ansible_env.HOME }}/.config/systemd/user"
@@ -27,4 +27,4 @@
       new: true
       names: true
       restart_policy: always
-      stop_timeout: 120
+      stop_timeout: 2
