@@ -115,5 +115,23 @@ return [
         'loop_limit' => [
             'ai_translate' => env('MQ_LOOP_LIMIT_AI_TRANSLATE', 0)
         ]
-    ]
+    ],
+    'rabbitmq' => [
+        'queues' => [
+            'ai_translate' => [
+                'retry_times' => env('RABBITMQ_ORDERS_RETRY_TIMES', 3),
+                'max_loop_count' => env('RABBITMQ_ORDERS_MAX_LOOP', 10),
+                'timeout' => env('RABBITMQ_ORDERS_TIMEOUT', 300),
+                'dead_letter_queue' => 'ai_translate_dlq',
+            ],
+        ],
+
+        // 死信队列配置
+        'dead_letter_queues' => [
+            'ai_translate_dlq' => [
+                'ttl' => 86400000, // 24小时 TTL (毫秒)
+                'max_length' => 10000,
+            ],
+        ],
+    ],
 ];
