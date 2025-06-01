@@ -1,6 +1,7 @@
 {{-- resources/views/components/book-list.blade.php --}}
 @once
 @push('styles')
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tabler/1.0.0-beta19/css/tabler.min.css" rel="stylesheet">
 <style>
     .book-list-container {
         max-width: 1024px;
