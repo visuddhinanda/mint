@@ -33,30 +33,7 @@
                 </div>
             </div>
             <div class="card-body">
-                <div class="row row-cards">
-                    @foreach($data['books'] as $book)
-                    <div class="col-sm-6 col-lg-4">
-                        <div class="card book-card h-100">
-                            <a href="{{ route('book.show', $book['id']) }}">
-                                <img src="{{ $book['cover'] }}" class="card-img-top book-cover" alt="{{ $book['title'] }}">
-                            </a>
-                            <div class="card-body d-flex flex-column">
-                                <h4 class="card-title">
-                                    <a href="{{ route('book.show', $book['id']) }}" class="text-decoration-none">
-                                        {{ $book['title'] }}
-                                    </a>
-                                </h4>
-                                <div class="text-muted">{{ $book['author'] }}</div>
-                                <div class="mt-auto pt-2">
-                                    <a href="{{ route('book.show', $book['id']) }}" class="btn btn-sm btn-outline-primary">
-                                        查看详情
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
+                @include('components.book-list', ['books' => $data['books']])
             </div>
         </div>
         @endforeach
