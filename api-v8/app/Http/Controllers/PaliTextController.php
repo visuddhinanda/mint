@@ -8,9 +8,7 @@ use App\Models\BookTitle;
 use App\Models\Tag;
 use App\Models\TagMap;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use App\Tools\RedisClusters;
-use Illuminate\Support\Facades\Log;
 
 class PaliTextController extends Controller
 {
@@ -28,22 +26,22 @@ class PaliTextController extends Controller
                 $tm = (new TagMap)->getTable();
                 $tg = (new Tag)->getTable();
                 $pt = (new PaliText)->getTable();
-                if($request->get('tags') && $request->get('tags')!==''){
-                    $tags = explode(',',$request->get('tags'));
+                if ($request->get('tags') && $request->get('tags') !== '') {
+                    $tags = explode(',', $request->get('tags'));
                     foreach ($tags as $tag) {
                         # code...
-                        if(!empty($tag)){
+                        if (!empty($tag)) {
                             $tagNames[] = $tag;
                         }
                     }
                 }
 
-                if(isset($tagNames)){
-                    $where1 = " where co = ".count($tagNames);
-                    $a = implode(",",array_fill(0, count($tagNames), '?')) ;
+                if (isset($tagNames)) {
+                    $where1 = " where co = " . count($tagNames);
+                    $a = implode(",", array_fill(0, count($tagNames), '?'));
                     $in1 = "and t.name in ({$a})";
                     $param  = $tagNames;
-                }else{
+                } else {
                     $where1 = " ";
                     $in1 = " ";
                 }
@@ -68,36 +66,35 @@ class PaliTextController extends Controller
                         left join $tg on $tg.id = tid.tag_id
                         order by count desc
                     ";
-                    if(isset($param)){
-                        $chapters = DB::select($query,$param);
-                    }else{
-                        $chapters = DB::select($query);
-                    }
-                    $all_count = count($chapters);
+                if (isset($param)) {
+                    $chapters = DB::select($query, $param);
+                } else {
+                    $chapters = DB::select($query);
+                }
+                $all_count = count($chapters);
                 break;
 
             case 'chapter':
-                $tm = (new TagMap)->getTable();
-                $tg = (new Tag)->getTable();
-                $pt = (new PaliText)->getTable();
-                if($request->get('tags') && $request->get('tags')!==''){
-                    $tags = explode(',',$request->get('tags'));
+                if ($request->get('tags') && $request->get('tags') !== '') {
+                    $tags = explode(',', $request->get('tags'));
                     foreach ($tags as $tag) {
                         # code...
-                        if(!empty($tag)){
+                        if (!empty($tag)) {
                             $tagNames[] = $tag;
                         }
                     }
                 }
 
-
-                if(isset($tagNames)){
-                    $where1 = " where co = ".count($tagNames);
-                    $a = implode(",",array_fill(0, count($tagNames), '?')) ;
+                $tm = (new TagMap)->getTable();
+                $tg = (new Tag)->getTable();
+                $pt = (new PaliText)->getTable();
+                if (isset($tagNames)) {
+                    $where1 = " where co = " . count($tagNames);
+                    $a = implode(",", array_fill(0, count($tagNames), '?'));
                     $in1 = "and t.name in ({$a})";
                     $param = $tagNames;
                     $where2 = "where level < 3";
-                }else{
+                } else {
                     $where1 = " ";
                     $in1 = " ";
                     $where2 = "where level = 1";
@@ -118,28 +115,28 @@ class PaliTextController extends Controller
                         $where2
                         order by book,paragraph";
 
-                    if(isset($param)){
-                        $chapters = DB::select($query,$param);
-                    }else{
-                        $chapters = DB::select($query);
-                    }
+                if (isset($param)) {
+                    $chapters = DB::select($query, $param);
+                } else {
+                    $chapters = DB::select($query);
+                }
 
                 $all_count = count($chapters);
                 break;
             case 'chapter_children':
-                $table = PaliText::where('book',$request->get('book'))
-                                ->where('parent',$request->get('para'))
-                                ->where('level','<',8);
+                $table = PaliText::where('book', $request->get('book'))
+                    ->where('parent', $request->get('para'))
+                    ->where('level', '<', 8);
                 $all_count = $table->count();
                 $chapters = $table->orderBy('paragraph')->get();
                 break;
             case 'paragraph':
-                $result = PaliText::where('book',$request->get('book'))
-                                  ->where('paragraph',$request->get('para'))
-                                  ->first();
-                if($result){
+                $result = PaliText::where('book', $request->get('book'))
+                    ->where('paragraph', $request->get('para'))
+                    ->first();
+                if ($result) {
                     return $this->ok($result);
-                }else{
+                } else {
                     return $this->error("no data");
                 }
                 break;
@@ -156,75 +153,75 @@ class PaliTextController extends Controller
                  * 4. 获取全部书的目录
                  */
 
-                if($request->has('series')){
+                if ($request->has('series')) {
                     $book_title = $request->get('series');
                     //获取丛书书目列表
-                    $books = BookTitle::where('title',$request->get('series'))->get();
-                }else{
+                    $books = BookTitle::where('title', $request->get('series'))->get();
+                } else {
                     //查询这个目录的顶级目录
-                    $path = PaliText::where('book',$request->get('book'))
-                                    ->where('paragraph',$request->get('para'))
-                                    ->select('path')->first();
-                    if(!$path){
+                    $path = PaliText::where('book', $request->get('book'))
+                        ->where('paragraph', $request->get('para'))
+                        ->select('path')->first();
+                    if (!$path) {
                         return $this->error("no data");
                     }
                     $json = \json_decode($path->path);
                     $root = null;
                     foreach ($json as $key => $value) {
                         # code...
-                        if( $value->level == 1 ){
+                        if ($value->level == 1) {
                             $root = $value;
                             break;
                         }
                     }
-                    if($root===null){
+                    if ($root === null) {
                         return $this->error("no data");
                     }
                     //查询书起始段落
-                    $rootPara = PaliText::where('book',$root->book)
-                                    ->where('paragraph',$root->paragraph)
-                                    ->first();
+                    $rootPara = PaliText::where('book', $root->book)
+                        ->where('paragraph', $root->paragraph)
+                        ->first();
                     //获取丛书书名
-                    $book_title = BookTitle::where('book',$rootPara->book)
-                                            ->where('paragraph',$rootPara->paragraph)
-                                            ->value('title');
+                    $book_title = BookTitle::where('book', $rootPara->book)
+                        ->where('paragraph', $rootPara->paragraph)
+                        ->value('title');
                     //获取丛书书目列表
-                    $books = BookTitle::where('title',$book_title)->get();
+                    $books = BookTitle::where('title', $book_title)->get();
                 }
 
 
                 $chapters = [];
-                $chapters[] = ['book'=>0,'paragraph'=>0,'toc'=>$book_title,'level'=>1];
+                $chapters[] = ['book' => 0, 'paragraph' => 0, 'toc' => $book_title, 'level' => 1];
                 foreach ($books as  $book) {
                     # code...
-                    $rootPara = PaliText::where('book',$book->book)
-                                ->where('paragraph',$book->paragraph)
-                                ->first();
-                    $table = PaliText::where('book',$rootPara->book)
-                                    ->whereBetween('paragraph',[$rootPara->paragraph,($rootPara->paragraph+$rootPara->chapter_len-1)])
-                                    ->where('level','<',8);
+                    $rootPara = PaliText::where('book', $book->book)
+                        ->where('paragraph', $book->paragraph)
+                        ->first();
+                    $table = PaliText::where('book', $rootPara->book)
+                        ->whereBetween('paragraph', [$rootPara->paragraph, ($rootPara->paragraph + $rootPara->chapter_len - 1)])
+                        ->where('level', '<', 8);
                     $all_count = $table->count();
-                    $curr_chapters = $table->select(['book','paragraph','toc','level'])->orderBy('paragraph')->get();
+                    $curr_chapters = $table->select(['book', 'paragraph', 'toc', 'level'])->orderBy('paragraph')->get();
                     foreach ($curr_chapters as  $chapter) {
                         # code...
-                        $chapters[] = ['book'=>$chapter->book,'paragraph'=>$chapter->paragraph,'toc'=>$chapter->toc,'level'=>($chapter->level+1)];
+                        $chapters[] = ['book' => $chapter->book, 'paragraph' => $chapter->paragraph, 'toc' => $chapter->toc, 'level' => ($chapter->level + 1)];
                     }
                 }
 
                 break;
-            }
-        if($chapters){
-            if($request->get('view') !== 'book-toc'){
+        }
+        if ($chapters) {
+            if ($request->get('view') !== 'book-toc') {
                 foreach ($chapters as $key => $value) {
-                    if(is_object($value)){
+                    if (is_object($value)) {
                         //TODO $value->book 可能不存在
-                        $progress_key="/chapter_dynamic/{$value->book}/{$value->paragraph}/global";
+                        $progress_key = "/chapter_dynamic/{$value->book}/{$value->paragraph}/global";
                         $chapters[$key]->progress_line = RedisClusters::get($progress_key);
                     }
                 }
             }
-            return $this->ok(["rows"=>$chapters,"count"=>$all_count]);
-        }else{
+            return $this->ok(["rows" => $chapters, "count" => $all_count]);
+        } else {
             return $this->error("no data");
         }
     }
