@@ -50,6 +50,15 @@
         font-size: 0.875rem;
     }
 
+    .language-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        background-color: #e5e7eb;
+        color: #374151;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
 
     /* 桌面端布局 */
     @media (min-width: 576px) {
