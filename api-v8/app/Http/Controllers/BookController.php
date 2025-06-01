@@ -33,7 +33,7 @@ class BookController extends Controller
             abort(404);
         }
 
-        return view('book.read', compact('book'));
+        return view('library.book.read', compact('book'));
     }
 
     private function loadBooks()
