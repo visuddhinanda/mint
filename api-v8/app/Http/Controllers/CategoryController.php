@@ -4,6 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use App\Models\PaliText;
+use App\Models\ProgressChapter;
+use App\Models\Tag;
+use App\Models\TagMap;
 
 class CategoryController extends Controller
 {
@@ -17,9 +22,7 @@ class CategoryController extends Controller
         $categoryData = [];
         foreach ($categories as $category) {
             if ($category['level'] == 1) {
-                $categoryBooks = array_filter($books, function ($book) use ($category) {
-                    return $book['category_id'] == $category['id'];
-                });
+                $categoryBooks = $this->getBooks($categories, $category['id']);
                 $categoryData[] = [
                     'category' => $category,
                     'books' => array_slice(array_values($categoryBooks), 0, 3)
@@ -46,19 +49,79 @@ class CategoryController extends Controller
         });
 
         // 获取该分类下的书籍
-        $categoryBooks = array_filter($books, function ($book) use ($id) {
-            return $book['category_id'] == $id;
-        });
-
+        $categoryBooks = $this->getBooks($categories, $id);
         // 获取面包屑
         $breadcrumbs = $this->getBreadcrumbs($currentCategory, $categories);
 
         return view('library.category', compact('currentCategory', 'subCategories', 'categoryBooks', 'breadcrumbs'));
     }
 
+    private function getBooks($categories, $id)
+    {
+        $currentCategory = collect($categories)->firstWhere('id', $id);
+        if (!$currentCategory) {
+            abort(404);
+        }
+
+        // 标签查章节
+        $tagNames = $currentCategory['tag'];
+        $tm = (new TagMap)->getTable();
+        $tg = (new Tag)->getTable();
+        $pt = (new PaliText)->getTable();
+        $where1 = " where co = " . count($tagNames);
+        $a = implode(",", array_fill(0, count($tagNames), '?'));
+        $in1 = "and t.name in ({$a})";
+        $param = $tagNames;
+        $where2 = "where level = 1";
+        $query = "
+                        select uid as id,book,paragraph,level,toc as title,chapter_strlen,parent,path from (
+                            select anchor_id as cid from (
+                                select tm.anchor_id , count(*) as co
+                                    from $tm as  tm
+                                    left join $tg as t on tm.tag_id = t.id
+                                    where tm.table_name  = 'pali_texts'
+                                    $in1
+                                    group by tm.anchor_id
+                            ) T
+                                $where1
+                        ) CID
+                        left join $pt as pt on CID.cid = pt.uid
+                        $where2
+                        order by book,paragraph";
+
+        $chapters = DB::select($query, $param);
+        $chaptersParam = [];
+        foreach ($chapters as $key => $chapter) {
+            $chaptersParam[] = [$chapter->book, $chapter->paragraph];
+        }
+        // 获取该分类下的章节
+        $books = ProgressChapter::whereIns(['book', 'para'], $chaptersParam)
+            ->where('progress', '>', 0.2)
+            ->get();
+        // 获取该分类下的书籍
+        $categoryBooks = [];
+        $books->each(function ($book) use (&$categoryBooks, $id) {
+            $categoryBooks[] = [
+                "id" => $book->id,
+                "title" => $book->title . "(" . $book->book . "-" . $book->para . ")",
+                "author" => "佛陀制定",
+                "category_id" => $id,
+                "cover" => "/assets/images/cover/1/214.jpg",
+                "description" => "比库戒律的详细说明",
+                "language" => "巴利语",
+                "contents" => [
+                    [
+                        "title" => "比库戒本",
+                        "content" => "诸恶莫作，众善奉行，自净其意，是诸佛教...",
+                        "summary" => "基本戒律",
+                    ]
+                ],
+            ];
+        });
+        return $categoryBooks;
+    }
     private function loadCategories()
     {
-        //$json = Storage::disk('public')->get('data/categories.json');
         $json = file_get_contents(public_path("app/palicanon/category/default.json"));
         $tree = json_decode($json, true);
         $flat = self::flattenWithIds($tree);
