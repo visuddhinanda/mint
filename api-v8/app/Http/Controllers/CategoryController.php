@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
+    protected static int $nextId = 1;
     public function index()
     {
         $categories = $this->loadCategories();
@@ -57,14 +58,44 @@ class CategoryController extends Controller
 
     private function loadCategories()
     {
-        $json = Storage::disk('public')->get('data/categories.json');
-        return json_decode($json, true);
+        //$json = Storage::disk('public')->get('data/categories.json');
+        $json = file_get_contents(public_path("app/palicanon/category/default.json"));
+        $tree = json_decode($json, true);
+        $flat = self::flattenWithIds($tree);
+        return $flat;
     }
 
     private function loadBooks()
     {
         $json = Storage::disk('public')->get('data/books.json');
         return json_decode($json, true);
+    }
+    public static function flattenWithIds(array $tree, int $parentId = 0, int $level = 1): array
+    {
+
+        $flat = [];
+
+        foreach ($tree as $node) {
+            $currentId = self::$nextId++;
+
+            $item = [
+                'id' => $currentId,
+                'parent_id' => $parentId,
+                'name' => $node['name'] ?? null,
+                'tag' => $node['tag'] ?? [],
+                "description" => "佛教戒律经典",
+                'level' => $level,
+            ];
+
+            $flat[] = $item;
+
+            if (isset($node['children']) && is_array($node['children'])) {
+                $childrenLevel = $level + 1;
+                $flat = array_merge($flat, self::flattenWithIds($node['children'], $currentId, $childrenLevel));
+            }
+        }
+
+        return $flat;
     }
 
     private function getBreadcrumbs($category, $categories)
