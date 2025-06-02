@@ -95,20 +95,25 @@ class CategoryController extends Controller
             $chaptersParam[] = [$chapter->book, $chapter->paragraph];
         }
         // 获取该分类下的章节
-        $books = ProgressChapter::whereIns(['book', 'para'], $chaptersParam)
+        $books = ProgressChapter::with('channel.owner')->whereIns(['book', 'para'], $chaptersParam)
+            ->whereHas('channel', function ($query) {
+                $query->where('status', 30);
+            })
             ->where('progress', '>', 0.2)
             ->get();
         // 获取该分类下的书籍
         $categoryBooks = [];
         $books->each(function ($book) use (&$categoryBooks, $id) {
             $categoryBooks[] = [
-                "id" => $book->id,
+                "id" => $book->uid,
                 "title" => $book->title . "(" . $book->book . "-" . $book->para . ")",
-                "author" => "佛陀制定",
+                "author" => $book->channel->name,
+                "publisher" => $book->channel->owner->nickname,
+                "type" => __('label.' . $book->channel->type),
                 "category_id" => $id,
                 "cover" => "/assets/images/cover/1/214.jpg",
-                "description" => "比库戒律的详细说明",
-                "language" => "巴利语",
+                "description" => $book->summary ?? "比库戒律的详细说明",
+                "language" => __('language.' . $book->channel->lang),
                 "contents" => [
                     [
                         "title" => "比库戒本",
