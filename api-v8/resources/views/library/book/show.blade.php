@@ -4,6 +4,17 @@
 
 @section('content')
 <div class="page-body">
+    <style>
+        .line2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            /* 限制显示两行 */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            /* 超出部分显示省略号 */
+        }
+    </style>
     <div class="container-xl">
         <div class="page-header d-print-none">
             <div class="row align-items-center">
@@ -71,11 +82,21 @@
                             <a href="{{ route('book.read', $book['id']) }}?chapter={{ $loop->iteration }}"
                                 class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1">{{ $chapter['title'] }}</h6>
-                                    <small>第{{ $loop->iteration }}章</small>
+                                    <h4 class="mb-1">{{ $chapter['title'] }}</h4>
+                                    <div class="d-flex" style="width:150px;">
+                                        @if($chapter['progress']>0)
+                                        <div class="progress">
+                                            <div class="progress-bar" style="width: {{ $chapter['progress'] }}%"></div>
+                                        </div>
+                                        @else
+                                        <small>无数据</small>
+                                        @endif
+
+                                    </div>
+
                                 </div>
                                 @if(isset($chapter['summary']))
-                                <p class="mb-1 text-muted">{{ $chapter['summary'] }}</p>
+                                <p class="mb-1 text-muted line2">{{ $chapter['summary'] }}</p>
                                 @endif
                             </a>
                             @endforeach
