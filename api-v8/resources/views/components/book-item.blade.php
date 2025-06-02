@@ -13,8 +13,10 @@
             <div class="book-info">
                 <div class="book-title">{{ $book['title'] ?? '未知书籍' }}</div>
                 <div class="book-author">{{ $book['author'] ?? '未知作者' }}</div>
+                <div class="book-author">{{ $book['publisher'] ?? '未知出版者' }}</div>
                 <div class="book-language">
                     <span class="language-badge">{{ $book['language'] ?? '未知语言' }}</span>
+                    <span class="language-badge">{{ $book['type'] ?? '未知类型' }}</span>
                 </div>
             </div>
         </div>
