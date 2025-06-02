@@ -43,7 +43,7 @@
         </div>
         @endif
 
-        @if(count($categoryBooks) > 0)
+
 
         <div class="card">
             <div class="card-header">
@@ -53,7 +53,7 @@
                 @include('components.book-list', ['books' => $categoryBooks])
             </div>
         </div>
-        @endif
+
     </div>
 </div>
 @endsection
