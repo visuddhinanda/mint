@@ -58,6 +58,7 @@ class BookController extends Controller
         $book['toc'] = $this->getBookToc($bookRaw->book, $bookRaw->para, $channelId, 2, 7);
         $book['categories'] = $this->getBookCategory($bookRaw->book, $bookRaw->para);
         $book['tags'] = [];
+        $book['pagination'] = $this->pagination($bookRaw);
         $book['content'] = $this->getBookContent($id);
         return view('library.book.read', compact('book'));
     }
@@ -221,6 +222,100 @@ class BookController extends Controller
         }
 
         return $result;
+    }
+
+    public function pagination($book)
+    {
+        $currBook = $this->bookStart($book->book, $book->para);
+        $start = $currBook->paragraph;
+        $end = $currBook->paragraph + $currBook->chapter_len - 1;
+        // 查询起始段落
+        $paragraphs = PaliText::where('book', $book->book)
+            ->whereBetween('paragraph', [$start, $end])
+            ->where('level', '<', 8)
+            ->orderBy('paragraph')
+            ->get();
+        $curr = $paragraphs->firstWhere('paragraph', $book->para);
+        $current = $curr; //实际显示的段落
+        $endParagraph = $curr->paragraph + $curr->chapter_len - 1;
+        if ($curr->chapter_strlen > $this->maxChapterLen) {
+            //太大了，修改结束位置 找到下一级
+            foreach ($paragraphs as $key => $paragraph) {
+                if ($paragraph->paragraph > $curr->paragraph) {
+                    if ($paragraph->chapter_strlen <= $this->maxChapterLen) {
+                        $endParagraph = $paragraph->paragraph + $paragraph->chapter_len - 1;
+                        $current = $paragraph;
+                        break;
+                    }
+                    if ($paragraph->level <= $curr->level) {
+                        //不能往下走了，就是它了
+                        $endParagraph = $paragraphs[$key - 1]->paragraph + $paragraphs[$key - 1]->chapter_len - 1;
+                        $current = $paragraph;
+                        break;
+                    }
+                }
+            }
+        }
+        $start = $curr->paragraph;
+        $end = $endParagraph;
+        $nextPali = $this->next($current->book, $current->paragraph, $current->level);
+        $prevPali = $this->prev($current->book, $current->paragraph, $current->level);
+
+        $next = null;
+        if ($nextPali) {
+            $nextTranslation = ProgressChapter::with('channel.owner')
+                ->where('book', $nextPali->book)
+                ->where('para', $nextPali->paragraph)
+                ->where('channel_id', $book->channel_id)
+                ->first();
+            if ($nextTranslation) {
+                if (!empty($nextTranslation->title)) {
+                    $next['title'] = $nextTranslation->title;
+                } else {
+                    $next['title'] = $nextPali->toc;
+                }
+                $next['id'] = $nextTranslation->uid;
+            }
+        }
+
+        $prev = null;
+        if ($prevPali) {
+            $prevTranslation = ProgressChapter::with('channel.owner')
+                ->where('book', $prevPali->book)
+                ->where('para', $prevPali->paragraph)
+                ->where('channel_id', $book->channel_id)
+                ->first();
+            if ($prevTranslation) {
+                if (!empty($prevTranslation->title)) {
+                    $prev['title'] = $prevTranslation->title;
+                } else {
+                    $prev['title'] = $prevPali->toc;
+                }
+                $prev['id'] = $prevTranslation->uid;
+            }
+        }
+
+        return compact('start', 'end', 'next', 'prev');
+    }
+
+    public function next($book, $paragraph, $level)
+    {
+        $next = PaliText::where('book', $book)
+            ->where('paragraph', '>', $paragraph)
+            ->where('level', $level)
+            ->orderBy('paragraph')
+            ->first();
+        return $next ?? null;
+    }
+    public function prev($book, $paragraph, $level)
+    {
+        $prev = PaliText::where('book', $book)
+            ->where('paragraph', '<', $paragraph)
+            ->where('level', $level)
+            ->orderBy('paragraph', 'desc')
+            ->first();
+
+        return $prev ?? null;
     }
     public function show2($id)
     {
