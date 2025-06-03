@@ -101,12 +101,18 @@ class CategoryController extends Controller
             })
             ->where('progress', '>', 0.2)
             ->get();
+
+        $pali = PaliText::where('level', 1)->get();
         // 获取该分类下的书籍
         $categoryBooks = [];
-        $books->each(function ($book) use (&$categoryBooks, $id) {
+        $books->each(function ($book) use (&$categoryBooks, $id, $pali) {
+            $title = $book->title;
+            if (empty($title)) {
+                $title = $pali->firstWhere('book', $book->book)->toc;
+            }
             $categoryBooks[] = [
                 "id" => $book->uid,
-                "title" => $book->title . "(" . $book->book . "-" . $book->para . ")",
+                "title" => $title,
                 "author" => $book->channel->name,
                 "publisher" => $book->channel->owner->nickname,
                 "type" => __('label.' . $book->channel->type),
