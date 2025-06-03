@@ -6,9 +6,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\ProgressChapter;
 use App\Models\PaliText;
+use App\Models\Sentence;
 
 class BookController extends Controller
 {
+    protected $maxChapterLen = 50000;
+    protected $minChapterLen = 100;
     public function show($id)
     {
         $bookRaw = $this->loadBook($id);
@@ -20,48 +23,8 @@ class BookController extends Controller
         //查询章节
         $channelId = $bookRaw->channel_id; // 替换为具体的 channel_id 值
 
-        $paliTexts = PaliText::where('book', $bookRaw->book)
-            ->where('paragraph', '>', $bookRaw->para)
-            ->where('level', 2)->orderBy('paragraph')->get();
-        $chapters = ProgressChapter::where('book', $bookRaw->book)
-            ->where('para', '>', $bookRaw->para)
-            ->where('channel_id', $channelId)->orderBy('para')->get();
-        $book =  [
-            "id" => $bookRaw->uid,
-            "title" => $bookRaw->title . "(" . $bookRaw->book . "-" . $bookRaw->para . ")",
-            "author" => $bookRaw->channel->name,
-            "publisher" => $bookRaw->channel->owner->nickname,
-            "type" => __('label.' . $bookRaw->channel->type),
-            "category_id" => 11,
-            "cover" => "/assets/images/cover/1/214.jpg",
-            "description" => $book->summary ?? "比库戒律的详细说明",
-            "language" => __('language.' . $bookRaw->channel->lang),
-            "contents" => $paliTexts->map(function ($paliText) use ($chapters) {
-                $title = $paliText->toc;
-                if (count($chapters) > 0) {
-
-                    $found = array_filter($chapters->toArray(), function ($chapter) use ($paliText) {
-                        return $chapter['book'] == $paliText->book && $chapter['para'] == $paliText->paragraph;
-                    });
-                    if (count($found) > 0) {
-                        $chapter = array_shift($found);
-                        if (!empty($chapter['title'])) {
-                            $title = $chapter['title'];
-                        }
-                        if (!empty($chapter['summary'])) {
-                            $summary = $chapter['summary'];
-                        }
-                        $progress = (int)($chapter['progress'] * 100);
-                    }
-                }
-                return [
-                    "title" => $title,
-                    "content" => "诸恶莫作，众善奉行，自净其意，是诸佛教...",
-                    "summary" => $summary ?? "",
-                    "progress" => $progress ?? 0,
-                ];
-            }),
-        ];
+        $book = $this->getBookInfo($bookRaw);
+        $book['contents'] = $this->getBookToc($bookRaw->book, $bookRaw->para, $channelId);
 
         // 获取其他版本
         $others = ProgressChapter::with('channel.owner')
@@ -75,38 +38,27 @@ class BookController extends Controller
 
         $otherVersions = [];
         $others->each(function ($book) use (&$otherVersions, $id) {
-            $otherVersions[] = [
-                "id" => $book->uid,
-                "title" => $book->title . "(" . $book->book . "-" . $book->para . ")",
-                "author" => $book->channel->name,
-                "publisher" => $book->channel->owner->nickname,
-                "type" => __('label.' . $book->channel->type),
-                "category_id" => $id,
-                "cover" => "/assets/images/cover/1/214.jpg",
-                "description" => $book->summary ?? "比库戒律的详细说明",
-                "language" => __('language.' . $book->channel->lang),
-                "contents" => [
-                    [
-                        "title" => "比库戒本",
-                        "content" => "诸恶莫作，众善奉行，自净其意，是诸佛教...",
-                        "summary" => "基本戒律",
-                    ]
-                ],
-            ];
+            $otherVersions[] = $this->getBookInfo($book);
         });
 
         return view('library.book.show', compact('book', 'otherVersions'));
     }
 
+
     public function read($id)
     {
-        $books = $this->loadBooks();
-        $book = collect($books)->firstWhere('id', $id);
+        $bookRaw = $this->loadBook($id);
 
-        if (!$book) {
+        if (!$bookRaw) {
             abort(404);
         }
+        $channelId = $bookRaw->channel_id; // 替换为具体的 channel_id 值
 
+        $book = $this->getBookInfo($bookRaw);
+        $book['toc'] = $this->getBookToc($bookRaw->book, $bookRaw->para, $channelId, 2, 7);
+        $book['categories'] = $this->getBookCategory($bookRaw->book, $bookRaw->para);
+        $book['tags'] = [];
+        $book['content'] = $this->getBookContent($id);
         return view('library.book.read', compact('book'));
     }
 
@@ -114,5 +66,206 @@ class BookController extends Controller
     {
         $book = ProgressChapter::with('channel.owner')->find($id);
         return $book;
+    }
+
+    public function toggleTheme(Request $request)
+    {
+        $theme = $request->input('theme', 'light');
+        session(['theme' => $theme]);
+        return response()->json(['status' => 'success']);
+    }
+
+    private function getBookInfo($book)
+    {
+        $title = $book->title;
+        if (empty($title)) {
+            $title = PaliText::where('book', $book->book)
+                ->where('paragraph', $book->para)->first()->toc;
+        }
+        return [
+            "id" => $book->uid,
+            "title" => $title . "(" . $book->book . "-" . $book->para . ")",
+            "author" => $book->channel->name,
+            "publisher" => $book->channel->owner->nickname,
+            "type" => __('label.' . $book->channel->type),
+            "category_id" => 11,
+            "cover" => "/assets/images/cover/1/214.jpg",
+            "description" => $book->summary ?? "",
+            "language" => __('language.' . $book->channel->lang),
+        ];
+    }
+
+    private function getBookToc(int $book, int $paragraph, string $channelId, $minLevel = 2, $maxLevel = 2)
+    {
+        //先找到书的起始（书名）章节
+        //一个book 里面可以有多本书
+        $currBook = $this->bookStart($book, $paragraph);
+        $start = $currBook->paragraph;
+        $end = $currBook->paragraph + $currBook->chapter_len - 1;
+        $paliTexts = PaliText::where('book', $book)
+            ->whereBetween('paragraph',  [$start, $end])
+            ->whereBetween('level', [$minLevel, $maxLevel])->orderBy('paragraph')->get();
+
+        $chapters = ProgressChapter::where('book', $book)
+            ->whereBetween('para', [$start, $end])
+            ->where('channel_id', $channelId)->orderBy('para')->get();
+
+        $toc = $paliTexts->map(function ($paliText) use ($chapters) {
+            $title = $paliText->toc;
+            if (count($chapters) > 0) {
+                $found = array_filter($chapters->toArray(), function ($chapter) use ($paliText) {
+                    return $chapter['book'] == $paliText->book && $chapter['para'] == $paliText->paragraph;
+                });
+                if (count($found) > 0) {
+                    $chapter = array_shift($found);
+                    if (!empty($chapter['title'])) {
+                        $title = $chapter['title'];
+                    }
+                    if (!empty($chapter['summary'])) {
+                        $summary = $chapter['summary'];
+                    }
+                    $progress = (int)($chapter['progress'] * 100);
+                    $id = $chapter['uid'];
+                }
+            }
+            return [
+                "id" => $id ?? '',
+                "title" => $title,
+                "summary" => $summary ?? "",
+                "progress" => $progress ?? 0,
+                "level" => (int)$paliText->level,
+                "disabled" => !isset($progress),
+            ];
+        })->toArray();
+        return $toc;
+    }
+
+    public function getBookCategory($book, $paragraph)
+    {
+        $tags = PaliText::with('tagMaps.tags')
+            ->where('book', $book)
+            ->where('paragraph', $paragraph)
+            ->first()->tagMaps->map(function ($tagMap) {
+                return $tagMap->tags;
+            })->toArray();
+        return $tags;
+    }
+
+    private function bookStart($book, $paragraph)
+    {
+        $currBook = PaliText::where('book', $book)
+            ->where('paragraph', '<=', $paragraph)
+            ->where('level', 1)
+            ->orderBy('paragraph', 'desc')
+            ->first();
+        return $currBook;
+    }
+    public function getBookContent($id)
+    {
+        //查询book信息
+        $book = $this->loadBook($id);
+        $currBook = $this->bookStart($book->book, $book->para);
+        $start = $currBook->paragraph;
+        $end = $currBook->paragraph + $currBook->chapter_len - 1;
+        // 查询起始段落
+        $paragraphs = PaliText::where('book', $book->book)
+            ->whereBetween('paragraph', [$start, $end])
+            ->where('level', '<', 8)
+            ->orderBy('paragraph')
+            ->get();
+        $curr = $paragraphs->firstWhere('paragraph', $book->para);
+        $endParagraph = $curr->paragraph + $curr->chapter_len - 1;
+        if ($curr->chapter_strlen > $this->maxChapterLen) {
+            //太大了，修改结束位置 找到下一级
+            foreach ($paragraphs as $key => $paragraph) {
+                if ($paragraph->paragraph > $curr->paragraph) {
+                    if ($paragraph->chapter_strlen <= $this->maxChapterLen) {
+                        $endParagraph = $paragraph->paragraph + $paragraph->chapter_len - 1;
+                        break;
+                    }
+                    if ($paragraph->level <= $curr->level) {
+                        //不能往下走了，就是它了
+                        $endParagraph = $paragraphs[$key - 1]->paragraph + $paragraphs[$key - 1]->chapter_len - 1;
+                        break;
+                    }
+                }
+            }
+        }
+
+        //获取句子数据
+        $sentences = Sentence::where('book_id', $book->book)
+            ->whereBetween('paragraph', [$curr->paragraph, $endParagraph])
+            ->where('channel_uid', $book->channel_id)
+            ->orderBy('paragraph')
+            ->orderBy('word_start')
+            ->get();
+        $pali = PaliText::where('book', $book->book)
+            ->whereBetween('paragraph', [$curr->paragraph, $endParagraph])
+            ->orderBy('paragraph')
+            ->get();
+        $result = [];
+        for ($i = $curr->paragraph; $i <= $endParagraph; $i++) {
+            $texts = array_filter($sentences->toArray(), function ($sentence) use ($i) {
+                return $sentence['paragraph'] == $i;
+            });
+            $contents = array_map(function ($text) {
+                return $text['content'];
+            }, $texts);
+            $currPali = $pali->firstWhere('paragraph', $i);
+            $paragraph = [
+                'id' => $i,
+                'level' => $currPali->level,
+                'text' => [[implode('', $contents)]],
+            ];
+            $result[] = $paragraph;
+        }
+
+        return $result;
+    }
+    public function show2($id)
+    {
+        // Sample book data (replace with database query)
+        $book = [
+            'title' => 'Sample Book Title',
+            'author' => 'John Doe',
+            'category' => 'Fiction',
+            'tags' => ['Adventure', 'Mystery', 'Bestseller'],
+            'toc' => ['Introduction', 'Chapter 1', 'Chapter 2', 'Conclusion'],
+            'content' => [
+                'This is the introduction to the book...',
+                'Chapter 1 content goes here...',
+                'Chapter 2 content goes here...',
+                'Conclusion of the book...',
+            ],
+            'downloads' => [
+                ['format' => 'PDF', 'url' => '#'],
+                ['format' => 'EPUB', 'url' => '#'],
+                ['format' => 'MOBI', 'url' => '#'],
+            ],
+        ];
+
+        // Sample related books (replace with database query)
+        $relatedBooks = [
+            [
+                'title' => 'Related Book 1',
+                'description' => 'A thrilling adventure...',
+                'image' => 'https://via.placeholder.com/300x200',
+                'link' => '#',
+            ],
+            [
+                'title' => 'Related Book 2',
+                'description' => 'A mystery novel...',
+                'image' => 'https://via.placeholder.com/300x200',
+                'link' => '#',
+            ],
+            [
+                'title' => 'Related Book 3',
+                'description' => 'A bestseller...',
+                'image' => 'https://via.placeholder.com/300x200',
+                'link' => '#',
+            ],
+        ];
+
+        return view('library.book.read2', compact('book', 'relatedBooks'));
     }
 }
