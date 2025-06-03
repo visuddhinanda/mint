@@ -321,8 +321,9 @@
                 <!-- Nav buttons -->
                 <div class="mt-6 pt-6">
                     <ul class="pagination">
+                        @if(!empty($book["pagination"]["prev"]))
                         <li class="page-item page-prev">
-                            <a class="page-link" href="/ui/components/autosize/">
+                            <a class="page-link" href='{{ route("book.read",$book["pagination"]["prev"]["id"]) }}'>
                                 <div class="row align-items-center">
                                     <div class="col-auto">
                                         <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-left -->
@@ -332,17 +333,19 @@
                                     </div>
                                     <div class="col">
                                         <div class="page-item-subtitle">previous</div>
-                                        <div class="page-item-title">Autosize</div>
+                                        <div class="page-item-title">{{ $book["pagination"]["prev"]["title"] }}</div>
                                     </div>
                                 </div>
                             </a>
                         </li>
+                        @endif
+                        @if(!empty($book["pagination"]["next"]))
                         <li class="page-item page-next">
-                            <a class="page-link" href="/ui/components/badges/">
+                            <a class="page-link" href='{{ route("book.read",$book["pagination"]["next"]["id"]) }}'>
                                 <div class="row align-items-center">
                                     <div class="col">
                                         <div class="page-item-subtitle">next</div>
-                                        <div class="page-item-title">Badges</div>
+                                        <div class="page-item-title">{{ $book["pagination"]["next"]["title"] }}</div>
                                     </div>
                                     <div class="col-auto">
                                         <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-right -->
@@ -353,6 +356,7 @@
                                 </div>
                             </a>
                         </li>
+                        @endif
                     </ul>
                 </div>
                 <!-- Related Books -->
