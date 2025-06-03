@@ -16,4 +16,9 @@ class PaliText extends Model
             ->whereColumn('progress_chapters.book', 'pali_texts.book')
             ->whereColumn('progress_chapters.para', 'pali_texts.paragraph');
     }
+
+    public function tagMaps()
+    {
+        return $this->hasMany(TagMap::class, 'anchor_id', 'uid');
+    }
 }
