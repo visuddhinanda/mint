@@ -39,3 +39,17 @@ Route::get('/book/{id}', function ($id) {
     return view('book', ['id' => $id]);
 });
 Route::redirect('/privacy', '/privacy/index');
+
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\BookController;
+
+Route::get('/library', [CategoryController::class, 'index'])->name('home');
+Route::get('/library/category/{id}', [CategoryController::class, 'show'])->name('category.show');
+Route::get('/library/book/{id}', [BookController::class, 'show'])->name('book.show');
+Route::get('/library/book/{id}/read', [BookController::class, 'read'])->name('book.read');
+Route::post('/theme/toggle', [BookController::class, 'toggleTheme'])->name('theme.toggle');
+Route::post('/logout', function () {
+    // Handle logout
+    //Auth::logout();
+    return redirect('/login');
+})->name('logout');
