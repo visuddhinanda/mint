@@ -115,7 +115,7 @@ class CategoryController extends Controller
                 "title" => $title,
                 "author" => $book->channel->name,
                 "publisher" => $book->channel->owner->nickname,
-                "type" => __('label.' . $book->channel->type),
+                "type" => __('labels.' . $book->channel->type),
                 "category_id" => $id,
                 "cover" => "/assets/images/cover/1/214.jpg",
                 "description" => $book->summary ?? "比库戒律的详细说明",
