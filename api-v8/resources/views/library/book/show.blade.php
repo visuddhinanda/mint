@@ -21,7 +21,7 @@
                 <div class="col">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ route('home') }}">首页</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('home') }}">{{ __('labels.home') }}</a></li>
                             <li class="breadcrumb-item active">{{ $book['title'] }}</li>
                         </ol>
                     </nav>
@@ -38,7 +38,7 @@
                             <svg class="icon me-2" width="24" height="24">
                                 <use xlink:href="#tabler-book-2"></use>
                             </svg>
-                            在线阅读
+                            {{ __('buttons.online-read') }}
                         </a>
                         <button class="btn btn-outline-secondary w-100">
                             <svg class="icon me-2" width="24" height="24">
