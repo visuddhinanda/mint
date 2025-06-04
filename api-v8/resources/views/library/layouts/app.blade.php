@@ -52,7 +52,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.2);
         }
 
         .hero-content {
@@ -152,8 +152,18 @@
     <div class="page">
         <!-- Hero Section -->
         <section class="hero-section">
-            <div class="hero-overlay"></div>
+            <div class="hero-overlay">
+                <div style="height:30px;width:100%;display: flex;justify-content: center;">
+                    <div style="color:white;flex:1;">
+                    </div>
+                    <div style="color:white;">
+                        <x-language-switcher />
+                    </div>
+                </div>
+            </div>
+
             <div class="hero-content">
+
                 <h1 class="hero-title">巴利书库</h1>
                 <p class="hero-subtitle">探索wikipali，开启智慧之门</p>
 
@@ -173,7 +183,9 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
+    <!-- Tabler JS and Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta21/dist/js/tabler.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @stack('scripts')
 </body>
 
