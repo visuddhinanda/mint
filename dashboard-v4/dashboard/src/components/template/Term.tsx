@@ -254,7 +254,10 @@ export const TermCtl = ({
           placement="bottom"
         >
           <Typography.Link
-            style={{ color: community ? "green" : undefined }}
+            style={{
+              color: community ? "green" : undefined,
+              wordBreak: "keep-all",
+            }}
             onClick={() => {
               console.debug("term send redux");
               store.dispatch(click(termData));
@@ -281,7 +284,9 @@ export const TermCtl = ({
         }}
         trigger={
           <Typography.Link>
-            <Text type="danger">{termData?.word}</Text>
+            <Text type="danger" style={{ wordBreak: "keep-all" }}>
+              {termData?.word}
+            </Text>
           </Typography.Link>
         }
         word={termData?.word}
