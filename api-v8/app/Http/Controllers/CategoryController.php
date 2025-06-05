@@ -99,7 +99,7 @@ class CategoryController extends Controller
             ->whereHas('channel', function ($query) {
                 $query->where('status', 30);
             })
-            ->where('progress', '>', 0.2)
+            ->where('progress', '>', config('mint.library.list_min_progress'))
             ->get();
 
         $pali = PaliText::where('level', 1)->get();

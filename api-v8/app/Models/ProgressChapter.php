@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class ProgressChapter extends Model
 {
@@ -47,5 +48,18 @@ class ProgressChapter extends Model
     public function views()
     {
         return $this->hasMany('App\Models\View', 'target_id', 'uid');
+    }
+
+    // 访问器格式化 created_at 字段
+    public function getFormattedCreateAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('Y-m-d H:i:s');
+        // 你也可以使用其他格式：format('d/m/Y'), format('Y年m月d日') 等
+    }
+    public function getFormattedUpdatedAtAttribute()
+    {
+        //return Carbon::parse($value)->format('Y-m-d H:i:s');
+        return $this->updated_at->format('Y年m月d日 H:i');
+        // 你也可以使用其他格式：format('d/m/Y'), format('Y年m月d日') 等
     }
 }
