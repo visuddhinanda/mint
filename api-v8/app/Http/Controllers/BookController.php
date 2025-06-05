@@ -85,7 +85,7 @@ class BookController extends Controller
         }
         return [
             "id" => $book->uid,
-            "title" => $title . "(" . $book->book . "-" . $book->para . ")",
+            "title" => $title,
             "author" => $book->channel->name,
             "publisher" => $book->channel->owner->nickname,
             "type" => __('label.' . $book->channel->type),
