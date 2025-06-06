@@ -14,6 +14,11 @@ use Illuminate\Support\Facades\Log;
 
 class BlogController extends Controller
 {
+    protected         $categories = [
+        ['id' => 'sutta', 'label' => 'sutta'],
+        ['id' => 'vinaya', 'label' => 'vinaya'],
+        ['id' => 'abhidhamma', 'label' => 'abhidhamma'],
+    ];
     // 首页 - 最新博文列表
     public function index($user)
     {
@@ -27,6 +32,7 @@ class BlogController extends Controller
             ->paginate(10);
 
         Log::info($posts[0]->formatted_created_at);
+        $categories = $this->categories;
         /*
         $posts = Post::published()
             ->with(['category', 'tags'])
@@ -40,7 +46,7 @@ class BlogController extends Controller
             ->get();
 */
         //return view('blog.index', compact('posts', 'categories', 'popularPosts'));
-        return view('blog.index', compact('user', 'posts'));
+        return view('blog.index', compact('user', 'posts', 'categories'));
     }
 
     /*
@@ -85,19 +91,23 @@ class BlogController extends Controller
 
         return view('blog.categories', compact('categories'));
     }
-
+*/
     // 分类下的文章
-    public function category(Category $category)
-    {
-        $posts = Post::published()
-            ->where('category_id', $category->id)
-            ->with(['category', 'tags'])
-            ->latest()
-            ->paginate(10);
+    public function category(
+        $user,
+        $category1,
+        $category2 = null,
+        $category3 = null,
+        $category4 = null,
+        $category5 = null
+    ) {
+        $user = UserApi::getByName($user);
+        $posts = [];
+        $categories = $this->categories;
 
-        return view('blog.category', compact('category', 'posts'));
+        return view('blog.category', compact('user', 'categories', 'posts'));
     }
-
+    /*
     // 年度归档
     public function archives()
     {
