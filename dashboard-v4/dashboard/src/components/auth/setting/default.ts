@@ -1,5 +1,4 @@
-import { useAppSelector } from "../../../hooks";
-import { ISettingItem, settingInfo } from "../../../reducers/setting";
+import { ISettingItem } from "../../../reducers/setting";
 
 export interface ISettingItemOption {
   label: string;
