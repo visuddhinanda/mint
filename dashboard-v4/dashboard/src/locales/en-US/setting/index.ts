@@ -33,6 +33,12 @@ const items = {
   "setting.nissaya.layout.inline.label": "inline",
   "setting.nissaya.layout.list.label": "list",
   "setting.wbw.order.label": "wbw input order",
+  "setting.term.first.show.label": "First Term",
+  "setting.term.first.show.description": "Show First Term",
+  "term.first.show.meaning_pali_others": "Meaning & Pali & Others Meaning",
+  "term.first.show.meaning_pali": "Meaning & Pali",
+  "term.first.show.meaning_others": "Meaning & Others Meaning",
+  "term.first.show.meaning": "Meaning Only",
 };
 
 export default items;
