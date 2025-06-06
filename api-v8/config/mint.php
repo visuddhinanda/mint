@@ -119,10 +119,11 @@ return [
     'rabbitmq' => [
         'queues' => [
             'ai_translate' => [
-                'retry_times' => env('RABBITMQ_ORDERS_RETRY_TIMES', 3),
-                'max_loop_count' => env('RABBITMQ_ORDERS_MAX_LOOP', 10),
-                'timeout' => env('RABBITMQ_ORDERS_TIMEOUT', 300),
+                'retry_times' => env('RABBITMQ_AI_RETRY_TIMES', 3),
+                'max_loop_count' => env('RABBITMQ_AI_MAX_LOOP', 10),
+                'timeout' => env('RABBITMQ_AI_TIMEOUT', 300),
                 'dead_letter_queue' => 'ai_translate_dlq',
+                'dead_letter_exchange' => 'ai_translate_dlx',
             ],
         ],
 
