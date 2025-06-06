@@ -192,7 +192,7 @@ class TemplateRender
                 }
             }
             if (!isset($channelInfo)) {
-                Log::error('channel is null');
+                Log::warning('channel is null');
                 $output = [
                     "word" => $word,
                     'innerHtml' => '',

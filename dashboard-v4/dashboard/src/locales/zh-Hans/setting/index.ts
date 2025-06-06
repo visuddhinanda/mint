@@ -33,6 +33,12 @@ const items = {
   "setting.nissaya.layout.inline.label": "连续",
   "setting.nissaya.layout.list.label": "列表",
   "setting.wbw.order.label": "显示输入顺序提示",
+  "setting.term.first.show.label": "第一个术语",
+  "setting.term.first.show.description": "第一个术语的显示方式",
+  "term.first.show.meaning_pali_others": "意思巴利及其他意思",
+  "term.first.show.meaning_pali": "意思巴利",
+  "term.first.show.meaning_others": "意思其他解释",
+  "term.first.show.meaning": "仅意思",
 };
 
 export default items;

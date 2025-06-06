@@ -5,6 +5,8 @@ use App\Http\Controllers\SentenceInfoController;
 use App\Http\Controllers\WbwAnalysisController;
 use App\Http\Controllers\PageIndexController;
 use App\Http\Controllers\AssetsController;
+use App\Http\Controllers\BlogController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -39,3 +41,29 @@ Route::get('/book/{id}', function ($id) {
     return view('book', ['id' => $id]);
 });
 Route::redirect('/privacy', '/privacy/index');
+
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\BookController;
+
+Route::get('/library', [CategoryController::class, 'index'])->name('home');
+Route::get('/library/category/{id}', [CategoryController::class, 'show'])->name('category.show');
+Route::get('/library/book/{id}', [BookController::class, 'show'])->name('book.show');
+Route::get('/library/book/{id}/read', [BookController::class, 'read'])->name('book.read');
+Route::post('/theme/toggle', [BookController::class, 'toggleTheme'])->name('theme.toggle');
+Route::post('/logout', function () {
+    // Handle logout
+    //Auth::logout();
+    return redirect('/login');
+})->name('logout');
+
+// 博客路由
+Route::prefix('blog')->group(function () {
+    Route::get('/{user}', [BlogController::class, 'index'])->name('index');
+    Route::get('/{user}/categories', [BlogController::class, 'categories'])->name('categories');
+    Route::get('/{user}/category/{category1}/{category2?}/{category3?}/{category4?}/{category5?}', [BlogController::class, 'category'])->name('category');
+    Route::get('/{user}/archives', [BlogController::class, 'archives'])->name('archives');
+    Route::get('/{user}/archives/{year}', [BlogController::class, 'archivesByYear'])->name('archives.year');
+    Route::get('/{user}/tag/{tag}', [BlogController::class, 'tag'])->name('tag');
+    Route::get('/{user}/search', [BlogController::class, 'search'])->name('search');
+    Route::get('/{user}/{post}', [BlogController::class, 'show'])->name('show');
+});

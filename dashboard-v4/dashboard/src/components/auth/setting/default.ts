@@ -1,5 +1,4 @@
-import { useAppSelector } from "../../../hooks";
-import { ISettingItem, settingInfo } from "../../../reducers/setting";
+import { ISettingItem } from "../../../reducers/setting";
 
 export interface ISettingItemOption {
   label: string;
@@ -183,6 +182,33 @@ export const defaultSetting: ISetting[] = [
       {
         value: "vi",
         label: "languages.vi",
+      },
+    ],
+  },
+  {
+    /**
+     * 术语首次显示
+     */
+    key: "setting.term.first.show",
+    label: "setting.term.first.show.label",
+    description: "setting.term.first.show.description",
+    defaultValue: "meaning_pali_others",
+    options: [
+      {
+        value: "meaning_pali_others",
+        label: "term.first.show.meaning_pali_others",
+      },
+      {
+        value: "meaning_pali",
+        label: "term.first.show.meaning_pali",
+      },
+      {
+        value: "meaning_others",
+        label: "term.first.show.meaning_others",
+      },
+      {
+        value: "meaning",
+        label: "term.first.show.meaning",
       },
     ],
   },

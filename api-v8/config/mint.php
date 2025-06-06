@@ -5,7 +5,15 @@ return [
         'icp_code' => env('APP_ICP_CODE', ''),
         'mps_code' => env('APP_MPS_CODE', ''),
     ],
-
+    'languages' => [
+        'en' => 'English',
+        'zh-Hans' => '简体中文',
+        'zh-Hant' => '繁体中文',
+    ],
+    'default_language' => 'en',
+    'library' => [
+        'list_min_progress' => env('LIBRARY_LIST_MIN_PROGRESS', 0.5),
+    ],
     'snowflake' => [
         'data_center_id' => env('SNOWFLAKE_DATA_CENTER_ID', 1),
         'worker_id' => env('SNOWFLAKE_WORKER_ID', 1),
