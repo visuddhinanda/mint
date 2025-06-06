@@ -334,7 +334,7 @@ class MqAiTranslate extends Command
     {
         $url = config('app.url') . '/api/v2/task-status/' . $taskId;
         $data = [
-            'status' => 'done',
+            'status' => $status,
         ];
         Log::debug('ai_translate task status request', ['url' => $url, 'data' => $data]);
         $response = Http::timeout(10)->withToken($token)->patch($url, $data);
