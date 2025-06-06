@@ -27,12 +27,12 @@ abstract class BaseRabbitMQJob implements ShouldQueue
         $this->currentRetryCount = $retryCount;
 
         // 从配置读取重试次数和超时时间
-        $queueConfig = config("rabbitmq.queues.{$queueName}");
+        $queueConfig = config("mint.rabbitmq.queues.{$queueName}");
         $this->tries = $queueConfig['retry_times'] ?? 3;
         $this->timeout = $queueConfig['timeout'] ?? 300;
     }
 
-    public function handle()
+    public function handle($messageId = null)
     {
         try {
             Log::info("开始处理队列消息", [
