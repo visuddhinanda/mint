@@ -31,7 +31,6 @@ class BlogController extends Controller
             ->latest()
             ->paginate(10);
 
-        Log::info($posts[0]->formatted_created_at);
         $categories = $this->categories;
         /*
         $posts = Post::published()
