@@ -187,6 +187,33 @@ export const defaultSetting: ISetting[] = [
   },
   {
     /**
+     * 术语首次显示
+     */
+    key: "setting.term.first.show",
+    label: "setting.term.first.show.label",
+    description: "setting.term.first.show.description",
+    defaultValue: "meaning_pali_others",
+    options: [
+      {
+        value: "meaning_pali_others",
+        label: "term.first.show.meaning_pali_others",
+      },
+      {
+        value: "meaning_pali",
+        label: "term.first.show.meaning_pali",
+      },
+      {
+        value: "meaning_others",
+        label: "term.first.show.meaning_others",
+      },
+      {
+        value: "meaning",
+        label: "term.first.show.meaning",
+      },
+    ],
+  },
+  {
+    /**
      * nissaya 显示模式切换
      */
     key: "setting.nissaya.layout.read",
