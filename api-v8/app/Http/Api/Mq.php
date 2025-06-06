@@ -115,7 +115,7 @@ class Mq
         /**
          * @param \PhpAmqpLib\Message\AMQPMessage $message
          */
-        $process_message = function ($message) use ($callback, $queue) {
+        $process_message = function (AMQPMessage $message) use ($callback, $queue) {
             Log::debug('received message', [
                 'message_id' => $message->get('message_id'),
                 'content_type' => $message->get('content_type')
