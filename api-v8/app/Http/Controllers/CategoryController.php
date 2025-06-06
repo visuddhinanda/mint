@@ -16,7 +16,6 @@ class CategoryController extends Controller
     public function index()
     {
         $categories = $this->loadCategories();
-        $books = $this->loadBooks();
 
         // 获取一级分类和对应的书籍
         $categoryData = [];
@@ -36,7 +35,6 @@ class CategoryController extends Controller
     public function show($id)
     {
         $categories = $this->loadCategories();
-        $books = $this->loadBooks();
 
         $currentCategory = collect($categories)->firstWhere('id', $id);
         if (!$currentCategory) {
@@ -139,11 +137,6 @@ class CategoryController extends Controller
         return $flat;
     }
 
-    private function loadBooks()
-    {
-        $json = Storage::disk('public')->get('data/books.json');
-        return json_decode($json, true);
-    }
     public static function flattenWithIds(array $tree, int $parentId = 0, int $level = 1): array
     {
 
