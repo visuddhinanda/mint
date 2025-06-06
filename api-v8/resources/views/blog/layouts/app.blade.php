@@ -376,23 +376,16 @@
                 <h2 class="widget-title section-title">Categories</h2>
 
                 <div class="tagCloud-tags">
+                    @foreach($categories as $category)
                     <a
-                        href="https://demo.stack.jimmycai.com/categories/example-category/"
+                        href="{{ route('category', [
+    'user' => $user['userName'],
+    'category1' => $category['id'],
+]) }}"
                         class="font_size_1">
-                        Example Category
+                        {{ $category['label'] }}
                     </a>
-
-                    <a
-                        href="https://demo.stack.jimmycai.com/categories/syntax/"
-                        class="font_size_1">
-                        Syntax
-                    </a>
-
-                    <a
-                        href="https://demo.stack.jimmycai.com/categories/themes/"
-                        class="font_size_1">
-                        Themes
-                    </a>
+                    @endforeach
                 </div>
             </section>
 
