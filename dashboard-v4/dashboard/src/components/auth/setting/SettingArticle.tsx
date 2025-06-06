@@ -25,6 +25,7 @@ const SettingArticleWidget = () => {
       <SettingItem
         data={SettingFind("setting.pali.script.secondary", settings)}
       />
+      <SettingItem data={SettingFind("setting.term.first.show", settings)} />
       <Divider>
         {intl.formatMessage({
           id: `buttons.translate`,
