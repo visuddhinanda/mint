@@ -448,13 +448,10 @@
 
             <footer class="site-footer">
                 <section class="copyright">
-                    © 2020 - 2025 Hugo Theme Stack Starter
+                    2020 - 2025 wikipali
                 </section>
 
                 <section class="powerby">
-                    Built with
-                    <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>
-                    <br />
                     Theme
                     <b><a
                             href="https://github.com/CaiJimmy/hugo-theme-stack"
@@ -463,6 +460,7 @@
                             data-version="3.30.0">Stack</a></b>
                     designed by
                     <a href="https://jimmycai.com/" target="_blank" rel="noopener">Jimmy</a>
+                    © 2020 - 2025 Hugo Theme Stack Starter
                 </section>
             </footer>
         </main>
