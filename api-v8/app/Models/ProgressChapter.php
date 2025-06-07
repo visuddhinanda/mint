@@ -35,7 +35,13 @@ class ProgressChapter extends Model
 
     public function tags()
     {
-        return $this->belongsToMany('App\Models\Tag', 'tag_maps', 'anchor_id', 'tag_id');
+        return $this->belongsToMany(
+            'App\Models\Tag',
+            'tag_maps',
+            'anchor_id',
+            'tag_id',
+            'uid'
+        );
     }
     /**
      * 关联到 Channel 模型

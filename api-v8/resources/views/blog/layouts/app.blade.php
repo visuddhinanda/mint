@@ -378,10 +378,7 @@
                 <div class="tagCloud-tags">
                     @foreach($categories as $category)
                     <a
-                        href="{{ route('category', [
-    'user' => $user['userName'],
-    'category1' => $category['id'],
-]) }}"
+                        href="{{ route('category', ['user' => $user['userName'],'category1' => $category['id'],]) }}"
                         class="font_size_1">
                         {{ $category['label'] }}
                     </a>
