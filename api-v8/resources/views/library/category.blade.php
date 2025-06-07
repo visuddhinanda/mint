@@ -10,13 +10,13 @@
                 <div class="col">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ route('home') }}">{{ __('labels.home') }}</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('library.home') }}">{{ __('labels.home') }}</a></li>
                             @foreach($breadcrumbs as $breadcrumb)
                             @if($loop->last)
                             <li class="breadcrumb-item active">{{ $breadcrumb['name'] }}</li>
                             @else
                             <li class="breadcrumb-item">
-                                <a href="{{ route('category.show', $breadcrumb['id']) }}">{{ $breadcrumb['name'] }}</a>
+                                <a href="{{ route('library.category.show', $breadcrumb['id']) }}">{{ $breadcrumb['name'] }}</a>
                             </li>
                             @endif
                             @endforeach
@@ -33,7 +33,7 @@
             <div class="col-sm-6 col-lg-3">
                 <div class="card">
                     <div class="card-body text-center">
-                        <a href="{{ route('category.show', $subCategory['id']) }}" class="btn btn-primary">
+                        <a href="{{ route('library.category.show', $subCategory['id']) }}" class="btn btn-primary">
                             {{ $subCategory['name'] }}
                         </a>
                     </div>

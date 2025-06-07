@@ -323,7 +323,7 @@
                     <ul class="pagination">
                         @if(!empty($book["pagination"]["prev"]))
                         <li class="page-item page-prev">
-                            <a class="page-link" href='{{ route("book.read",$book["pagination"]["prev"]["id"]) }}'>
+                            <a class="page-link" href='{{ route("library.book.read",$book["pagination"]["prev"]["id"]) }}'>
                                 <div class="row align-items-center">
                                     <div class="col-auto">
                                         <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-left -->
@@ -341,7 +341,7 @@
                         @endif
                         @if(!empty($book["pagination"]["next"]))
                         <li class="page-item page-next">
-                            <a class="page-link" href='{{ route("book.read",$book["pagination"]["next"]["id"]) }}'>
+                            <a class="page-link" href='{{ route("library.book.read",$book["pagination"]["next"]["id"]) }}'>
                                 <div class="row align-items-center">
                                     <div class="col">
                                         <div class="page-item-subtitle">next</div>

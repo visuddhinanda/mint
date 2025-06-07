@@ -45,10 +45,7 @@ Route::redirect('/privacy', '/privacy/index');
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BookController;
 
-Route::get('/library', [CategoryController::class, 'index'])->name('home');
-Route::get('/library/category/{id}', [CategoryController::class, 'show'])->name('category.show');
-Route::get('/library/book/{id}', [BookController::class, 'show'])->name('book.show');
-Route::get('/library/book/{id}/read', [BookController::class, 'read'])->name('book.read');
+
 Route::post('/theme/toggle', [BookController::class, 'toggleTheme'])->name('theme.toggle');
 Route::post('/logout', function () {
     // Handle logout
@@ -56,6 +53,12 @@ Route::post('/logout', function () {
     return redirect('/login');
 })->name('logout');
 
+Route::prefix('library')->group(function () {
+    Route::get('/', [CategoryController::class, 'index'])->name('library.home');
+    Route::get('/category/{id}', [CategoryController::class, 'show'])->name('library.category.show');
+    Route::get('/book/{id}', [BookController::class, 'show'])->name('library.book.show');
+    Route::get('/book/{id}/read', [BookController::class, 'read'])->name('library.book.read');
+});
 // 博客路由
 Route::prefix('blog')->group(function () {
     Route::get('/{user}', [BlogController::class, 'index'])->name('blog.index');
