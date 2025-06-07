@@ -41,22 +41,24 @@ class ProgressChapterService
     }
     public function get()
     {
+        $tagCount = count($this->tags);
         $chapters = ProgressChapter::where('progress', '>', $this->minProgress)
             ->whereHas('channel', function ($query) {
                 $query->where('owner_uid', $this->channelOwnerId);
             })->whereHas('tags', function ($query) {
                 $query->whereIn('name', $this->tags);
-            })->get();
+            }, '=', $tagCount)->get();
         return $chapters;
     }
     public function getTags()
     {
+        $tagCount = count($this->tags);
         $chapters = ProgressChapter::where('progress', '>', $this->minProgress)
             ->whereHas('channel', function ($query) {
                 $query->where('owner_uid', $this->channelOwnerId);
             })->whereHas('tags', function ($query) {
                 $query->whereIn('name', $this->tags);
-            })->select('uid')->get();
+            }, '=', $tagCount)->select('uid')->get();
         $tagMaps = TagMap::with('tags')->whereIn('anchor_id', $chapters)
             ->get();
         $tags = [];
