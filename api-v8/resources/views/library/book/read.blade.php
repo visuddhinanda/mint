@@ -241,7 +241,7 @@
                 @foreach ($book['toc'] as $index => $item)
                 <li class="toc-level-{{ $item['level'] }} {{ $item['disabled'] ? 'toc-disabled' : '' }}">
                     @if (!$item['disabled'])
-                    <a href="#section-{{ $index }}">{{ $item['title'] }}</a>
+                    <a href="{{ route('library.book.read', $item['id']) }}">{{ $item['title'] }}</a>
                     @else
                     <span>{{ $item['title'] }}</span>
                     @endif
@@ -267,7 +267,9 @@
                     @foreach ($book['toc'] as $index => $item)
                     <li class="toc-level-{{ $item['level'] }} {{ $item['disabled'] ? 'toc-disabled' : '' }}">
                         @if (!$item['disabled'])
-                        <a href="/library/book/{{ $item['id'] }}/read">{{ $item['title'] }}</a>
+                        <a href="{{ route('library.book.read', $item['id']) }}">
+                            {{ $item['title'] }}
+                        </a>
                         @else
                         <span>{{ $item['title'] }}</span>
                         @endif
@@ -289,7 +291,11 @@
                 <!-- text area -->
                 <div>
                     <h2>{{ $book['title'] }}</h2>
-                    <p><strong>Author:</strong> {{ $book['author'] }}</p>
+                    <p><strong>Author:</strong> <span>{{ $book['author'] }}@
+                            <a href="{{ route('blog.index', ['user' => $book['publisher']->username]) }}">
+                                {{ $book['publisher']->nickname }}
+                            </a>
+                        </span></p>
 
                     <div class="content">
                         @if(isset($book['content']))
@@ -323,7 +329,7 @@
                     <ul class="pagination">
                         @if(!empty($book["pagination"]["prev"]))
                         <li class="page-item page-prev">
-                            <a class="page-link" href='{{ route("book.read",$book["pagination"]["prev"]["id"]) }}'>
+                            <a class="page-link" href='{{ route("library.book.read",$book["pagination"]["prev"]["id"]) }}'>
                                 <div class="row align-items-center">
                                     <div class="col-auto">
                                         <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-left -->
@@ -341,7 +347,7 @@
                         @endif
                         @if(!empty($book["pagination"]["next"]))
                         <li class="page-item page-next">
-                            <a class="page-link" href='{{ route("book.read",$book["pagination"]["next"]["id"]) }}'>
+                            <a class="page-link" href='{{ route("library.book.read",$book["pagination"]["next"]["id"]) }}'>
                                 <div class="row align-items-center">
                                     <div class="col">
                                         <div class="page-item-subtitle">next</div>

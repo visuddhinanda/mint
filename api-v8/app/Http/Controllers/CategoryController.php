@@ -112,19 +112,12 @@ class CategoryController extends Controller
                 "id" => $book->uid,
                 "title" => $title,
                 "author" => $book->channel->name,
-                "publisher" => $book->channel->owner->nickname,
+                "publisher" => $book->channel->owner,
                 "type" => __('labels.' . $book->channel->type),
                 "category_id" => $id,
                 "cover" => "/assets/images/cover/1/214.jpg",
                 "description" => $book->summary ?? "比库戒律的详细说明",
                 "language" => __('language.' . $book->channel->lang),
-                "contents" => [
-                    [
-                        "title" => "比库戒本",
-                        "content" => "诸恶莫作，众善奉行，自净其意，是诸佛教...",
-                        "summary" => "基本戒律",
-                    ]
-                ],
             ];
         });
         return $categoryBooks;

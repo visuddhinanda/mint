@@ -12,7 +12,7 @@
             <h3 class="section-count">{{ $count }} page</h3>
             <h1 class="section-term">
                 @foreach ($current as $category)
-                /<a href="{{ route('category', ['user' => $user['userName'],'category1' => $category['id'],]) }}">
+                /<a href="{{ route('blog.category', ['user' => $user['userName'],'category1' => $category['id'],]) }}">
                     {{ $category['label'] }}
                 </a>
                 @endforeach
@@ -33,7 +33,7 @@
 <section class="article-list--compact">
     @foreach ($posts as $post)
     <article>
-        <a href="{{ route('book.read', $post['uid']) }}">
+        <a href="{{ route('library.book.read', $post['uid']) }}">
             <div class="article-details">
                 <h2 class="article-title">{{ $post->title }}</h2>
                 <footer class="article-time">

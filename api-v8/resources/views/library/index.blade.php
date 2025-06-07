@@ -24,7 +24,7 @@
                     {{ $data['category']['name'] }}
                 </h3>
                 <div class="card-actions">
-                    <a href="{{ route('category.show', $data['category']['id']) }}" class="btn btn-primary btn-sm">
+                    <a href="{{ route('library.category.show', $data['category']['id']) }}" class="btn btn-primary btn-sm">
                         {{ __('buttons.more') }}
                         <svg class="icon ms-1" width="24" height="24">
                             <use xlink:href="#tabler-arrow-right"></use>

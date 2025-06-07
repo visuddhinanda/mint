@@ -21,7 +21,7 @@
                 <div class="col">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{{ route('home') }}">{{ __('labels.home') }}</a></li>
+                            <li class="breadcrumb-item"><a href="{{ route('library.home') }}">{{ __('labels.home') }}</a></li>
                             <li class="breadcrumb-item active">{{ $book['title'] }}</li>
                         </ol>
                     </nav>
@@ -34,7 +34,7 @@
                 <div class="card">
                     <img src="{{ $book['cover'] }}" class="card-img-top" alt="{{ $book['title'] }}" style="max-height: 400px; width: fit-content;">
                     <div class="card-body text-center">
-                        <a href="{{ route('book.read', $book['id']) }}" class="btn btn-primary btn-lg w-100 mb-2">
+                        <a href="{{ route('library.book.read', $book['id']) }}" class="btn btn-primary btn-lg w-100 mb-2">
                             <svg class="icon me-2" width="24" height="24">
                                 <use xlink:href="#tabler-book-2"></use>
                             </svg>
@@ -61,6 +61,14 @@
                             <div class="col-sm-9">{{ $book['author'] }}</div>
                         </div>
                         <div class="row mb-3">
+                            <div class="col-sm-3"><strong>出版:</strong></div>
+                            <div class="col-sm-9">
+                                <a href="{{ route('blog.index', ['user' => $book['publisher']->username]) }}">
+                                    {{ $book['publisher']->nickname }}
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
                             <div class="col-sm-3"><strong>语言:</strong></div>
                             <div class="col-sm-9">{{ $book['language'] ?? '巴利语' }}</div>
                         </div>
@@ -79,7 +87,7 @@
                     <div class="card-body">
                         <div class="list-group">
                             @foreach($book['contents'] as $chapter)
-                            <a href="{{ route('book.read', $chapter['id']) }}?chapter={{ $loop->iteration }}"
+                            <a href="{{ route('library.book.read', $chapter['id']) }}?chapter={{ $loop->iteration }}"
                                 class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h4 class="mb-1">{{ $chapter['title'] }}</h4>
@@ -117,7 +125,7 @@
                                 <div class="d-flex">
                                     <img src="{{ $version['cover'] }}" class="me-3" style="width: 60px; height: 80px; object-fit: cover;" alt="{{ $version['title'] }}">
                                     <div>
-                                        <h6><a href="{{ route('book.show', $version['id']) }}">{{ $version['title'] }}</a></h6>
+                                        <h6><a href="{{ route('library.book.show', $version['id']) }}">{{ $version['title'] }}</a></h6>
                                         <div class="text-muted small">{{ $version['author'] }}</div>
                                         <div class="text-muted small">{{ $version['language'] ?? '巴利语' }}</div>
                                     </div>
