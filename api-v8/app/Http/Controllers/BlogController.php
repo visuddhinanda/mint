@@ -3,21 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
-use App\Models\Category;
 use App\Models\Tag;
 use App\Models\ProgressChapter;
 
-use Illuminate\Http\Request;
-use Carbon\Carbon;
 use App\Http\Api\UserApi;
 use Illuminate\Support\Facades\Log;
+
+use App\Services\ProgressChapterService;
 
 class BlogController extends Controller
 {
     protected         $categories = [
-        ['id' => 'sutta', 'label' => 'sutta'],
-        ['id' => 'vinaya', 'label' => 'vinaya'],
-        ['id' => 'abhidhamma', 'label' => 'abhidhamma'],
+        ['id' => 'sutta', 'label' => 'suttapiṭaka'],
+        ['id' => 'vinaya', 'label' => 'vinayapiṭaka'],
+        ['id' => 'abhidhamma', 'label' => 'abhidhammapiṭaka'],
+        ['id' => 'añña', 'label' => 'añña'],
+        ['id' => 'mūla', 'label' => 'mūla'],
+        ['id' => 'aṭṭhakathā', 'label' => 'aṭṭhakathā'],
+        ['id' => 'ṭīkā', 'label' => 'ṭīkā'],
     ];
     // 首页 - 最新博文列表
     public function index($user)
@@ -102,10 +105,43 @@ class BlogController extends Controller
         $category5 = null
     ) {
         $user = UserApi::getByName($user);
-        $posts = [];
         $categories = $this->categories;
+        $chapterService = new ProgressChapterService();
 
-        return view('blog.category', compact('user', 'categories', 'posts'));
+        $tags = $this->getCategories($category1, $category2, $category3, $category4, $category5);
+        $posts = $chapterService->setProgress(0.9)->setChannelOwnerId($user['id'])
+            ->setTags($tags)
+            ->get();
+        $count = count($posts);
+        $current = array_map(function ($item) {
+            return ['id' => $item, 'label' => $item];
+        }, $tags);
+
+        $tagOptions = $chapterService->setProgress(0.9)->setChannelOwnerId($user['id'])
+            ->setTags($tags)
+            ->getTags();
+        return view('blog.category', compact('user', 'categories', 'posts', 'current', 'tagOptions', 'count'));
+    }
+
+    private function getCategories($category1, $category2, $category3, $category4, $category5)
+    {
+        $category = [];
+        if ($category1) {
+            $category[] = $category1;
+        }
+        if ($category2) {
+            $category[] = $category2;
+        }
+        if ($category3) {
+            $category[] = $category3;
+        }
+        if ($category4) {
+            $category[] = $category4;
+        }
+        if ($category5) {
+            $category[] = $category5;
+        }
+        return $category;
     }
     /*
     // 年度归档
