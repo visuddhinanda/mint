@@ -10,6 +10,7 @@ use App\Models\Discussion;
 use App\Http\Resources\DiscussionResource;
 use App\Models\SentPr;
 use App\Http\Resources\SentPrResource;
+use App\Services\RabbitMQService;
 
 class TestMq extends Command
 {
@@ -19,7 +20,7 @@ class TestMq extends Command
      * @var string
      */
     protected $signature = 'test:mq {--discussion=} {--pr=}';
-
+    protected $publish;
     /**
      * The console command description.
      *
@@ -32,8 +33,9 @@ class TestMq extends Command
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(RabbitMQService $publish)
     {
+        $this->publish = $publish;
         parent::__construct();
     }
 
@@ -44,18 +46,20 @@ class TestMq extends Command
      */
     public function handle()
     {
-        if(\App\Tools\Tools::isStop()){
+        if (\App\Tools\Tools::isStop()) {
             return 0;
         }
-		Mq::publish('hello',['hello world']);
+        $this->publish->publishMessage('ai_translate', ['text' => 'hello']);
+
+        Mq::publish('hello', ['hello world']);
         $discussion = $this->option('discussion');
-        if($discussion && Str::isUuid($discussion)){
-            Mq::publish('discussion',new DiscussionResource(Discussion::find($discussion)));
+        if ($discussion && Str::isUuid($discussion)) {
+            Mq::publish('discussion', new DiscussionResource(Discussion::find($discussion)));
         }
 
         $pr = $this->option('pr');
-        if($pr && Str::isUuid($pr)){
-            Mq::publish('suggestion',new SentPrResource(SentPr::where('uid',$pr)->first()));
+        if ($pr && Str::isUuid($pr)) {
+            Mq::publish('suggestion', new SentPrResource(SentPr::where('uid', $pr)->first()));
         }
 
         return 0;

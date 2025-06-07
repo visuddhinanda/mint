@@ -12,6 +12,7 @@ class AiTranslateService
 
     public function processTranslate(array $translateData): array
     {
+        $a = $translateData['count'] / 10;
         Log::debug('AiTranslateService processOrder', $translateData);
         return [];
     }
