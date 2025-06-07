@@ -87,7 +87,7 @@ class BookController extends Controller
             "id" => $book->uid,
             "title" => $title,
             "author" => $book->channel->name,
-            "publisher" => $book->channel->owner->nickname,
+            "publisher" => $book->channel->owner,
             "type" => __('label.' . $book->channel->type),
             "category_id" => 11,
             "cover" => "/assets/images/cover/1/214.jpg",
