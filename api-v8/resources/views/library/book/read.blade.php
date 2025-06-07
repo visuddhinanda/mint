@@ -289,7 +289,11 @@
                 <!-- text area -->
                 <div>
                     <h2>{{ $book['title'] }}</h2>
-                    <p><strong>Author:</strong> {{ $book['author'] }}</p>
+                    <p><strong>Author:</strong> <span>{{ $book['author'] }}@
+                            <a href="{{ route('blog.index', ['user' => $book['publisher']->username]) }}">
+                                {{ $book['publisher']->nickname }}
+                            </a>
+                        </span></p>
 
                     <div class="content">
                         @if(isset($book['content']))

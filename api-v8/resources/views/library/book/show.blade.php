@@ -61,6 +61,14 @@
                             <div class="col-sm-9">{{ $book['author'] }}</div>
                         </div>
                         <div class="row mb-3">
+                            <div class="col-sm-3"><strong>出版:</strong></div>
+                            <div class="col-sm-9">
+                                <a href="{{ route('blog.index', ['user' => $book['publisher']->username]) }}">
+                                    {{ $book['publisher']->nickname }}
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
                             <div class="col-sm-3"><strong>语言:</strong></div>
                             <div class="col-sm-9">{{ $book['language'] ?? '巴利语' }}</div>
                         </div>
