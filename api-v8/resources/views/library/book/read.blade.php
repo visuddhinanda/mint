@@ -241,7 +241,7 @@
                 @foreach ($book['toc'] as $index => $item)
                 <li class="toc-level-{{ $item['level'] }} {{ $item['disabled'] ? 'toc-disabled' : '' }}">
                     @if (!$item['disabled'])
-                    <a href="#section-{{ $index }}">{{ $item['title'] }}</a>
+                    <a href="{{ route('library.book.read', $item['id']) }}">{{ $item['title'] }}</a>
                     @else
                     <span>{{ $item['title'] }}</span>
                     @endif
@@ -267,7 +267,9 @@
                     @foreach ($book['toc'] as $index => $item)
                     <li class="toc-level-{{ $item['level'] }} {{ $item['disabled'] ? 'toc-disabled' : '' }}">
                         @if (!$item['disabled'])
-                        <a href="/library/book/{{ $item['id'] }}/read">{{ $item['title'] }}</a>
+                        <a href="{{ route('library.book.read', $item['id']) }}">
+                            {{ $item['title'] }}
+                        </a>
                         @else
                         <span>{{ $item['title'] }}</span>
                         @endif
