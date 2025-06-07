@@ -85,7 +85,7 @@
                 <figure class="site-avatar">
                     <a href="https://demo.stack.jimmycai.com/">
                         <img
-                            src="{{ $user['avatar'] }}"
+                            src="{{ $user['avatar'] ?? '' }}"
                             width="300"
                             height="300"
                             class="site-logo"
