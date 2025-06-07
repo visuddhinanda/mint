@@ -17,6 +17,9 @@ class Tag extends Model
 
     use HasFactory;
 
+    /**
+     * 关联到ProgressChapter
+     */
     public function chapters()
     {
         return $this->belongsToMany('App\Models\ProgressChapter', 'tag_maps', 'tag_id', 'anchor_id');
