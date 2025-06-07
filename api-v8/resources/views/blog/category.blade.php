@@ -20,8 +20,10 @@
             <section class="widget tagCloud">
                 <div class="tagCloud-tags">
                     @foreach($tagOptions as $id => $tag)
-                    <a href="{{ rtrim(url()->current(), '/') . '/' . $tag['tag']->name }}">{{ $tag['tag']->name }}</a>
-                    @endforeach
+                    @if($tag['count'] < $count)
+                        <a href="{{ rtrim(url()->current(), '/') . '/' . $tag['tag']->name }}">{{ $tag['tag']->name }}({{ $tag['count'] }})</a>
+                        @endif
+                        @endforeach
                 </div>
             </section>
         </div>
