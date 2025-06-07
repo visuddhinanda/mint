@@ -12,7 +12,7 @@
             <h3 class="section-count">{{ $count }} page</h3>
             <h1 class="section-term">
                 @foreach ($current as $category)
-                /<a href="{{ route('category', ['user' => $user['userName'],'category1' => $category['id'],]) }}">
+                /<a href="{{ route('blog.category', ['user' => $user['userName'],'category1' => $category['id'],]) }}">
                     {{ $category['label'] }}
                 </a>
                 @endforeach

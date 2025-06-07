@@ -93,7 +93,7 @@
                             alt="Avatar" />
                     </a>
 
-                    <span class="emoji">🍥</span>
+                    <span class="emoji" style="font-size: 11px;">LV10</span>
                 </figure>
 
                 <div class="site-meta">
@@ -378,7 +378,7 @@
                 <div class="tagCloud-tags">
                     @foreach($categories as $category)
                     <a
-                        href="{{ route('category', ['user' => $user['userName'],'category1' => $category['id'],]) }}"
+                        href="{{ route('blog.category', ['user' => $user['userName'],'category1' => $category['id'],]) }}"
                         class="font_size_1">
                         {{ $category['label'] }}
                     </a>

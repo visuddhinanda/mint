@@ -58,12 +58,12 @@ Route::post('/logout', function () {
 
 // 博客路由
 Route::prefix('blog')->group(function () {
-    Route::get('/{user}', [BlogController::class, 'index'])->name('index');
-    Route::get('/{user}/categories', [BlogController::class, 'categories'])->name('categories');
-    Route::get('/{user}/category/{category1}/{category2?}/{category3?}/{category4?}/{category5?}', [BlogController::class, 'category'])->name('category');
-    Route::get('/{user}/archives', [BlogController::class, 'archives'])->name('archives');
-    Route::get('/{user}/archives/{year}', [BlogController::class, 'archivesByYear'])->name('archives.year');
-    Route::get('/{user}/tag/{tag}', [BlogController::class, 'tag'])->name('tag');
-    Route::get('/{user}/search', [BlogController::class, 'search'])->name('search');
-    Route::get('/{user}/{post}', [BlogController::class, 'show'])->name('show');
+    Route::get('/{user}', [BlogController::class, 'index'])->name('blog.index');
+    Route::get('/{user}/categories', [BlogController::class, 'categories'])->name('blog.categories');
+    Route::get('/{user}/category/{category1}/{category2?}/{category3?}/{category4?}/{category5?}', [BlogController::class, 'category'])->name('blog.category');
+    Route::get('/{user}/archives', [BlogController::class, 'archives'])->name('blog.archives');
+    Route::get('/{user}/archives/{year}', [BlogController::class, 'archivesByYear'])->name('blog.archives.year');
+    Route::get('/{user}/tag/{tag}', [BlogController::class, 'tag'])->name('blog.tag');
+    Route::get('/{user}/search', [BlogController::class, 'search'])->name('blog.search');
+    Route::get('/{user}/{post}', [BlogController::class, 'show'])->name('blog.show');
 });
