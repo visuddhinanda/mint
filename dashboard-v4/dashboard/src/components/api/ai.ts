@@ -50,6 +50,7 @@ export interface IAiModel {
   privacy: TPrivacy;
   owner: IStudio;
   editor: IUser;
+  user: IUser;
   created_at: string;
   updated_at: string;
 }
