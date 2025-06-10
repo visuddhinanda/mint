@@ -15,6 +15,7 @@ import AiModelCreate from "./AiModelCreate";
 import PublicityIcon from "../studio/PublicityIcon";
 import ShareModal from "../share/ShareModal";
 import { EResType } from "../share/Share";
+import User from "../auth/User";
 
 interface IWidget {
   studioName?: string;
@@ -73,9 +74,14 @@ const AiModelList = ({ studioName }: IWidget) => {
             dataIndex: "name",
             render(dom, entity, index, action, schema) {
               return (
-                <Link to={`/studio/${studioName}/ai/models/${entity.uid}/edit`}>
-                  {entity.name}
-                </Link>
+                <Space>
+                  <PublicityIcon value={entity.privacy} />
+                  <Link
+                    to={`/studio/${studioName}/ai/models/${entity.uid}/edit`}
+                  >
+                    {entity.name}
+                  </Link>
+                </Space>
               );
             },
           },
@@ -94,7 +100,7 @@ const AiModelList = ({ studioName }: IWidget) => {
           },
           avatar: {
             render(dom, entity, index, action, schema) {
-              return <PublicityIcon value={entity.privacy} />;
+              return <User {...entity.user} showName={false} />;
             },
           },
           actions: {
