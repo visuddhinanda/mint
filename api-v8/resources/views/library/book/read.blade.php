@@ -65,6 +65,10 @@
             .content-area {
                 width: 100%;
             }
+
+            .main-container {
+                padding: 0;
+            }
         }
 
         /* Tablet: Show TOC and content */
