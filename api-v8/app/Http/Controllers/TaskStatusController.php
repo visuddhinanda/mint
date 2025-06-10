@@ -79,7 +79,7 @@ class TaskStatusController extends Controller
      * @param  \App\Models\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, string $id, AiTranslateService $ai)
+    public function update(Request $request, string $id)
     {
         //
         $task = Task::findOrFail($id);
@@ -189,7 +189,7 @@ class TaskStatusController extends Controller
             $aiAssistant = AiModel::whereIn('uid', $taskAssignee)->first();
             if ($aiAssistant) {
                 try {
-
+                    $ai = app(AiTranslateService::class);
                     $params = $ai->makeByTask($taskId, $aiAssistant->uid);
                     Log::debug('ai task', ['message' => count($params)]);
                     $aiTask = Task::find($taskId);

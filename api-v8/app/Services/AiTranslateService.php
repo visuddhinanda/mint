@@ -31,9 +31,9 @@ class AiTranslateService
     private $apiTimeout = 100;
     private $llmTimeout = 300;
     private $taskTopicId;
-    public function __construct(RabbitMQService $mq)
+    public function __construct()
     {
-        $this->mq = $mq;
+        $this->mq = app(RabbitMQService::class);
     }
 
     /**

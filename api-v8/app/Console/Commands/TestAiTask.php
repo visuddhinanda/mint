@@ -38,10 +38,10 @@ class TestAiTask extends Command
      *
      * @return int
      */
-    public function handle(AiTranslateService $ai)
+    public function handle()
     {
         $taskId = $this->argument('id');
-
+        $ai = app(AiTranslateService::class);
         $params = $ai->makeByTask($taskId, !$this->option('test'));
         var_dump($params);
         var_dump($this->option('test'));

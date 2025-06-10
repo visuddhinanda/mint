@@ -31,7 +31,7 @@ class RabbitMQWorker extends Command
     private $timeout = 15;
     private $job = null;
 
-    public function handle(RabbitMQService $consume)
+    public function handle()
     {
         if (\App\Tools\Tools::isStop()) {
             return 0;
@@ -50,7 +50,7 @@ class RabbitMQWorker extends Command
         $this->info("队列: {$this->queueName}");
         $this->info("最大循环次数: {$this->maxLoopCount}");
         $this->info("重试次数: {$this->queueConfig['retry_times']}");
-
+        $consume = app(RabbitMQService::class);
         try {
             $consume->setupQueue($this->queueName);
             $this->channel = $consume->getChannel();
