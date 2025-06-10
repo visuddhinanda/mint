@@ -68,6 +68,11 @@
 
             .main-container {
                 padding: 0;
+
+            }
+
+            .card {
+                border: none;
             }
         }
 
