@@ -13,7 +13,8 @@ use App\Http\Resources\TaskResource;
 use App\Http\Api\AuthApi;
 use App\Http\Api\WatchApi;
 use App\Models\AiModel;
-use App\Http\Api\AiTaskPrepare;
+use App\Services\AiTranslateService;
+
 
 class TaskStatusController extends Controller
 {
@@ -187,13 +188,21 @@ class TaskStatusController extends Controller
                 ->select('assignee_id')->get();
             $aiAssistant = AiModel::whereIn('uid', $taskAssignee)->first();
             if ($aiAssistant) {
-                $aiTask = Task::find($taskId);
-                $aiTask->executor_id = $aiAssistant->uid;
-                $aiTask->status = 'queue';
-                $aiTask->save();
-                $this->pushChange('queue', $taskId);
-                $params = AiTaskPrepare::translate($taskId);
-                Log::debug('ai task', ['message' => count($params)]);
+                try {
+                    $ai = app(AiTranslateService::class);
+                    $params = $ai->makeByTask($taskId, $aiAssistant->uid);
+                    Log::debug('ai task', ['message' => count($params)]);
+                    $aiTask = Task::find($taskId);
+                    $aiTask->executor_id = $aiAssistant->uid;
+                    $aiTask->status = 'queue';
+                    $aiTask->save();
+                    $this->pushChange('queue', $taskId);
+                } catch (\Exception $e) {
+                    Log::error('ai assistant start fail', [
+                        'task' => $taskId,
+                        'error' => $e->getMessage()
+                    ]);
+                }
             }
         }
 

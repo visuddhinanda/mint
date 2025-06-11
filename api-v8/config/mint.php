@@ -133,6 +133,10 @@ return [
                 'dead_letter_queue' => 'ai_translate_dlq',
                 'dead_letter_exchange' => 'ai_translate_dlx',
             ],
+            'heartbeat_queue' => [
+                'ttl' => 86400000, // 24小时 TTL (毫秒)
+                'max_length' => 10000,
+            ]
         ],
 
         // 死信队列配置

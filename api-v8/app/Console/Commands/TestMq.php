@@ -33,9 +33,8 @@ class TestMq extends Command
      *
      * @return void
      */
-    public function __construct(RabbitMQService $publish)
+    public function __construct()
     {
-        $this->publish = $publish;
         parent::__construct();
     }
 
@@ -49,6 +48,8 @@ class TestMq extends Command
         if (\App\Tools\Tools::isStop()) {
             return 0;
         }
+        $publish = app(RabbitMQService::class);
+        $this->publish = $publish;
         $this->publish->publishMessage('ai_translate', ['text' => 'hello']);
 
         Mq::publish('hello', ['hello world']);

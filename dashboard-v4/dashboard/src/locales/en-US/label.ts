@@ -68,6 +68,7 @@ const items = {
   "labels.task.status.canceled": "canceled",
   "labels.task.status.expired": "expired",
   "labels.task.status.queue": "queue",
+  "labels.task.status.stop": "stop",
   "labels.filter": "filter",
   "labels.participants": "participants",
   "labels.task.category": "task category",

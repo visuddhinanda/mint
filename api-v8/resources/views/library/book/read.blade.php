@@ -65,6 +65,15 @@
             .content-area {
                 width: 100%;
             }
+
+            .main-container {
+                padding: 0;
+
+            }
+
+            .card {
+                border: none;
+            }
         }
 
         /* Tablet: Show TOC and content */

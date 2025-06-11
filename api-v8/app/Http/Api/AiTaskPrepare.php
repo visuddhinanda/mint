@@ -150,7 +150,7 @@ class AiTaskPrepare
                 }
             }
 
-            Log::debug('mustache render', ['tpl' => $description, 'data' => $data]);
+            //Log::debug('mustache render', ['tpl' => $description, 'data' => $data]);
             $content = $m->render($description, $data);
             $prompt = $mdRender->convert($content, []);
             //gen mq

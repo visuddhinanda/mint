@@ -105,6 +105,9 @@ const TaskStatusButton = ({
     case "queue":
       menuEnable = ["stop"];
       break;
+    case "stop":
+      menuEnable = ["restarted"];
+      break;
   }
 
   const items: IStatusMenu[] = StatusButtons.map((item) => {

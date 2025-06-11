@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Http\Api\AiTaskPrepare;
+use App\Services\AiTranslateService;
 
 class TestAiTask extends Command
 {
@@ -40,7 +41,8 @@ class TestAiTask extends Command
     public function handle()
     {
         $taskId = $this->argument('id');
-        $params = AiTaskPrepare::translate($taskId, !$this->option('test'));
+        $ai = app(AiTranslateService::class);
+        $params = $ai->makeByTask($taskId, !$this->option('test'));
         var_dump($params);
         var_dump($this->option('test'));
         $this->info('total:' . count($params));
