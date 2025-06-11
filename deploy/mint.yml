@@ -9,6 +9,7 @@
     - fpm
     - task
     - fort
+    - ai_translate
   roles:
     - mint-v2.1
 
