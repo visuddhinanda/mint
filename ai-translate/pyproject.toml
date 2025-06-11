@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai_translate"
+version = "2025.6.11"
+requires-python = ">= 3.11"
+description = "An OpenAI consumer process"
+readme = "README.md"
+license = "MIT"
+
+dependencies = ["pika", "openai"]
+
+[project.scripts]
+mint-ai-translate-consumer = "ai_translate.__main__:main"
