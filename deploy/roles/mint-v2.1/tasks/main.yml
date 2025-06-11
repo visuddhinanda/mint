@@ -6,12 +6,24 @@
     owner: "{{ ansible_user }}"
     mode: "0755"
 
-- name: Download source code
-  ansible.builtin.unarchive:
-    src: https://github.com/iapt-platform/mint/archive/{{ mint_version }}.zip
-    dest: "{{ app_deploy_target | dirname }}"
-    remote_src: true
-    creates: "{{ app_deploy_target }}"
+# - name: Download source code
+#   ansible.builtin.unarchive:
+#     src: https://github.com/iapt-platform/mint/archive/{{ mint_version }}.zip
+#     dest: "{{ app_deploy_target | dirname }}"
+#     remote_src: true
+#     creates: "{{ app_deploy_target }}"
+
+- name: Download source codes
+  ansible.builtin.git:
+    repo: "https://github.com/iapt-platform/mint.git"
+    dest: "{{ app_deploy_target | dirname }}/repo"
+
+- name: Clone to spec version
+  ansible.builtin.git:
+    repo: "{{ app_deploy_target | dirname }}/repo"
+    dest: "{{ app_deploy_target }}"
+    depth: 1
+    single_branch: true
 
 - name: Upload dashboard-v4 dist
   ansible.posix.synchronize:
