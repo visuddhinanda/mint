@@ -41,7 +41,7 @@ RUN wget -q -O $HOME/downloads/composer https://getcomposer.org/installer
 RUN cd $HOME/downloads && php${PHP_VERSION} composer && cp composer.phar /usr/local/bin/composer
 
 # https://github.com/nvm-sh/nvm
-ENV NVM_VERSION "v0.40.2"
+ENV NVM_VERSION "v0.40.3"
 RUN git clone -b ${NVM_VERSION} https://github.com/nvm-sh/nvm.git $HOME/.nvm
 RUN echo 'export NVM_DIR="$HOME/.nvm"' >> $HOME/.bashrc
 RUN echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $HOME/.bashrc
