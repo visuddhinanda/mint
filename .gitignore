@@ -1,3 +1,7 @@
 /tmp/
 /.ansible/
 /.vscode/launch.json
+
+*.swp
+*.log
+.stop
