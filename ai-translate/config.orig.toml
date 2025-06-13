@@ -4,3 +4,8 @@ port = 5672
 user = 'www'
 password = 'change-me'
 virtual-host = 'testing'
+
+[redis]
+namespace = 'testing://'
+host = '127.0.0.1'
+port = 6371
