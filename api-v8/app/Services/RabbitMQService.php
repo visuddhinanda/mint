@@ -7,6 +7,7 @@ use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 use PhpAmqpLib\Wire\AMQPTable;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class RabbitMQService
 {
@@ -49,47 +50,59 @@ class RabbitMQService
 
 
         // 创建死信交换机
-        $this->channel->exchange_declare(
-            $queueConfig['dead_letter_exchange'],
-            'direct',
-            false,
-            true,
-            false
-        );
+        if (isset($queueConfig['dead_letter_exchange'])) {
+            $this->channel->exchange_declare(
+                $queueConfig['dead_letter_exchange'],
+                'direct',
+                false,
+                true,
+                false
+            );
 
-        $dlqName = $queueConfig['dead_letter_queue'];
-        $dlqConfig = config("mint.rabbitmq.dead_letter_queues.{$dlqName}", []);
-        $dlqArgs = [];
-        if (isset($dlqConfig['ttl'])) {
-            $dlqArgs['x-message-ttl'] =  $dlqConfig['ttl'];
+            $dlqName = $queueConfig['dead_letter_queue'];
+            $dlqConfig = config("mint.rabbitmq.dead_letter_queues.{$dlqName}", []);
+            $dlqArgs = [];
+            if (isset($dlqConfig['ttl'])) {
+                $dlqArgs['x-message-ttl'] =  $dlqConfig['ttl'];
+            }
+            if (isset($dlqConfig['max_length'])) {
+                $dlqArgs['x-max-length'] =  $dlqConfig['max_length'];
+            }
+            $dlqArguments = new AMQPTable($dlqArgs);
+
+            // 创建死信队列
+            $this->channel->queue_declare(
+                $dlqName,
+                false,  // passive
+                true,   // durable
+                false,  // exclusive
+                false,  // auto_delete
+                false,  // nowait
+                $dlqArguments
+            );
+
+            // 绑定死信队列到死信交换机
+            $this->channel->queue_bind(
+                $queueConfig['dead_letter_queue'],
+                $queueConfig['dead_letter_exchange']
+            );
+
+            // 创建主队列，配置死信
+            $arguments = new AMQPTable([
+                'x-dead-letter-exchange' => $queueConfig['dead_letter_exchange'],
+                'x-dead-letter-routing-key' => $queueConfig['dead_letter_queue'], // 死信路由键
+            ]);
+        } else {
+            $workerArgs = [];
+            if (isset($queueConfig['ttl'])) {
+                $workerArgs['x-message-ttl'] =  $queueConfig['ttl'];
+            }
+            if (isset($queueConfig['max_length'])) {
+                $workerArgs['x-max-length'] =  $queueConfig['max_length'];
+            }
+            $arguments = new AMQPTable($workerArgs);
         }
-        if (isset($dlqConfig['max_length'])) {
-            $dlqArgs['x-max-length'] =  $dlqConfig['max_length'];
-        }
-        $dlqArguments = new AMQPTable($dlqArgs);
 
-        // 创建死信队列
-        $this->channel->queue_declare(
-            $dlqName,
-            false,  // passive
-            true,   // durable
-            false,  // exclusive
-            false,  // auto_delete
-            false,  // nowait
-            $dlqArguments
-        );
-
-        // 绑定死信队列到死信交换机
-        $this->channel->queue_bind(
-            $queueConfig['dead_letter_queue'],
-            $queueConfig['dead_letter_exchange']
-        );
-
-        // 创建主队列，配置死信
-        $arguments = new AMQPTable([
-            'x-dead-letter-exchange' => $queueConfig['dead_letter_exchange'],
-            'x-dead-letter-routing-key' => $queueConfig['dead_letter_queue'], // 死信路由键
-        ]);
 
         $this->channel->queue_declare(
             $queueName,
@@ -112,7 +125,7 @@ class RabbitMQService
                 [
                     'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT,
                     'timestamp' => time(),
-                    'message_id' => uniqid(),
+                    'message_id' => Str::uuid(),
                     "content_type" => 'application/json; charset=utf-8'
                 ]
             );

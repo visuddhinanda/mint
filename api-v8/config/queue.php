@@ -77,6 +77,7 @@ return [
             'user' => env('RABBITMQ_USER', 'guest'),
             'password' => env('RABBITMQ_PASSWORD', 'guest'),
             'virtual_host' => env('RABBITMQ_VIRTUAL_HOST', '/'),
+            'heartbeat' => env('RABBITMQ_HEARTBEAT', 60), // 心跳时间（秒）
         ],
 
     ],

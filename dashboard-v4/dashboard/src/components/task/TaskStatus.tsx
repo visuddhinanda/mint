@@ -55,6 +55,9 @@ const TaskStatus = ({ task }: IWidget) => {
     case "requested_restart":
       color = "warning";
       break;
+    case "stop":
+      color = "error";
+      break;
   }
 
   return (

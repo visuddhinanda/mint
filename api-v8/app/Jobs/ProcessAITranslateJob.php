@@ -7,12 +7,14 @@ use Illuminate\Support\Facades\Log;
 
 class ProcessAITranslateJob extends BaseRabbitMQJob
 {
+    private $aiService;
     protected function processMessage(array $messageData)
     {
         $startTime = microtime(true);
         try {
-            $translateService = app(AiTranslateService::class);
-            return $translateService->processTranslate($messageData);
+            // Laravel会自动注入
+            $this->aiService = app(AiTranslateService::class);
+            return $this->aiService->processTranslate($this->messageId, $messageData, $this);
         } catch (\Exception $e) {
             // 记录失败指标
 
@@ -28,8 +30,7 @@ class ProcessAITranslateJob extends BaseRabbitMQJob
     {
         parent::handleFinalFailure($messageData, $exception);
 
-        // 订单特定的失败处理
-        $orderService = app(AiTranslateService::class);
-        $orderService->handleFailedTranslate($messageData, $exception);
+        // 消息处理最终失败，准备发送到死信队列
+        $this->aiService->handleFailedTranslate($this->messageId, $messageData, $exception);
     }
 }

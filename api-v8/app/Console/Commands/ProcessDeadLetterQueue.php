@@ -30,13 +30,13 @@ class ProcessDeadLetterQueue extends Command
         $requeue = $this->option('requeue');
         $delete = $this->option('delete');
 
-        $config = config('rabbitmq.connection');
+        $config = config('queue.connections.rabbitmq');
         $connection = new AMQPStreamConnection(
             $config['host'],
             $config['port'],
             $config['user'],
             $config['password'],
-            $config['vhost']
+            $config['virtual_host']
         );
 
         $channel = $connection->channel();

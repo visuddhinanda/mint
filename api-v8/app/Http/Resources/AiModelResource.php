@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Api\AiAssistantApi;
 
 class AiModelResource extends JsonResource
 {
@@ -14,6 +15,8 @@ class AiModelResource extends JsonResource
      */
     public function toArray($request)
     {
-        return parent::toArray($request);
+        $data = parent::toArray($request);
+        $data['user'] = AiAssistantApi::userInfo($this);
+        return $data;
     }
 }
