@@ -10,7 +10,7 @@ description = "An OpenAI consumer process"
 readme = "README.md"
 license = "MIT"
 
-dependencies = ["pika", "openai"]
+dependencies = ["pika", "requests", "openai"]
 
 [project.scripts]
 mint-ai-translate-consumer = "ai_translate.__main__:main"
