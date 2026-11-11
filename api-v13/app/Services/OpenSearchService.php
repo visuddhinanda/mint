@@ -728,6 +728,12 @@ class OpenSearchService
         // ---------- 查询部分 ----------
         $queryText = trim($params['query'] ?? '');
 
+        // fuzzy / definition 的巴利文多词查询按词的罕见度加权；其余模式不需要
+        $weights = null;
+        if ($queryText !== '' && ! in_array($mode, ['exact', 'semantic', 'hybrid'], true) && ! $this->isCjkQuery($queryText)) {
+            $weights = $this->wordRarityWeights($this->scoringWords($this->splitQueryWords($queryText)));
+        }
+
         if ($queryText === '') {
             $query = ['match_all' => new \stdClass];
         } else {
@@ -745,12 +751,12 @@ class OpenSearchService
                     break;
 
                 case 'definition':
-                    $query = $this->buildDefinitionQuery($queryText);
+                    $query = $this->buildDefinitionQuery($queryText, $weights);
                     break;
 
                 case 'fuzzy':
                 default:
-                    $query = $this->buildFuzzyQuery($queryText);
+                    $query = $this->buildFuzzyQuery($queryText, $weights);
                     break;
             }
         }
@@ -876,9 +882,10 @@ class OpenSearchService
      *   - 巴利文（拉丁字母）→ 走三层排序（见 buildPaliFuzzyQuery）+ bold_* 提权
      *
      * @param  string  $query  搜索关键词
+     * @param  array<string, float>|null  $weights  巴利文各词的罕见度权重，null 表示都按 1
      * @return array OpenSearch DSL query 片段
      */
-    protected function buildFuzzyQuery(string $query): array
+    protected function buildFuzzyQuery(string $query, ?array $weights = null): array
     {
         if ($this->isCjkQuery($query)) {
             return [
@@ -896,7 +903,7 @@ class OpenSearchService
             ];
         }
 
-        return $this->buildPaliFuzzyQuery($query);
+        return $this->buildPaliFuzzyQuery($query, 1.0, $weights);
     }
 
     /**
@@ -954,6 +961,125 @@ class OpenSearchService
      * 同分时的 BM25 微调权重：BM25 一般 < 30，乘上后 < 0.3，小于计分表的最小档差
      */
     private const TIE_BREAKER_BOOST = 0.01;
+
+    /**
+     * 罕见度权重的下限：再常见的词也保留这么多分量，不至于完全不计
+     */
+    private const RARITY_WEIGHT_FLOOR = 0.2;
+
+    /**
+     * 罕见度权重的指数：IDF 取了对数，887 段与 211 段的词只差 0.82 : 1，拉不开；
+     * 归一后再取幂放大差距
+     */
+    private const RARITY_EXPONENT = 4;
+
+    /**
+     * 每个词的文档频率在 RedisCache 里的保存期（秒）。语料按月更新，一天足够新
+     */
+    private const DOC_FREQUENCY_TTL = 86400;
+
+    /**
+     * 多词查询里每个词的罕见度权重（类 BM25 的 IDF，按最罕见的词归一到 1）
+     *
+     * 按词计的固定分让每个词分量相同，常见词（如 bojjhaṅga，到处都是黑体）会把罕见的
+     * 目标词（dhammavicayasambojjhaṅga）挤出前排。乘上这个权重后，越罕见的词分越高。
+     * 文档频率按 title/content 的 .pali（带同义词，即全部词形）统计，一次 _msearch 取齐，
+     * 逐词缓存。取不到时返回全 1（等于不加权），只记日志不报错。
+     *
+     * @param  list<string>  $words  参与计分的原始词（已去掉停用词）
+     * @return array<string, float> 原始词 => 权重，范围 [RARITY_WEIGHT_FLOOR, 1]
+     */
+    protected function wordRarityWeights(array $words): array
+    {
+        $uniqueWords = array_values(array_unique($words));
+        $flat = array_fill_keys($uniqueWords, 1.0);
+
+        if (count($uniqueWords) < 2) {
+            return $flat;
+        }
+
+        try {
+            $index = config('mint.opensearch.index');
+            $total = RedisCache::remember("/opensearch/{$index}/doc-count", self::DOC_FREQUENCY_TTL, fn () => $this->count());
+            $frequencies = $this->documentFrequencies($index, $uniqueWords);
+        } catch (Exception $e) {
+            Log::warning('opensearch word rarity weights failed', ['words' => $uniqueWords, 'error' => $e->getMessage()]);
+
+            return $flat;
+        }
+
+        $idf = [];
+        foreach ($uniqueWords as $word) {
+            $df = $frequencies[$word] ?? 0;
+            $idf[$word] = log(1 + ($total - $df + 0.5) / ($df + 0.5));
+        }
+
+        $maxIdf = max($idf);
+        if ($maxIdf <= 0) {
+            return $flat;
+        }
+
+        return array_map(
+            fn (float $value): float => max(self::RARITY_WEIGHT_FLOOR, ($value / $maxIdf) ** self::RARITY_EXPONENT),
+            $idf,
+        );
+    }
+
+    /**
+     * 每个词出现在多少个文档里（含同义词展开的全部词形），逐词缓存，未缓存的一次 _msearch 取齐
+     *
+     * @param  string  $index  索引名
+     * @param  list<string>  $words  原始词
+     * @return array<string, int> 原始词 => 文档数
+     */
+    protected function documentFrequencies(string $index, array $words): array
+    {
+        $frequencies = [];
+        $missing = [];
+
+        foreach ($words as $word) {
+            $cached = RedisCache::get($this->documentFrequencyCacheKey($index, $word));
+            if ($cached === null) {
+                $missing[] = $word;
+            } else {
+                $frequencies[$word] = (int) $cached;
+            }
+        }
+
+        if ($missing === []) {
+            return $frequencies;
+        }
+
+        $body = [];
+        foreach ($missing as $word) {
+            $body[] = ['index' => $index];
+            $body[] = [
+                'size' => 0,
+                'track_total_hits' => true,
+                'query' => ['multi_match' => ['query' => $word, 'fields' => ['title.text.pali', 'content.text.pali']]],
+            ];
+        }
+
+        $responses = $this->client->msearch(['body' => $body])['responses'] ?? [];
+
+        foreach ($missing as $i => $word) {
+            $df = (int) ($responses[$i]['hits']['total']['value'] ?? 0);
+            $frequencies[$word] = $df;
+            RedisCache::put($this->documentFrequencyCacheKey($index, $word), $df, self::DOC_FREQUENCY_TTL);
+        }
+
+        return $frequencies;
+    }
+
+    /**
+     * @param  string  $index  索引名
+     * @param  string  $word  原始词
+     * @return string 文档频率的缓存 key
+     */
+    protected function documentFrequencyCacheKey(string $index, string $word): string
+    {
+        return "/opensearch/{$index}/word-df/".md5(mb_strtolower($word));
+    }
 
     /**
      * 巴利文停用词（小写；比较前去掉标点）
@@ -1037,11 +1163,15 @@ class OpenSearchService
      * 不生成单词子句，也不进 BM25 子句，于是只命中「ca」的文档不会被召回。
      * 两个停用词组成的相邻词对同理跳过。查询全是停用词时按普通词处理。
      *
+     * 单词子句（拼写、同义词）乘上该词的罕见度权重（见 wordRarityWeights），
+     * 常见词分量小、罕见词分量大；词序子句（整句、相邻两词）不乘。
+     *
      * @param  string  $query  搜索关键词
      * @param  float  $scale  整体缩放（definition 模式用它把正文得分压到黑体字之下）
+     * @param  array<string, float>|null  $weights  原始词 => 罕见度权重，null 表示都按 1
      * @return array OpenSearch DSL query 片段
      */
-    protected function buildPaliFuzzyQuery(string $query, float $scale = 1.0): array
+    protected function buildPaliFuzzyQuery(string $query, float $scale = 1.0, ?array $weights = null): array
     {
         $words = $this->splitQueryWords($query);
         $wordCount = count($words);
@@ -1088,22 +1218,24 @@ class OpenSearchService
             }
         }
 
-        // 拼写：每个词各算一次（停用词不算）
+        // 拼写：每个词各算一次（停用词不算），按罕见度加权
         foreach ($scoringWords as $word) {
+            $weight = $weights[$word] ?? 1.0;
+
             $should[] = $this->constantScore([
                 'multi_match' => [
                     'query' => $word,
                     'fields' => $exactFields,
                     'operator' => 'and',
                 ],
-            ], $scores['exact']);
+            ], $scores['exact'] * $weight);
 
             $should[] = $this->constantScore([
                 'multi_match' => [
                     'query' => $word,
                     'fields' => $fuzzyFields,
                 ],
-            ], $scores['synonym']);
+            ], $scores['synonym'] * $weight);
         }
 
         // 同分文档按 BM25 排先后
@@ -1147,12 +1279,15 @@ class OpenSearchService
      *     正文里粘了连音（如 vitakkanti）匹配不到的词，往往靠它召回
      *   - 用 match_phrase 而不是 match：中文在 standard 下按字切分，phrase 要求字连续，
      *     避免一个字重合就命中
+     *   - 每个词的黑体分乘上它的罕见度权重（见 wordRarityWeights）：常见词（bojjhaṅga）
+     *     不再与罕见的目标词（dhammavicayasambojjhaṅga）同分，挤占前排
      * 计分表见 DEFINITION_SCORES；正文部分复用 fuzzy 的计分，乘 DEFINITION_TEXT_SCALE。
      *
      * @param  string  $query  搜索关键词
+     * @param  array<string, float>|null  $weights  原始词 => 罕见度权重，null 表示都按 1
      * @return array OpenSearch DSL query 片段
      */
-    protected function buildDefinitionQuery(string $query): array
+    protected function buildDefinitionQuery(string $query, ?array $weights = null): array
     {
         $words = $this->splitQueryWords($query);
 
@@ -1164,14 +1299,16 @@ class OpenSearchService
 
         // 停用词不单独算黑体分（整句的 multi_phrase 仍带上它们）
         foreach ($this->scoringWords($words) as $word) {
+            $weight = $weights[$word] ?? 1.0;
+
             foreach (['single' => 'bold_single', 'multi' => 'bold_multi'] as $tier => $field) {
                 $should[] = $this->constantScore(
                     ['match_phrase' => [$field => $word]],
-                    self::DEFINITION_SCORES[$tier],
+                    self::DEFINITION_SCORES[$tier] * $weight,
                 );
                 $should[] = $this->constantScore(
                     ['match_phrase' => [$field => ['query' => $word, 'analyzer' => 'standard']]],
-                    self::DEFINITION_SCORES[$tier.'_exact'],
+                    self::DEFINITION_SCORES[$tier.'_exact'] * $weight,
                 );
             }
         }
@@ -1193,7 +1330,7 @@ class OpenSearchService
                 ],
             ];
         } else {
-            $should[] = $this->buildPaliFuzzyQuery($query, self::DEFINITION_TEXT_SCALE);
+            $should[] = $this->buildPaliFuzzyQuery($query, self::DEFINITION_TEXT_SCALE, $weights);
         }
 
         return [

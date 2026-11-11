@@ -1,11 +1,20 @@
 <?php
 
+use App\Facades\RedisCache;
 use App\Services\OpenSearchService;
 
 /**
  * 调用 OpenSearchService 的 protected 查询构造方法（纯函数，不连 OpenSearch）
  */
 function buildSearchQuery(string $method, mixed ...$args): array
+{
+    return callSearchService($method, ...$args);
+}
+
+/**
+ * 调用 OpenSearchService 的 protected 方法，返回值不限类型
+ */
+function callSearchService(string $method, mixed ...$args): mixed
 {
     $service = new OpenSearchService;
 
@@ -105,4 +114,40 @@ it('ignores stopwords for definition bold scoring', function () {
 
     // 只有 vitakko 四条 + 整句在多词黑体里 30
     expect(constantScoreBoosts($query))->toEqual([100.0, 10.0, 30.0, 5.0, 30.0]);
+});
+
+/**
+ * 预置文档总数与各词的文档频率，让 wordRarityWeights 不用连 OpenSearch
+ *
+ * @param  array<string, int>  $frequencies  原始词 => 文档数
+ */
+function seedDocumentFrequencies(int $total, array $frequencies): void
+{
+    $index = config('mint.opensearch.index');
+    RedisCache::put("/opensearch/{$index}/doc-count", $total);
+    foreach ($frequencies as $word => $df) {
+        RedisCache::put(callSearchService('documentFrequencyCacheKey', $index, $word), $df);
+    }
+}
+
+it('weights rarer words higher and floors very common ones', function () {
+    seedDocumentFrequencies(550000, ['rare' => 10, 'mid' => 100, 'common' => 200000]);
+
+    $weights = buildSearchQuery('wordRarityWeights', ['rare', 'mid', 'common']);
+
+    expect($weights['rare'])->toBe(1.0)
+        ->and($weights['mid'])->toBeLessThan(1.0)->toBeGreaterThan(0.2)
+        ->and($weights['common'])->toBe(0.2);
+});
+
+it('does not weight a single word', function () {
+
+    expect(buildSearchQuery('wordRarityWeights', ['vitakko']))->toBe(['vitakko' => 1.0]);
+});
+
+it('multiplies per-word clauses by rarity but not word-order clauses', function () {
+    $query = buildSearchQuery('buildPaliFuzzyQuery', 'evaṃ me sutaṃ', 1.0, ['evaṃ' => 0.5, 'me' => 1.0, 'sutaṃ' => 0.25]);
+
+    // 整句 20 与相邻词对 5 不乘；拼写 10、同义 2 分别乘 0.5 / 1 / 0.25
+    expect(constantScoreBoosts($query))->toEqual([20.0, 5.0, 5.0, 5.0, 1.0, 10.0, 2.0, 2.5, 0.5]);
 });
