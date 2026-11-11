@@ -624,11 +624,12 @@ class OpenSearchService
     /**
      * 执行高级搜索
      *
-     * 支持四种搜索模式：
-     *   - fuzzy    多字段模糊查询（默认），基于 BM25
-     *   - exact    精确匹配，使用 markdown_clean analyzer
-     *   - semantic 纯语义向量搜索，需要 OpenAI embedding
-     *   - hybrid   fuzzy + semantic 混合，权重由 fuzzy_ratio / semantic_ratio 控制
+     * 支持五种搜索模式：
+     *   - fuzzy       多字段模糊查询（默认），巴利文走三层排序
+     *   - exact       精确匹配，使用 markdown_clean analyzer
+     *   - semantic    纯语义向量搜索，需要 OpenAI embedding
+     *   - hybrid      fuzzy + semantic 混合，权重由 fuzzy_ratio / semantic_ratio 控制
+     *   - definition  定义查询，黑体字（bold_single/bold_multi）高权重，术语定义排前
      *
      * 支持的过滤参数：
      *   resourceType, resourceId, granularity, language, category,
@@ -743,6 +744,10 @@ class OpenSearchService
                     $query = $this->buildHybridQuery($queryText);
                     break;
 
+                case 'definition':
+                    $query = $this->buildDefinitionQuery($queryText);
+                    break;
+
                 case 'fuzzy':
                 default:
                     $query = $this->buildFuzzyQuery($queryText);
@@ -782,16 +787,14 @@ class OpenSearchService
             ],
         ];
 
-        // 只有有搜索词时才开启高亮
+        // 只有有搜索词时才开启高亮；字段按语种路由，避免把巴利文喂给中文分词器
         if ($queryText !== '') {
+            $highlightFields = $this->isCjkQuery($queryText)
+                ? ['title.text.zh', 'summary.text', 'content.text.zh']
+                : ['title.text.pali', 'content.text.pali'];
+
             $dsl['highlight'] = [
-                'fields' => [
-                    'title.text.pali' => new \stdClass,
-                    'title.text.zh' => new \stdClass,
-                    'summary.text' => new \stdClass,
-                    'content.text.pali' => new \stdClass,
-                    'content.text.zh' => new \stdClass,
-                ],
+                'fields' => array_fill_keys($highlightFields, new \stdClass),
                 'fragmenter' => 'sentence',
                 'fragment_size' => 200,
                 'number_of_fragments' => 1,
@@ -868,24 +871,327 @@ class OpenSearchService
     /**
      * 构建 fuzzy（多字段模糊）查询
      *
-     * 基于 BM25 的 multi_match best_fields 查询，
-     * 字段权重取自 $weights['fuzzy']。
+     * 按查询语种路由字段，避免巴利文被中文分词器切碎、中文被巴利文 analyzer 误伤：
+     *   - 含汉字 → 只搜 bold_* + *.text.zh + summary.text
+     *   - 巴利文（拉丁字母）→ 走三层排序（见 buildPaliFuzzyQuery）+ bold_* 提权
      *
      * @param  string  $query  搜索关键词
      * @return array OpenSearch DSL query 片段
      */
     protected function buildFuzzyQuery(string $query): array
     {
-        $fields = [];
-        foreach ($this->weights['fuzzy'] as $field => $weight) {
-            $fields[] = $field.'^'.$weight;
+        if ($this->isCjkQuery($query)) {
+            return [
+                'multi_match' => [
+                    'query' => $query,
+                    'fields' => [
+                        'bold_single^50',
+                        'bold_multi^10',
+                        'title.text.zh^3',
+                        'summary.text^2',
+                        'content.text.zh^1',
+                    ],
+                    'type' => 'best_fields',
+                ],
+            ];
+        }
+
+        return $this->buildPaliFuzzyQuery($query);
+    }
+
+    /**
+     * 巴利文 fuzzy 的计分表（全部是固定分，逐项累加）
+     *
+     * 一个文档的得分 = 命中的每一项相加，于是「部分符合」自然逐级降分：
+     *   - phrase   整句按原顺序、拼写完全相同（≥2 个词才有）
+     *   - bigram   相邻两词按原顺序、拼写相同，每对一次（≥3 个词才有，2 个词时与 phrase 重合）
+     *   - exact    单个原始词拼写相同，每词一次
+     *   - synonym  单个原始词经同义词可替代，每词一次（拼写相同的词也会命中这一项）
+     *
+     * 以 3 个词为例：整句原样 66 > 全部拼写相同但乱序 36 > 两词相邻拼写相同 + 一词同义 31
+     * > 两词拼写相同不相邻 24 > 三词全靠同义词 6 > 一词同义 2。
+     *
+     * @var array{phrase: int, bigram: int, exact: int, synonym: int}
+     */
+    private const PALI_FUZZY_SCORES = [
+        'phrase' => 20,
+        'bigram' => 5,
+        'exact' => 10,
+        'synonym' => 2,
+    ];
+
+    /**
+     * definition 的计分表（黑体字部分，每个原始词各算一次）
+     *
+     *   - single         该词是单独黑体字，拼写相同
+     *   - single_synonym 该词经同义词可替代地是单独黑体字（拼写相同的也会命中）
+     *   - multi          该词出现在多词黑体短语里，拼写相同
+     *   - multi_phrase   整句按原顺序出现在多词黑体短语里（≥2 个词才有）
+     *
+     * 正文得分按 DEFINITION_TEXT_SCALE 缩小后叠加，只用来给黑体同分的文档排先后。
+     *
+     * @var array{single: int, single_synonym: int, multi: int, multi_phrase: int}
+     */
+    private const DEFINITION_SCORES = [
+        'single' => 100,
+        'single_synonym' => 20,
+        'multi' => 30,
+        'multi_phrase' => 30,
+    ];
+
+    /**
+     * definition 模式里正文得分的缩放系数，保证正文再怎么命中也压不过一个黑体字
+     */
+    private const DEFINITION_TEXT_SCALE = 0.1;
+
+    /**
+     * 同分时的 BM25 微调权重：BM25 一般 < 30，乘上后 < 0.3，小于计分表的最小档差
+     */
+    private const TIE_BREAKER_BOOST = 0.01;
+
+    /**
+     * 巴利文停用词（小写；比较前去掉标点）
+     *
+     * 取自 pg 全文检索的 pali.stop（api-v8/public/app/fts/pali.stop），另加 vā。
+     * 停用词只参与词序打分（整句、相邻两词），不单独计分、不单独召回，见 buildPaliFuzzyQuery。
+     *
+     * @var list<string>
+     */
+    private const PALI_STOPWORDS = ['na', 'no', 'ca', 'va', 'vā', 'hi', 'pana', 'iva', 'eva'];
+
+    /**
+     * 判断原始词是否巴利文停用词
+     *
+     * @param  string  $word  原始词（可带标点，如「ca,」「‘‘na」）
+     * @return bool 是停用词返回 true
+     */
+    protected function isPaliStopword(string $word): bool
+    {
+        $normalized = mb_strtolower(preg_replace('/[^\p{L}\p{M}]/u', '', $word) ?? '');
+
+        return in_array($normalized, self::PALI_STOPWORDS, true);
+    }
+
+    /**
+     * 取出用于单独计分的词：去掉停用词；全是停用词时原样返回，避免查不到东西
+     *
+     * @param  list<string>  $words  原始词
+     * @return list<string>
+     */
+    protected function scoringWords(array $words): array
+    {
+        $contentWords = array_values(array_filter(
+            $words,
+            fn (string $word): bool => ! $this->isPaliStopword($word),
+        ));
+
+        return $contentWords === [] ? $words : $contentWords;
+    }
+
+    /**
+     * 把查询切成原始词
+     *
+     * 按空白切分，并丢掉不含字母的片段（如「–」「.」）：它们经分析器后没有 token，
+     * 留着会让按词计分的子句永远不命中。
+     *
+     * @param  string  $query  搜索关键词
+     * @return list<string>
+     */
+    protected function splitQueryWords(string $query): array
+    {
+        $words = preg_split('/\s+/u', trim($query)) ?: [];
+
+        return array_values(array_filter(
+            $words,
+            fn (string $word): bool => preg_match('/\p{L}/u', $word) === 1,
+        ));
+    }
+
+    /**
+     * 包一层 constant_score：命中即得固定分，不受 BM25 字段长度归一化影响
+     *
+     * @param  array<string, mixed>  $filter  过滤子句
+     * @param  float  $boost  命中时的固定分
+     * @return array{constant_score: array{filter: array<string, mixed>, boost: float}}
+     */
+    protected function constantScore(array $filter, float $boost): array
+    {
+        return ['constant_score' => ['filter' => $filter, 'boost' => $boost]];
+    }
+
+    /**
+     * 构建巴利文查询：词序符合、拼写相同得高分，部分符合逐级降分
+     *
+     * 命中按「原始词」（空格切分）计，不按同义词展开后的 token 计——每个原始词一个
+     * constant_score 子句，命中几个同义词都只算一次。计分表见 PALI_FUZZY_SCORES。
+     * 拼写相同打在 .exact 子字段（markdown_clean，无同义词），同义词打在 .pali。
+     * 最后加一条极小权重的 BM25 子句，只用来给同分文档排先后。
+     *
+     * 停用词（PALI_STOPWORDS）只出现在整句、相邻两词的子句里，保住词序判断；
+     * 不生成单词子句，也不进 BM25 子句，于是只命中「ca」的文档不会被召回。
+     * 两个停用词组成的相邻词对同理跳过。查询全是停用词时按普通词处理。
+     *
+     * @param  string  $query  搜索关键词
+     * @param  float  $scale  整体缩放（definition 模式用它把正文得分压到黑体字之下）
+     * @return array OpenSearch DSL query 片段
+     */
+    protected function buildPaliFuzzyQuery(string $query, float $scale = 1.0): array
+    {
+        $words = $this->splitQueryWords($query);
+        $wordCount = count($words);
+
+        if ($wordCount === 0) {
+            return ['match_all' => new \stdClass];
+        }
+
+        $scoringWords = $this->scoringWords($words);
+        $allStopwords = array_all($words, fn (string $word): bool => $this->isPaliStopword($word));
+
+        $exactFields = ['title.text.pali.exact', 'content.text.pali.exact'];
+        $fuzzyFields = ['title.text.pali', 'content.text.pali'];
+        $scores = array_map(fn (int $score): float => $score * $scale, self::PALI_FUZZY_SCORES);
+
+        $should = [];
+
+        // 词序：整句原样
+        if ($wordCount >= 2) {
+            $should[] = $this->constantScore([
+                'multi_match' => [
+                    'query' => implode(' ', $words),
+                    'type' => 'phrase',
+                    'fields' => $exactFields,
+                ],
+            ], $scores['phrase']);
+        }
+
+        // 词序：相邻两词原样（部分顺序符合）
+        if ($wordCount >= 3) {
+            for ($i = 0; $i < $wordCount - 1; $i++) {
+                $bothStopwords = $this->isPaliStopword($words[$i]) && $this->isPaliStopword($words[$i + 1]);
+                if ($bothStopwords && ! $allStopwords) {
+                    continue;
+                }
+
+                $should[] = $this->constantScore([
+                    'multi_match' => [
+                        'query' => $words[$i].' '.$words[$i + 1],
+                        'type' => 'phrase',
+                        'fields' => $exactFields,
+                    ],
+                ], $scores['bigram']);
+            }
+        }
+
+        // 拼写：每个词各算一次（停用词不算）
+        foreach ($scoringWords as $word) {
+            $should[] = $this->constantScore([
+                'multi_match' => [
+                    'query' => $word,
+                    'fields' => $exactFields,
+                    'operator' => 'and',
+                ],
+            ], $scores['exact']);
+
+            $should[] = $this->constantScore([
+                'multi_match' => [
+                    'query' => $word,
+                    'fields' => $fuzzyFields,
+                ],
+            ], $scores['synonym']);
+        }
+
+        // 同分文档按 BM25 排先后
+        $should[] = [
+            'match' => [
+                'content.text.pali' => [
+                    'query' => implode(' ', $scoringWords),
+                    'boost' => self::TIE_BREAKER_BOOST * $scale,
+                ],
+            ],
+        ];
+
+        return [
+            'bool' => [
+                'should' => $should,
+            ],
+        ];
+    }
+
+    /**
+     * 判断查询是否含中文（CJK 统一表意文字）
+     *
+     * @param  string  $query  搜索关键词
+     * @return bool 含汉字返回 true，否则按巴利文（拉丁字母）处理
+     */
+    protected function isCjkQuery(string $query): bool
+    {
+        return (bool) preg_match('/[\x{4E00}-\x{9FFF}\x{3400}-\x{4DBF}\x{F900}-\x{FAFF}]/u', $query);
+    }
+
+    /**
+     * 构建 definition（定义查询）
+     *
+     * 义注里的黑体字通常就是被解释的词，所以黑体字命中决定排序，正文只做次级排序：
+     *   - 每个原始词单独算：命中的单独黑体字（bold_single）越多分越高
+     *   - 单独黑体字 > 多词黑体短语（bold_multi）里的词
+     *   - 拼写相同 > 同义词可替代：bold_* 建索引用 standard，查询时显式指定
+     *     analyzer=standard 即是「拼写相同」，不指定则走带同义词的 pali_query_analyzer
+     *   - 用 match_phrase 而不是 match：中文在 standard 下按字切分，phrase 要求字连续，
+     *     避免一个字重合就命中
+     * 计分表见 DEFINITION_SCORES；正文部分复用 fuzzy 的计分，乘 DEFINITION_TEXT_SCALE。
+     *
+     * @param  string  $query  搜索关键词
+     * @return array OpenSearch DSL query 片段
+     */
+    protected function buildDefinitionQuery(string $query): array
+    {
+        $words = $this->splitQueryWords($query);
+
+        if ($words === []) {
+            return ['match_all' => new \stdClass];
+        }
+
+        $should = [];
+
+        // 停用词不单独算黑体分（整句的 multi_phrase 仍带上它们）
+        foreach ($this->scoringWords($words) as $word) {
+            $should[] = $this->constantScore(
+                ['match_phrase' => ['bold_single' => ['query' => $word, 'analyzer' => 'standard']]],
+                self::DEFINITION_SCORES['single'],
+            );
+            $should[] = $this->constantScore(
+                ['match_phrase' => ['bold_single' => $word]],
+                self::DEFINITION_SCORES['single_synonym'],
+            );
+            $should[] = $this->constantScore(
+                ['match_phrase' => ['bold_multi' => ['query' => $word, 'analyzer' => 'standard']]],
+                self::DEFINITION_SCORES['multi'],
+            );
+        }
+
+        if (count($words) >= 2) {
+            $should[] = $this->constantScore(
+                ['match_phrase' => ['bold_multi' => ['query' => implode(' ', $words), 'analyzer' => 'standard']]],
+                self::DEFINITION_SCORES['multi_phrase'],
+            );
+        }
+
+        // 正文：黑体同分时的次级排序，也保留没有黑体的文档（偈颂等）的召回
+        if ($this->isCjkQuery($query)) {
+            $should[] = [
+                'multi_match' => [
+                    'query' => $query,
+                    'fields' => ['title.text.zh^3', 'content.text.zh'],
+                    'boost' => self::DEFINITION_TEXT_SCALE,
+                ],
+            ];
+        } else {
+            $should[] = $this->buildPaliFuzzyQuery($query, self::DEFINITION_TEXT_SCALE);
         }
 
         return [
-            'multi_match' => [
-                'query' => $query,
-                'fields' => $fields,
-                'type' => 'best_fields',
+            'bool' => [
+                'should' => $should,
             ],
         ];
     }

@@ -36195,7 +36195,7 @@ export interface operations {
                 /** @description 每页数量，上限 100 */
                 page_size?: number;
                 /** @description 检索模式 */
-                search_mode?: "fuzzy" | "exact" | "semantic" | "hybrid";
+                search_mode?: "fuzzy" | "exact" | "semantic" | "hybrid" | "definition";
                 /** @description 资源类型 */
                 resource_type?: "article" | "term" | "dictionary" | "translation" | "origin_text" | "nissaya";
                 /** @description 限定某个资源 id */
@@ -36270,7 +36270,7 @@ export interface operations {
                      * @default fuzzy
                      * @enum {string}
                      */
-                    search_mode?: "fuzzy" | "exact" | "semantic" | "hybrid";
+                    search_mode?: "fuzzy" | "exact" | "semantic" | "hybrid" | "definition";
                     /** @description 资源类型 */
                     resource_type?: string;
                     /** @description 文档颗粒度 */
