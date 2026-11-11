@@ -923,19 +923,25 @@ class OpenSearchService
     /**
      * definition 的计分表（黑体字部分，每个原始词各算一次）
      *
-     *   - single         该词是单独黑体字，拼写相同
-     *   - single_synonym 该词经同义词可替代地是单独黑体字（拼写相同的也会命中）
-     *   - multi          该词出现在多词黑体短语里，拼写相同
-     *   - multi_phrase   整句按原顺序出现在多词黑体短语里（≥2 个词才有）
+     * 主分不分词形：同义词词典的一行就是一个词的全部变格变位，所以「任一词形」走同义词，
+     * 与 v2 search-pali-wbw 把全部词形一视同仁的口径一致；原拼写只给少量加分，排在同档前面。
      *
+     *   - single        该词（任一词形）是单独黑体字
+     *   - single_exact  再加：拼写也相同
+     *   - multi         该词（任一词形）出现在多词黑体短语里
+     *   - multi_exact   再加：拼写也相同
+     *   - multi_phrase  整句按原顺序、拼写相同出现在多词黑体短语里（≥2 个词才有）
+     *
+     * 每个词：单独黑体 ≥ 100 > 多词黑体 ≤ 35，于是命中的单独黑体字越多排越前。
      * 正文得分按 DEFINITION_TEXT_SCALE 缩小后叠加，只用来给黑体同分的文档排先后。
      *
-     * @var array{single: int, single_synonym: int, multi: int, multi_phrase: int}
+     * @var array{single: int, single_exact: int, multi: int, multi_exact: int, multi_phrase: int}
      */
     private const DEFINITION_SCORES = [
         'single' => 100,
-        'single_synonym' => 20,
+        'single_exact' => 10,
         'multi' => 30,
+        'multi_exact' => 5,
         'multi_phrase' => 30,
     ];
 
@@ -1134,8 +1140,11 @@ class OpenSearchService
      * 义注里的黑体字通常就是被解释的词，所以黑体字命中决定排序，正文只做次级排序：
      *   - 每个原始词单独算：命中的单独黑体字（bold_single）越多分越高
      *   - 单独黑体字 > 多词黑体短语（bold_multi）里的词
-     *   - 拼写相同 > 同义词可替代：bold_* 建索引用 standard，查询时显式指定
-     *     analyzer=standard 即是「拼写相同」，不指定则走带同义词的 pali_query_analyzer
+     *   - 词形不分高下（走同义词，即该词的全部变格变位），原拼写只在同档内加少量分：
+     *     bold_* 建索引用 standard，查询时显式指定 analyzer=standard 即是「拼写相同」，
+     *     不指定则走带同义词的 pali_query_analyzer
+     *   - 多词黑体也按任一词形算：bold_* 取自 wbw_templates.real（已拆连音），
+     *     正文里粘了连音（如 vitakkanti）匹配不到的词，往往靠它召回
      *   - 用 match_phrase 而不是 match：中文在 standard 下按字切分，phrase 要求字连续，
      *     避免一个字重合就命中
      * 计分表见 DEFINITION_SCORES；正文部分复用 fuzzy 的计分，乘 DEFINITION_TEXT_SCALE。
@@ -1155,18 +1164,16 @@ class OpenSearchService
 
         // 停用词不单独算黑体分（整句的 multi_phrase 仍带上它们）
         foreach ($this->scoringWords($words) as $word) {
-            $should[] = $this->constantScore(
-                ['match_phrase' => ['bold_single' => ['query' => $word, 'analyzer' => 'standard']]],
-                self::DEFINITION_SCORES['single'],
-            );
-            $should[] = $this->constantScore(
-                ['match_phrase' => ['bold_single' => $word]],
-                self::DEFINITION_SCORES['single_synonym'],
-            );
-            $should[] = $this->constantScore(
-                ['match_phrase' => ['bold_multi' => ['query' => $word, 'analyzer' => 'standard']]],
-                self::DEFINITION_SCORES['multi'],
-            );
+            foreach (['single' => 'bold_single', 'multi' => 'bold_multi'] as $tier => $field) {
+                $should[] = $this->constantScore(
+                    ['match_phrase' => [$field => $word]],
+                    self::DEFINITION_SCORES[$tier],
+                );
+                $should[] = $this->constantScore(
+                    ['match_phrase' => [$field => ['query' => $word, 'analyzer' => 'standard']]],
+                    self::DEFINITION_SCORES[$tier.'_exact'],
+                );
+            }
         }
 
         if (count($words) >= 2) {

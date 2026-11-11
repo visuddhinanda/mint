@@ -53,16 +53,17 @@ it('has no order clauses for a single pali word', function () {
     expect(constantScoreBoosts($query))->toEqual([10.0, 2.0]);
 });
 
-it('ranks definition by each matched single bold word, exact spelling first', function () {
+it('ranks definition by each matched single bold word, any word form', function () {
     $query = buildSearchQuery('buildDefinitionQuery', 'vitakko vicāro');
     $should = $query['bool']['should'];
 
-    // 每词：单独黑体拼写相同 100、单独黑体同义 20、多词黑体 30；再加整句在多词黑体里 30
-    expect(constantScoreBoosts($query))->toEqual([100.0, 20.0, 30.0, 100.0, 20.0, 30.0, 30.0]);
+    // 每词：单独黑体任一词形 100 + 原拼写 10、多词黑体任一词形 30 + 原拼写 5；再加整句在多词黑体里 30
+    expect(constantScoreBoosts($query))->toEqual([100.0, 10.0, 30.0, 5.0, 100.0, 10.0, 30.0, 5.0, 30.0]);
 
-    expect($should[0]['constant_score']['filter']['match_phrase']['bold_single'])
+    expect($should[0]['constant_score']['filter']['match_phrase']['bold_single'])->toBe('vitakko');
+    expect($should[1]['constant_score']['filter']['match_phrase']['bold_single'])
         ->toBe(['query' => 'vitakko', 'analyzer' => 'standard']);
-    expect($should[1]['constant_score']['filter']['match_phrase']['bold_single'])->toBe('vitakko');
+    expect($should[2]['constant_score']['filter']['match_phrase']['bold_multi'])->toBe('vitakko');
 
     // 正文部分整体缩小到 0.1，压不过一个黑体字
     $text = end($should);
@@ -102,6 +103,6 @@ it('treats an all-stopword query as normal words', function () {
 it('ignores stopwords for definition bold scoring', function () {
     $query = buildSearchQuery('buildDefinitionQuery', 'vitakko ca');
 
-    // 只有 vitakko 三条 + 整句在多词黑体里 30
-    expect(constantScoreBoosts($query))->toEqual([100.0, 20.0, 30.0, 30.0]);
+    // 只有 vitakko 四条 + 整句在多词黑体里 30
+    expect(constantScoreBoosts($query))->toEqual([100.0, 10.0, 30.0, 5.0, 30.0]);
 });
