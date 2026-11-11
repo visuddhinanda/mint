@@ -289,9 +289,9 @@ class IndexTipitaka extends Command
              */
             $start = $chapter->paragraph;
             if ($key === count($chapters) - 1) {
-                $end = PaliText::where('book', $book)
-                    ->orderBy('paragraph', 'desc')->first()
-                    ->value('paragraph');
+                // 不能写 ->first()->value('paragraph')：模型实例上的 value() 会新开一个不带条件的查询，
+                // 拿到全表第一行的段号，最后一章的范围变成空的、从不被索引
+                $end = PaliText::where('book', $book)->max('paragraph');
             } else {
                 $end = $chapters[$key + 1]->paragraph - 1;
             }
