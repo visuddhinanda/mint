@@ -123,6 +123,39 @@
   连音（`koṭisanthāra`、`vassaṃvutthānaṃ`）会漏。`wbw_templates` 里已有拆好的词与词根，
   可给每段写一个词根字段进索引，比维护同义词表可靠。需要重建索引。
 
+### 4.6 章节标题检索走 OpenSearch（取代 `/v3/tipitaka-chapters` 里的 PHP 匹配）
+
+2026-11-11 新建了 `GET /v3/tipitaka-chapters`（取代 v2 `search-title-index`），`q` 的容错匹配写在 PHP 里
+（`App\Services\V3\TipitakaChapterService`：去变音符号、去序号与丛书缩写、三字母粗筛 + 编辑距离，
+外加公开译本的中文章节名），**只用来先验证「按章节名定位」的效果**。验证结果见 agent-poc
+`agent-tuning/docs/retrieval-recall-2026-11.md` 第七节：插件 `locate` 一条路就让 148 道真实问题里
+能作答的从 40 题（`find` 前 3 段）到 54 题，与 `find` 互补后 74 题。
+
+正式实现要放到 OpenSearch，插件 `locate` 改调 `/v3/search`。
+
+**已有的基础**：`opensearch:index-tipitaka --granularity=chapter`（`IndexTipitaka::indexChapter`）为每个
+「章节 × channel」建一份文档（`tipitaka_chapter_{book}-{para}_{channel}`，跳过逐词 channel）：标题是该 channel
+在章节起始段的第一句——巴利原文 channel 就是三藏标题，译文 channel 就是译文标题——正文是这一章到下一个标题之前
+的文本，`related_id = "{book}-{para}"`，`granularity` 是 `chapter`（level 1 为 `book`）。所以**三藏标题与各译本的
+章节标题都已在索引设计里**，不需要另建字段。差距（本地索引 `wikipali_20260813` 只建了 paragraph 与 session，
+章节文档要先补建）：
+
+| 需要 | 现状 | 要做 |
+| --- | --- | --- |
+| 一章只出一条 | 每个 channel 一份文档，同一章会出几十条 | 查询用 `collapse: {field: related_id}`（keyword，可折叠），`inner_hits` 带回命中的是哪个标题 |
+| 不出现私有译本 | 索引不分 channel 公开与否，私有译本的标题、正文都会被搜到；文档里也没写 `metadata.channel`（`search()` 的 channel 过滤对章节文档无效） | 建索引时写 `metadata.channel` 与公开状态，查询按公开过滤（或只索引公开 channel） |
+| 不分变音符号 | `title.text.pali` 是 standard + lowercase，`ā` ≠ `a` | 加子字段：asciifolding + 去序号与括号缩写的 char_filter |
+| 名字的一部分（`parinibbāna` 找 Mahāparinibbānasuttaṃ） | 复合词标题是一个 token | 加 3-gram 子字段，或对折叠后的 keyword 用 wildcard |
+| 拼错一两个字母 | — | 折叠子字段用 `fuzziness: AUTO`；长复合词错得多时靠 ngram 的 `minimum_should_match` |
+| 译文标题进对的语言字段 | 只有 `zh*` 写进 `title.text.zh`，其余语言（en、my…）都写进 `title.text.pali`（代码里有 TODO） | 按 channel 语言分字段；非巴利、非中文的另设字段或不进标题检索 |
+| 坐标与体量 | 只有 `related_id` 字符串；章节文档没有 `path`、段数、字符数、layer | 写入 book / para / level / chapter_len / chapter_strlen / path / layer，`locate` 才能直接给出体量与路径 |
+| 每本书最后一章 | `indexChapter` 求最后一章的结束段时调用了 `$model->value('paragraph')`，它会新开一个不带条件的查询，返回的是全表第一行的段号（实测 book 162 得到 858，真实最后一段是 4669），于是最后一章的范围为空、**没有被索引** | 改成 `PaliText::where('book', $book)->max('paragraph')` |
+
+做法：新 `search_mode=title`（或 `granularity=chapter` 时的默认），`OpenSearchService` 里建查询；插件 `locate`
+改调 `/v3/search`，输出保持不变。**验收**：用 `agent-tuning/eval/recall/eval_navigate.py` + `eval_judge.py`
+重跑，locate 一路不低于 PHP 版（留出集 54/148、调参集 10/11）。`/v3/tipitaka-chapters` 继续作为 v2 替代与
+`toc`（按书列标题）的数据源，PHP 匹配不再扩展。
+
 ## 复现
 
 评测脚本目前放在开发机，没有进仓库：
