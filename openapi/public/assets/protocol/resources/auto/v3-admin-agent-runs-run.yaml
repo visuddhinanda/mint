@@ -67,6 +67,11 @@ get:
                     type: string
                   route:
                     type: string
+                    enum:
+                      - question
+                      - term
+                      - passage
+                      - chat
                     nullable: true
                   deep:
                     type: boolean

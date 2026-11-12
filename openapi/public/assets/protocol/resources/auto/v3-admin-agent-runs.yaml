@@ -35,7 +35,12 @@ get:
       in: query
       schema:
         type: string
-      description: '研究路径（question / term / passage / chat）'
+        enum:
+          - question
+          - term
+          - passage
+          - chat
+      description: '研究路径：question 一般问题 / term 术语与词 / passage 阅读页提问 / chat 闲聊'
     -
       name: 'filter[account_type]'
       in: query
@@ -116,6 +121,7 @@ get:
                       type: string
                     route:
                       type: string
+                      enum: [question, term, passage, chat]
                       nullable: true
                     deep:
                       type: boolean

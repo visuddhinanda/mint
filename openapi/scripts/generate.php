@@ -606,6 +606,16 @@ function phpTypeToSchema(string $type): array
             }
             $concrete[] = $mem;
         }
+        // 全是字符串字面量（'question'|'term'|…）→ 字符串枚举
+        $literals = array_filter($concrete, fn ($m) => preg_match("/^'[^']*'$/", $m));
+        if ($concrete && count($literals) === count($concrete)) {
+            $schema = ['type' => 'string', 'enum' => array_map(fn ($m) => trim($m, "'"), array_values($concrete))];
+            if ($nullable) {
+                $schema['nullable'] = true;
+            }
+
+            return $schema;
+        }
         $type = $concrete ? $concrete[0] : 'mixed';
     }
     $type = trim($type);

@@ -65,7 +65,7 @@ delete:
     - agent-threads
   operationId: delete_api_v3_me_agent_threads_thread_
   description: |-
-    软删：从我的历史里消失，服务器保留到期（默认 180 天）后彻底清除，期间用于防滥用。
+    软删：会话连同它的问答一起从我的历史里消失，之后任何接口都读不到；服务器上的数据永久保留（防滥用、改进回答）。
     返回软删后的会话本身（200，`deleted_at` 非空），不是 204。
 
     实现：`V3\MeAgentThreadController@destroy`

@@ -39,7 +39,7 @@ post:
               description: '设备匿名 id（uuid）。游客必填'
             client_ip:
               type: string
-              description: '客户端 IP。只对游客用于同 IP 上限'
+              description: '客户端 IP（runtime 写入）。游客必填，没有就 422；只对游客用于同 IP 上限'
           required:
             - run_id
   responses:
