@@ -10,6 +10,8 @@ import message from "./zh-Hans/message";
 import label from "./zh-Hans/label";
 import error from "./zh-Hans/error";
 import pages from "./zh-Hans/pages";
+import admin from "./zh-Hans/admin";
+import adminStats from "./zh-Hans/admin-stats";
 
 const items = {
   "columns.library.title": "藏经阁",
@@ -59,6 +61,8 @@ const items = {
   ...label,
   ...error,
   ...pages,
+  ...admin,
+  ...adminStats,
 };
 
 export default items;

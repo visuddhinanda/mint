@@ -10,6 +10,8 @@ import message from "./en-US/message";
 import label from "./en-US/label";
 import error from "./en-US/error";
 import pages from "./en-US/pages";
+import admin from "./en-US/admin";
+import adminStats from "./en-US/admin-stats";
 
 const items = {
   "columns.library.title": "Library",
@@ -59,6 +61,8 @@ const items = {
   ...label,
   ...error,
   ...pages,
+  ...admin,
+  ...adminStats,
 };
 
 export default items;

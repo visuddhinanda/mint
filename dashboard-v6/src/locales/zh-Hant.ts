@@ -10,6 +10,8 @@ import message from "./zh-Hant/message";
 import label from "./zh-Hant/label";
 import error from "./zh-Hant/error";
 import pages from "./zh-Hant/pages";
+import admin from "./zh-Hant/admin";
+import adminStats from "./zh-Hant/admin-stats";
 
 const items = {
   "columns.library.title": "藏經閣",
@@ -59,6 +61,8 @@ const items = {
   ...label,
   ...error,
   ...pages,
+  ...admin,
+  ...adminStats,
 };
 
 export default items;
