@@ -218,7 +218,6 @@ class IndexTipitaka extends Command
         } else {
             $this->openSearchService->create($document['id'], $document);
         }
-
     }
 
     protected function indexPaliSession($paraInfo, $contents, $currChapter, $related_id)
@@ -262,7 +261,6 @@ class IndexTipitaka extends Command
         } else {
             $this->openSearchService->create($document['id'], $document);
         }
-
     }
 
     /**
@@ -394,7 +392,7 @@ class IndexTipitaka extends Command
             $document['content']['text']['pali'] = $plainText;
             $document['title']['text']['pali'] = $title;
         }
-        $document['content']['display'] = $param['content'];             // 展示
+        // $document['content']['display'] = $param['content'];             // 展示
         RedisCache::put($docId, $param['content']);
 
         if ($this->isTest) {
