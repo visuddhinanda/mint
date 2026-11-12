@@ -7,6 +7,7 @@ use App\Models\ReadingDaily;
 use App\Models\UserInfo;
 use App\Models\UserOperationDaily;
 use App\Services\AuthService;
+use App\Services\V3\AgentAccount;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 
@@ -43,10 +44,10 @@ function charge(array $body, ?string $userUid = null, array $headers = [])
     return test()->postJson('/api/v3/agent-charges', $body + ['run_id' => (string) Str::uuid(), 'client_ip' => '192.0.2.1'], chargeHeaders($userUid) + $headers);
 }
 
-function spendFree(string $account, int $amount, ?string $ip = null): void
+function spendFree(AgentAccount $account, int $amount, ?string $ip = null): void
 {
     CreditLedgerEntry::create([
-        'account' => $account, 'delta' => -$amount, 'kind' => 'spend', 'bucket' => 'free',
+        ...$account->columns(), 'delta' => -$amount, 'kind' => 'spend', 'bucket' => 'free',
         'source' => 'agent_run', 'ref' => (string) Str::uuid(), 'day' => now('UTC')->toDateString(),
         'policy_version' => 1, 'client_ip' => $ip,
     ]);
@@ -65,7 +66,7 @@ it('refuses a guest without a client ip but not a signed-in user', function () {
 });
 
 it('refuses to charge for a thread that belongs to another account', function () {
-    $thread = AgentThread::factory()->create(['account' => 'user:'.Str::uuid()]);
+    $thread = AgentThread::factory()->forUser((string) Str::uuid())->create();
 
     charge(['device_id' => (string) Str::uuid(), 'thread_id' => $thread->thread_id])->assertForbidden();
     expect(CreditLedgerEntry::count())->toBe(0);
@@ -73,7 +74,7 @@ it('refuses to charge for a thread that belongs to another account', function ()
 
 it('charges for my own thread, deleted or not, and for a new one', function () {
     $device = (string) Str::uuid();
-    $thread = AgentThread::factory()->create(['account' => 'guest:'.$device, 'user_uid' => null, 'device_id' => $device]);
+    $thread = AgentThread::factory()->forGuest($device)->create();
     $thread->delete();
 
     charge(['device_id' => $device, 'thread_id' => $thread->thread_id])->assertCreated();
@@ -122,7 +123,7 @@ it('is idempotent on run_id', function () {
 
 it('spends daily free first, then earned credits', function () {
     $user = makeStudio('mix-'.Str::random(5));
-    spendFree('user:'.$user, 490);
+    spendFree(AgentAccount::user($user), 490);
     $this->artisan('credits:adjust', ['user' => $user, 'delta' => 50, '--reason' => 'test'])->assertSuccessful();
 
     charge(['deep' => true], $user)
@@ -134,7 +135,7 @@ it('spends daily free first, then earned credits', function () {
 });
 
 it('caps all guests behind one ip', function () {
-    spendFree('guest:'.Str::uuid(), 490, '198.51.100.9');
+    spendFree(AgentAccount::guest((string) Str::uuid()), 490, '198.51.100.9');
 
     charge(['device_id' => (string) Str::uuid(), 'client_ip' => '198.51.100.9'])->assertCreated();
     charge(['device_id' => (string) Str::uuid(), 'client_ip' => '198.51.100.9'])
@@ -144,7 +145,7 @@ it('caps all guests behind one ip', function () {
 });
 
 it('does not apply the ip cap to signed-in users', function () {
-    spendFree('guest:'.Str::uuid(), 500, '198.51.100.9');
+    spendFree(AgentAccount::guest((string) Str::uuid()), 500, '198.51.100.9');
 
     charge(['client_ip' => '198.51.100.9'], makeStudio('ipuser-'.Str::random(5)))->assertCreated();
 });
@@ -204,6 +205,32 @@ it('shows guest quota without earn rules', function () {
         ->assertJsonPath('data.cost.deep', 30)
         ->assertJsonPath('data.earn', [])
         ->assertJsonStructure(['data' => ['resets_at', 'policy_version', 'earned_balance', 'earned_today']]);
+});
+
+it('never mistakes a guest whose device id equals a user uid for that user', function () {
+    // 设备 id 由客户端填，可以故意填成别人的 uid：账号必须按 account_type + account_id 两列认
+    $user = makeStudio('twin-'.Str::random(5));
+    CreditLedgerEntry::create([
+        ...AgentAccount::user($user)->columns(), 'delta' => 200, 'kind' => 'adjust', 'bucket' => 'earned',
+        'source' => 'admin', 'ref' => 'gift', 'day' => now('UTC')->toDateString(), 'policy_version' => 1,
+    ]);
+    $userThread = AgentThread::factory()->forUser($user)->create();
+
+    // 看不到他的积分
+    $this->getJson("/api/v3/agent-quota?device_id={$user}")
+        ->assertOk()
+        ->assertJsonPath('data.account_type', 'guest')
+        ->assertJsonPath('data.earned_balance', 0);
+    // 不能往他的会话里提问
+    charge(['device_id' => $user, 'thread_id' => $userThread->thread_id])->assertForbidden();
+    // 花掉游客自己的赠送额度后就被拒，碰不到他的积分
+    spendFree(AgentAccount::guest($user), 100);
+    charge(['device_id' => $user])->assertStatus(402);
+
+    $this->getJson('/api/v3/agent-quota', authHeader($user))
+        ->assertJsonPath('data.account_type', 'user')
+        ->assertJsonPath('data.earned_balance', 200)
+        ->assertJsonPath('data.free_used', 0);
 });
 
 it('requires a device id for guest quota', function () {
@@ -286,11 +313,11 @@ it('settles yesterday for everyone with the daily command', function () {
 
     $this->artisan('credits:settle-activity')->assertSuccessful();
 
-    expect(CreditLedgerEntry::where('account', 'user:'.$user)->where('source', 'reading')->value('delta'))->toBe(20);
+    expect(CreditLedgerEntry::ownedBy(AgentAccount::user($user))->where('source', 'reading')->value('delta'))->toBe(20);
 
     // 重复执行不重复入账
     $this->artisan('credits:settle-activity')->assertSuccessful();
-    expect(CreditLedgerEntry::where('account', 'user:'.$user)->where('source', 'reading')->count())->toBe(1);
+    expect(CreditLedgerEntry::ownedBy(AgentAccount::user($user))->where('source', 'reading')->count())->toBe(1);
 });
 
 it('backfills every missed day since credits started, however many', function () {
@@ -313,7 +340,7 @@ it('backfills every missed day since credits started, however many', function ()
 
     $this->artisan('credits:settle-activity')->assertSuccessful();
 
-    $earned = CreditLedgerEntry::where('account', 'user:'.$user)->orderBy('day')->get(['source', 'day', 'delta'])
+    $earned = CreditLedgerEntry::ownedBy(AgentAccount::user($user))->orderBy('day')->get(['source', 'day', 'delta'])
         ->map(fn ($e) => [$e->source, $e->day->toDateString(), $e->delta])->all();
     expect($earned)->toBe([
         ['reading', now('UTC')->subDays(40)->toDateString(), 5],
@@ -335,7 +362,7 @@ it('re-settles a day that was settled before it ended and leaves closed days alo
     }
     // 那天中午就结算过（之后又读了），以及那天结束后才结算过（数额以当时为准，不再动）
     $entry = fn ($day, int $delta, $at) => CreditLedgerEntry::create([
-        'account' => 'user:'.$user, 'delta' => $delta, 'kind' => 'earn', 'bucket' => 'earned', 'source' => 'reading',
+        ...AgentAccount::user($user)->columns(), 'delta' => $delta, 'kind' => 'earn', 'bucket' => 'earned', 'source' => 'reading',
         'ref' => $day->toDateString(), 'day' => $day->toDateString(), 'policy_version' => 1,
     ])->forceFill(['updated_at' => $at])->saveQuietly();
     $entry($early, 2, $early->copy()->addHours(12));
@@ -343,7 +370,7 @@ it('re-settles a day that was settled before it ended and leaves closed days alo
 
     $this->artisan('credits:settle-activity')->assertSuccessful();
 
-    $deltas = CreditLedgerEntry::where('account', 'user:'.$user)->pluck('delta', 'ref');
+    $deltas = CreditLedgerEntry::ownedBy(AgentAccount::user($user))->pluck('delta', 'ref');
     expect($deltas[$early->toDateString()])->toBe(20)
         ->and($deltas[$closed->toDateString()])->toBe(7);
 });
@@ -355,7 +382,7 @@ it('does not keep re-settling an early-settled day whose amount was already righ
     ReadingDaily::create(['user_uid' => $user, 'day' => $day->toDateString(), 'seconds' => 120, 'seconds_reported' => 120]);
     // 当天中途结算过，数额恰好已经对了（2 分）
     CreditLedgerEntry::create([
-        'account' => 'user:'.$user, 'delta' => 2, 'kind' => 'earn', 'bucket' => 'earned', 'source' => 'reading',
+        ...AgentAccount::user($user)->columns(), 'delta' => 2, 'kind' => 'earn', 'bucket' => 'earned', 'source' => 'reading',
         'ref' => $day->toDateString(), 'day' => $day->toDateString(), 'policy_version' => 1,
     ])->forceFill(['updated_at' => $day->copy()->addHours(12)])->saveQuietly();
 
@@ -375,13 +402,13 @@ it('re-settles editing on a western client day settled before that local day end
     ]);
     // 次日 01:00 UTC（本地那天还没结束）只结算到 2 分钟
     CreditLedgerEntry::create([
-        'account' => 'user:'.$user, 'delta' => 10, 'kind' => 'earn', 'bucket' => 'earned', 'source' => 'editing',
+        ...AgentAccount::user($user)->columns(), 'delta' => 10, 'kind' => 'earn', 'bucket' => 'earned', 'source' => 'editing',
         'ref' => $day->toDateString(), 'day' => $day->toDateString(), 'policy_version' => 1,
     ])->forceFill(['updated_at' => $day->copy()->addDay()->addHour()])->saveQuietly();
 
     $this->artisan('credits:settle-activity')->assertSuccessful();
 
-    expect(CreditLedgerEntry::where('account', 'user:'.$user)->where('source', 'editing')->value('delta'))->toBe(50);
+    expect(CreditLedgerEntry::ownedBy(AgentAccount::user($user))->where('source', 'editing')->value('delta'))->toBe(50);
 });
 
 /* ------------------------------------------------------------------ 策略与调整 */
@@ -416,9 +443,9 @@ it('applies a manual adjustment only once per ref', function () {
 
 it('tells guests to sign in and users to read when out of credits', function () {
     $device = (string) Str::uuid();
-    spendFree('guest:'.$device, 100);
+    spendFree(AgentAccount::guest($device), 100);
     $user = makeStudio('out-'.Str::random(5));
-    spendFree('user:'.$user, 500);
+    spendFree(AgentAccount::user($user), 500);
 
     $guestDetail = charge(['device_id' => $device], null, ['Accept-Language' => 'zh-Hans'])->assertStatus(402)->json('detail');
     $userDetail = charge([], $user, ['Accept-Language' => 'zh-Hans'])->assertStatus(402)->json('detail');

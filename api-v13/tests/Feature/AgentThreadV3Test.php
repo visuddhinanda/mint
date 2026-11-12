@@ -121,10 +121,10 @@ it('ignores fields other than title on rename', function () {
     $me = (string) Str::uuid();
     $thread = AgentThread::factory()->forUser($me)->create();
 
-    $this->patchJson("/api/v3/me/agent-threads/{$thread->thread_id}", ['account' => 'user:someone-else'], authHeader($me))
+    $this->patchJson("/api/v3/me/agent-threads/{$thread->thread_id}", ['account_type' => 'guest', 'account_id' => (string) Str::uuid()], authHeader($me))
         ->assertOk();
 
-    expect($thread->fresh()->account)->toBe('user:'.$me);
+    expect($thread->fresh()->only('account_type', 'account_id'))->toBe(['account_type' => 'user', 'account_id' => $me]);
 });
 
 it('rejects an empty title', function () {

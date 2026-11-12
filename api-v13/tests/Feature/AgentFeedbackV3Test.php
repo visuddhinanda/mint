@@ -43,7 +43,7 @@ it('lets a guest rate an answer and change the rating', function () {
     ])->assertOk()->assertJsonPath('data.comment', '中部有这段');
 
     expect(AgentFeedback::count())->toBe(1)
-        ->and(AgentFeedback::first()->account)->toBe('guest:'.$device);
+        ->and(AgentFeedback::first()->only('account_type', 'account_id'))->toBe(['account_type' => 'guest', 'account_id' => $device]);
 });
 
 it('keeps one rating per user and per guest device', function () {
@@ -121,7 +121,7 @@ it('rejects an unknown signal', function () {
 
 it('turns improve on for the rated run of the same account only', function () {
     $device = (string) Str::uuid();
-    $mine = AgentThread::factory()->create(['account' => 'guest:'.$device, 'user_uid' => null, 'device_id' => $device]);
+    $mine = AgentThread::factory()->forGuest($device)->create();
     $run = AgentRun::factory()->for($mine, 'thread')->create(['assistant_message_id' => 'msg-c1', 'improve' => false]);
     $other = AgentRun::factory()->for(AgentThread::factory(), 'thread')->create(['assistant_message_id' => 'msg-c2', 'improve' => false]);
 
@@ -164,7 +164,9 @@ it('lists feedback with the run summary for admins only', function () {
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.question', '什么是慈？')
         ->assertJsonPath('data.0.account_type', 'guest')
-        ->assertJsonMissingPath('data.0.account');
+        ->assertJsonMissingPath('data.0.account')
+        // 对外不暴露自增主键
+        ->assertJsonMissingPath('data.0.id');
     $this->getJson('/api/v3/admin/agent-feedback?filter[tag]=missed', $admin)->assertJsonCount(1, 'data');
     $this->getJson('/api/v3/admin/agent-feedback', $admin)->assertJsonPath('meta.total', 2);
 });
@@ -189,11 +191,11 @@ it('exports a digest without identities or opted-out runs', function () {
     $user = (string) Str::uuid();
     $thread = AgentThread::factory()->forUser($user)->create();
     AgentRun::factory()->for($thread, 'thread')->create([
-        'user_uid' => $user, 'assistant_message_id' => 'd1', 'started_at' => '2026-10-20 10:00:00', 'question' => 'Q1',
+        'assistant_message_id' => 'd1', 'started_at' => '2026-10-20 10:00:00', 'question' => 'Q1',
         'plan' => ['lemmas' => ['mettā'], 'keywords' => [['lemma' => 'mettā', 'tags' => 'sutta']]],
     ]);
-    AgentRun::factory()->for($thread, 'thread')->create(['user_uid' => $user, 'started_at' => '2026-10-20 10:00:30', 'question' => 'Q2']);
-    AgentRun::factory()->for($thread, 'thread')->create(['user_uid' => $user, 'started_at' => '2026-10-20 10:05:00', 'question' => 'secret', 'improve' => false]);
+    AgentRun::factory()->for($thread, 'thread')->create(['started_at' => '2026-10-20 10:00:30', 'question' => 'Q2']);
+    AgentRun::factory()->for($thread, 'thread')->create(['started_at' => '2026-10-20 10:05:00', 'question' => 'secret', 'improve' => false]);
     $this->postJson('/api/v3/agent-events', ['message_id' => 'd1', 'kind' => 'copy'], authHeader($user));
 
     $res = $this->getJson('/api/v3/admin/agent-runs/digest?from=2026-10-20&to=2026-10-20', feedbackAdmin())->assertOk();
@@ -201,7 +203,7 @@ it('exports a digest without identities or opted-out runs', function () {
 
     expect(array_column($items, 'question'))->toBe(['Q1', 'Q2'])
         ->and($items[0])->toMatchArray(['lemmas' => ['mettā'], 'keywords' => ['mettā|sutta'], 'events' => ['copy' => 1], 'next_question_after_s' => 30])
-        ->and($items[0])->not->toHaveKeys(['user', 'user_uid', 'device_id', 'client_ip', 'account', 'answer', 'evidence'])
+        ->and($items[0])->not->toHaveKeys(['user', 'user_uid', 'device_id', 'client_ip', 'account_id', 'answer', 'evidence'])
         ->and($res->json('meta.has_more'))->toBeFalse();
 });
 

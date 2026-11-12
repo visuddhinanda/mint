@@ -92,12 +92,12 @@ it('records a guest run with device id and ip', function () {
         ->assertJsonPath('data.account_type', 'guest');
 
     $run = AgentRun::where('run_id', $payload['run_id'])->firstOrFail();
-    expect($run->user_uid)->toBeNull()
-        ->and($run->device_id)->toBe($payload['device_id'])
+    expect($run->account_type)->toBe('guest')
+        ->and($run->account_id)->toBe($payload['device_id'])
         ->and($run->client_ip)->toBe('203.0.113.7')
         ->and($run->plan)->toBe(['lemmas' => ['ariyasacca']])
         ->and($run->steps()->count())->toBe(3)
-        ->and($run->thread->account)->toBe('guest:'.$payload['device_id'])
+        ->and($run->thread->only('account_type', 'account_id'))->toBe(['account_type' => 'guest', 'account_id' => $payload['device_id']])
         ->and($run->thread->title)->toBe('什么是四圣谛？');
 });
 
@@ -126,7 +126,7 @@ it('treats a model token as a guest', function () {
         'Authorization' => 'Bearer '.AuthService::getUserToken($model->uid),
     ])->assertCreated()->assertJsonPath('data.account_type', 'guest');
 
-    expect(AgentRun::where('run_id', $payload['run_id'])->value('user_uid'))->toBeNull();
+    expect(AgentRun::where('run_id', $payload['run_id'])->value('account_type'))->toBe('guest');
 });
 
 /* ------------------------------------------------------------------ 登录用户 */
@@ -140,10 +140,10 @@ it('records a user run without device id or ip', function () {
         ->assertJsonPath('data.account_type', 'user');
 
     $run = AgentRun::where('run_id', $payload['run_id'])->firstOrFail();
-    expect($run->user_uid)->toBe($user)
-        ->and($run->device_id)->toBeNull()
+    expect($run->account_type)->toBe('user')
+        ->and($run->account_id)->toBe($user)
         ->and($run->client_ip)->toBeNull()
-        ->and($run->thread->account)->toBe('user:'.$user);
+        ->and($run->thread->only('account_type', 'account_id'))->toBe(['account_type' => 'user', 'account_id' => $user]);
 });
 
 it('records a run even when the user opted out of improvement', function () {
@@ -164,7 +164,7 @@ it('rejects a thread id that belongs to another account', function () {
         ->assertJsonPath('status', 403);
 
     expect(AgentThread::where('thread_id', $thread)->count())->toBe(1)
-        ->and(AgentThread::where('thread_id', $thread)->value('account'))->toStartWith('guest:');
+        ->and(AgentThread::where('thread_id', $thread)->value('account_type'))->toBe('guest');
 });
 
 it('appends runs to the same thread and advances last_run_at', function () {

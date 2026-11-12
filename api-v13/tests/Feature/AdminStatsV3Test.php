@@ -126,8 +126,8 @@ it('summarises agent runs', function () {
     $userThread = AgentThread::factory()->forUser($user)->create();
     $guestThread = AgentThread::factory()->create();
     $at = '2026-10-20 10:00:00';
-    AgentRun::factory()->for($userThread, 'thread')->create(['route' => 'term', 'deep' => true, 'latency_ms' => 1000, 'started_at' => $at, 'user_uid' => $user, 'tokens_in' => 100]);
-    AgentRun::factory()->for($userThread, 'thread')->create(['route' => 'passage', 'latency_ms' => 3000, 'started_at' => $at, 'user_uid' => $user]);
+    AgentRun::factory()->for($userThread, 'thread')->create(['route' => 'term', 'deep' => true, 'latency_ms' => 1000, 'started_at' => $at, 'tokens_in' => 100]);
+    AgentRun::factory()->for($userThread, 'thread')->create(['route' => 'passage', 'latency_ms' => 3000, 'started_at' => $at]);
     AgentRun::factory()->for($guestThread, 'thread')->create(['route' => null, 'status' => 'denied', 'latency_ms' => 50, 'started_at' => $at, 'improve' => false]);
     AgentRun::factory()->for($guestThread, 'thread')->create(['route' => 'question', 'status' => 'ok', 'latency_ms' => 99999, 'started_at' => '2026-09-01 00:00:00']);
 
@@ -153,7 +153,7 @@ it('lists tool calls and credit flows', function () {
         ['seq' => 2, 'kind' => 'event', 'name' => 'quota', 'args' => ['result' => 'unchecked']],
     ]);
     DB::table('credit_ledger')->insert([
-        'account' => $thread->account, 'delta' => -10, 'kind' => 'spend', 'bucket' => 'free', 'source' => 'agent_run',
+        'account_type' => $thread->account_type, 'account_id' => $thread->account_id, 'delta' => -10, 'kind' => 'spend', 'bucket' => 'free', 'source' => 'agent_run',
         'ref' => $run->run_id, 'day' => '2026-10-20', 'policy_version' => 1, 'created_at' => now(), 'updated_at' => now(),
     ]);
 
@@ -185,7 +185,7 @@ it('lists runs newest first with filters', function () {
 it('shows the full research process of a run', function () {
     $user = makeStudio('asker-'.Str::random(4));
     $thread = AgentThread::factory()->forUser($user)->create();
-    $run = AgentRun::factory()->for($thread, 'thread')->create(['user_uid' => $user, 'evidence' => '证据全文']);
+    $run = AgentRun::factory()->for($thread, 'thread')->create(['evidence' => '证据全文']);
     $run->steps()->create(['seq' => 0, 'kind' => 'route', 'args' => ['route' => 'term']]);
 
     $this->getJson("/api/v3/admin/agent-runs/{$run->run_id}", authHeader(makeAdmin()))
