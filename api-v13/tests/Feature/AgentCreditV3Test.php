@@ -39,7 +39,8 @@ function chargeHeaders(?string $userUid = null): array
 
 function charge(array $body, ?string $userUid = null, array $headers = [])
 {
-    return test()->postJson('/api/v3/agent-charges', $body + ['run_id' => (string) Str::uuid()], chargeHeaders($userUid) + $headers);
+    // 游客必须带客户端 IP（runtime 写入）；没指定就给一个测试用的
+    return test()->postJson('/api/v3/agent-charges', $body + ['run_id' => (string) Str::uuid(), 'client_ip' => '192.0.2.1'], chargeHeaders($userUid) + $headers);
 }
 
 function spendFree(string $account, int $amount, ?string $ip = null): void
@@ -52,6 +53,16 @@ function spendFree(string $account, int $amount, ?string $ip = null): void
 }
 
 /* ------------------------------------------------------------------ 扣费 */
+
+it('refuses a guest without a client ip but not a signed-in user', function () {
+    $this->postJson('/api/v3/agent-charges', ['run_id' => (string) Str::uuid(), 'device_id' => (string) Str::uuid()], chargeHeaders())
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('client_ip');
+    expect(CreditLedgerEntry::count())->toBe(0);
+
+    $this->postJson('/api/v3/agent-charges', ['run_id' => (string) Str::uuid()], chargeHeaders(makeStudio('noip-'.Str::random(5))))
+        ->assertCreated();
+});
 
 it('refuses to charge for a thread that belongs to another account', function () {
     $thread = AgentThread::factory()->create(['account' => 'user:'.Str::uuid()]);

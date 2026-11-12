@@ -249,9 +249,9 @@ it('rejects an unknown status', function () {
         ->assertJsonValidationErrors('status');
 });
 
-it('rejects an unknown step kind', function () {
+it('rejects a step kind longer than the column (unknown kinds are kept, see AgentRouteEnumTest)', function () {
     $this->postJson('/api/v3/agent-traces', tracePayload([
-        'steps' => [['seq' => 0, 'kind' => 'bogus']],
+        'steps' => [['seq' => 0, 'kind' => str_repeat('k', 17)]],
     ]), agentHeaders())
         ->assertUnprocessable()
         ->assertJsonValidationErrors('steps.0.kind');
