@@ -43,4 +43,14 @@ return [
     'agent_grant_invalid' => '写入授权无效、已过期或已撤销。',
     'agent_grant_scope' => '写入授权不覆盖这条内容。',
 
+    'agent_device_required' => '未登录时必须带 device_id。',
+    'agent_client_ip_required' => '未登录时必须带客户端 IP。',
+    'agent_thread_forbidden' => '这个会话属于别的账号，请新开一个会话。',
+    'agent_quota_insufficient_user' => '今天的积分不够这次提问了。读经可以赚取积分。',
+    'agent_quota_insufficient_guest' => '今天的免费提问次数用完了。登录后每天有更多次数。',
+    'agent_quota_ip_cap' => '今天同一网络下的提问太多了，请登录后继续。',
+    'reading_time_day_out_of_range' => '读经时长只能上报今天或 2 天内的。',
+    'stats_range_too_long' => '时间范围最多 :days 天。',
+    'agent_feedback_tags' => '标签和评价不配套。',
+
 ];
