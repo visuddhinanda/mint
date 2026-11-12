@@ -81,6 +81,9 @@ post:
                     type: string
                   account_type:
                     type: string
+                    enum:
+                      - user
+                      - guest
                   created_at:
                     type: string
     201:
@@ -99,6 +102,9 @@ post:
                     type: string
                   account_type:
                     type: string
+                    enum:
+                      - user
+                      - guest
                   created_at:
                     type: string
     401:

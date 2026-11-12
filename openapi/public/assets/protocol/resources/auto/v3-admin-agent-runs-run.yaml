@@ -40,6 +40,9 @@ get:
                     nullable: true
                   account_type:
                     type: string
+                    enum:
+                      - user
+                      - guest
                   user:
                     type: object
                     properties:

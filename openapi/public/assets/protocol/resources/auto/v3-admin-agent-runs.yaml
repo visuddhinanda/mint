@@ -101,6 +101,7 @@ get:
                       nullable: true
                     account_type:
                       type: string
+                      enum: [user, guest]
                     user:
                       type: object
                       properties: { id: { type: string }, nickName: { type: string }, userName: { type: string }, realName: { type: string }, sn: { type: integer }, avatar: { type: string }, roles: { type: array, items: { type: string } } }
