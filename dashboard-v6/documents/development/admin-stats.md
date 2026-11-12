@@ -35,7 +35,7 @@
 | 指标 | 口径 | 来源 |
 |---|---|---|
 | 提问数 | 区间内开始的提问（`started_at`） | `agent_runs` |
-| 提问的人 | 登录用户按账号、游客按设备匿名 id 去重 | `agent_threads.account` |
+| 提问的人 | 登录用户按账号、游客按设备匿名 id 去重 | `agent_threads.account_type` + `account_id` |
 | 响应耗时 | 成功（status=ok）提问的 `latency_ms` P50 / P95 | `agent_runs` |
 | 拦截 / 出错 | status = denied（额度不足）与 error（已退积分）；另列「未查额度放行」次数（2026-11 起 agent 不再放行，mint 不可用时回网络错误并记 denied；这一项只剩历史数据） | `agent_runs`、`agent_run_steps`（event · quota） |
 | 每日提问 | 按研究路径（question / term / passage / chat）堆叠 | `agent_runs.route` |

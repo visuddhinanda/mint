@@ -34939,7 +34939,6 @@ export interface operations {
                 content: {
                     "application/json": {
                         data?: {
-                            id?: number;
                             message_id?: string;
                             rating?: number;
                             tags?: string[];
@@ -35001,7 +35000,8 @@ export interface operations {
                             run_id?: string;
                             thread_id?: string | null;
                             thread_title?: string | null;
-                            account_type?: string;
+                            /** @enum {string} */
+                            account_type?: "user" | "guest";
                             user?: {
                                 id?: string;
                                 nickName?: string;
@@ -35125,7 +35125,8 @@ export interface operations {
                             run_id?: string;
                             thread_id?: string | null;
                             thread_title?: string | null;
-                            account_type?: string;
+                            /** @enum {string} */
+                            account_type?: "user" | "guest";
                             user?: {
                                 id?: string;
                                 nickName?: string;
@@ -35797,7 +35798,8 @@ export interface operations {
                         data?: {
                             run_id?: string;
                             thread_id?: string;
-                            account_type?: string;
+                            /** @enum {string} */
+                            account_type?: "user" | "guest";
                             created_at?: string;
                         };
                     };
@@ -35813,7 +35815,8 @@ export interface operations {
                         data?: {
                             run_id?: string;
                             thread_id?: string;
-                            account_type?: string;
+                            /** @enum {string} */
+                            account_type?: "user" | "guest";
                             created_at?: string;
                         };
                     };

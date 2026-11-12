@@ -12,6 +12,8 @@ import dayjs from "dayjs";
 import type { AgentFeedbackItem } from "../../api/adminStats";
 import { useAgentFeedback } from "../../hooks/useAdminStats";
 import AgentRunDrawer from "./AgentRunDrawer";
+
+const PAGE_SIZE = 20;
 import { useT } from "./helpers";
 
 const UP_TAGS = ["accurate", "useful_citations", "clear", "inspiring"];
@@ -26,10 +28,14 @@ const AgentFeedbackTable = () => {
   const [runId, setRunId] = useState<string | null>(null);
   const { data, loading } = useAgentFeedback({
     page,
-    per_page: 20,
+    per_page: PAGE_SIZE,
     ...(filters.rating ? { "filter[rating]": String(filters.rating) as "1" | "-1" } : {}),
     ...(filters.tag ? { "filter[tag]": filters.tag } : {}),
   });
+
+  // 评价没有对外的 id（接口不返回自增主键，也没有按单条评价查询的接口）：
+  // 表格只读，行 key 用「分页偏移 + 页内序号」即可
+  const rows = (data?.data ?? []).map((item, i) => ({ ...item, key: (page - 1) * PAGE_SIZE + i }));
 
   const columns: ColumnsType<AgentFeedbackItem> = [
     {
@@ -101,12 +107,11 @@ const AgentFeedbackTable = () => {
     <>
       <Table<AgentFeedbackItem>
         size="small"
-        rowKey="id"
         columns={columns}
-        dataSource={data?.data ?? []}
+        dataSource={rows}
         loading={loading}
         scroll={{ x: 1000 }}
-        pagination={{ current: page, pageSize: 20, total: data?.meta?.total ?? 0, showSizeChanger: false, onChange: setPage }}
+        pagination={{ current: page, pageSize: PAGE_SIZE, total: data?.meta?.total ?? 0, showSizeChanger: false, onChange: setPage }}
         onChange={(_, f, __, extra) => {
           // 翻页也会触发 onChange：只在筛选时重置筛选条件与页码
           if (extra.action !== "filter") return;
