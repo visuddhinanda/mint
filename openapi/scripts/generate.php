@@ -1109,7 +1109,10 @@ $main = [
         'description' => "International Academy Of Pali Tipitaka(国际巴利三藏学院)\n\n" .
             "由 `php openapi/scripts/generate.php` 依据 api-v13 的路由与控制器源码生成。\n" .
             "响应统一封装为 `{ok, message, data}`；`ok=false` 时 `message` 为错误信息。",
-        'version' => date('Y.n.j'),
+        // 固定值，不要用日期或提交号：规格完全由代码决定，「哪一版」看 git 就够了。
+        // 曾用 date('Y.n.j')，结果隔天重跑就让 main.yaml 与 api-test 生成客户端的 160 个文件
+        // 全部出现只改版本行的 diff，CI 的 `generate.php && git diff --exit-code` 也会无故失败。
+        'version' => '1.0.0',
     ],
     // 第一项是 Swagger UI 的默认选择，放同源代理，避免 Try it out 误打生产
     'servers' => [
