@@ -5841,8 +5841,12 @@ export interface paths {
         get: operations["get_api_v2_share"];
         put?: never;
         /**
-         * 新建 share
-         * @description 实现：`ShareController@store`
+         * 为资源添加协作者。
+         * @description 只有资源拥有者能调用（与 update / destroy 的「power > 20」同口径）。
+         *     资源归属按 res_type 到对应表里查，查不到即拒绝——客户端谎报 res_type
+         *     只会让自己被拒，不会绕过校验。
+         *
+         *     实现：`ShareController@store`
          */
         post: operations["post_api_v2_share"];
         delete?: never;
@@ -28302,15 +28306,25 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: {
+        requestBody: {
             content: {
                 "application/json": {
-                    user_id?: string;
-                    res_id?: string;
-                    res_type?: string;
-                    user_type?: string;
-                    /** @enum {string} */
-                    role?: "manager" | "editor" | "reader";
+                    /** @description 资源 uid */
+                    res_id: string;
+                    /** @description 资源类型：2 channel、3 文章、4 文集、6 工作流、7 项目、8 AI 模型 */
+                    res_type: number;
+                    /** @description 协作者 uid 列表（用户或群组） */
+                    user_id: unknown[];
+                    /**
+                     * @description 协作者类型
+                     * @enum {string}
+                     */
+                    user_type: "user" | "group";
+                    /**
+                     * @description 协作者角色
+                     * @enum {string}
+                     */
+                    role: "manager" | "editor" | "reader";
                 };
             };
         };
