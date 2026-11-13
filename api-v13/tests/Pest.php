@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Channel;
+use App\Models\GroupInfo;
+use App\Models\GroupMember;
 use App\Models\Sentence;
 use App\Models\UserInfo;
 use App\Services\AuthService;
@@ -175,4 +177,43 @@ function makeSentence(string $channelUid, int $book, int $para, int $wordStart, 
     ])->save();
 
     return $sentence;
+}
+
+/**
+ * 建一个团队（group），创建者以 owner（power 0）入团，返回 group uid。
+ *
+ * 与 v2 `GroupController@store` 写入的两行一致。
+ */
+function makeGroup(string $ownerUid, string $name = 'test team'): string
+{
+    $uid = (string) Str::uuid();
+    (new GroupInfo)->forceFill([
+        'id' => random_int(1, PHP_INT_MAX),
+        'uid' => $uid,
+        'name' => $name,
+        'owner' => $ownerUid,
+        'create_time' => time() * 1000,
+        'modify_time' => time() * 1000,
+    ])->save();
+    addGroupMember($uid, $ownerUid, 0);
+
+    return $uid;
+}
+
+/**
+ * 把用户加进团队。power：0 owner、1 manager、2 普通成员（v2 口径）。
+ */
+function addGroupMember(string $groupUid, string $userUid, int $power = 2, ?string $role = null): GroupMember
+{
+    $member = new GroupMember;
+    $member->forceFill(array_filter([
+        'id' => random_int(1, PHP_INT_MAX),
+        'user_id' => $userUid,
+        'group_id' => $groupUid,
+        'group_name' => GroupInfo::where('uid', $groupUid)->value('name'),
+        'power' => $power,
+        'role' => $role,
+    ], fn ($value) => $value !== null))->save();
+
+    return $member;
 }
