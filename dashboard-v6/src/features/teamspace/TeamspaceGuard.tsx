@@ -8,8 +8,8 @@ import { useCurrentRouteId } from "../../hooks/useCurrentRouteId";
 import { TEAMSPACE_HINT, teamspaceAvailability } from "./scope";
 
 /**
- * 团队空间下拦住还不能用的页面（菜单置灰之外，直接输入地址也进不去）。
- * 个人空间下原样渲染。
+ * 拦住当前空间下不能用的页面（菜单置灰之外，直接输入地址也进不去）：
+ * 团队空间里拦个人专属与尚未支持的模块，个人空间里拦只属于团队空间的页面。
  */
 const TeamspaceGuard = ({ children }: { children: React.ReactNode }) => {
   const intl = useIntl();
@@ -17,8 +17,8 @@ const TeamspaceGuard = ({ children }: { children: React.ReactNode }) => {
   const routeId = useCurrentRouteId();
   const { isTeamspace } = useActiveStudio();
 
-  const availability = teamspaceAvailability(routeId);
-  if (!isTeamspace || availability === "available") {
+  const availability = teamspaceAvailability(routeId, isTeamspace);
+  if (availability === "available") {
     return <>{children}</>;
   }
 
@@ -28,9 +28,11 @@ const TeamspaceGuard = ({ children }: { children: React.ReactNode }) => {
         status="info"
         title={intl.formatMessage({ id: TEAMSPACE_HINT[availability] })}
         extra={
-          <Button type="primary" onClick={() => dispatch(studioSignOut())}>
-            {intl.formatMessage({ id: "buttons.teamspace.leave" })}
-          </Button>
+          isTeamspace ? (
+            <Button type="primary" onClick={() => dispatch(studioSignOut())}>
+              {intl.formatMessage({ id: "buttons.teamspace.leave" })}
+            </Button>
+          ) : undefined
         }
       />
     </div>

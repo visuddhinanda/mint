@@ -721,6 +721,18 @@ paths:
     $ref: ./resources/auto/v3-discussions-discussion-replies.yaml
   /v3/email-certifications:
     $ref: ./resources/auto/v3-email-certifications.yaml
+  /v3/groups:
+    $ref: ./resources/auto/v3-groups.yaml
+  '/v3/groups/{group}':
+    $ref: ./resources/auto/v3-groups-group.yaml
+  '/v3/groups/{group}/members':
+    $ref: ./resources/auto/v3-groups-group-members.yaml
+  '/v3/groups/{group}/members/{member}':
+    $ref: ./resources/auto/v3-groups-group-members-member.yaml
+  '/v3/groups/{group}/shares':
+    $ref: ./resources/auto/v3-groups-group-shares.yaml
+  '/v3/groups/{group}/shares/{share}':
+    $ref: ./resources/auto/v3-groups-group-shares-share.yaml
   /v3/heartbeat:
     $ref: ./resources/auto/v3-heartbeat.yaml
   /v3/invites:
@@ -735,6 +747,8 @@ paths:
     $ref: ./resources/auto/v3-me-agent-threads-thread.yaml
   '/v3/me/agent-threads/{thread}/archive':
     $ref: ./resources/auto/v3-me-agent-threads-thread-archive.yaml
+  /v3/me/groups:
+    $ref: ./resources/auto/v3-me-groups.yaml
   /v3/me/reactions:
     $ref: ./resources/auto/v3-me-reactions.yaml
   '/v3/me/reactions/{reaction}':

@@ -102,6 +102,7 @@ const items = {
   "group.fields.name.label": "团队名",
   "group.files": "团队文档",
   "group.member": "团队成员",
+  "forms.message.group.leave": "确定退出这个团队吗？",
 };
 
 export default items;

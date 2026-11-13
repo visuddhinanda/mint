@@ -122,15 +122,16 @@ function findOpenKeys(
 /* ================= 团队空间置灰 ================= */
 
 /**
- * 团队空间下把不可用的菜单置灰并给出原因；有子菜单的，子项全灰才灰。
+ * 把当前空间（个人 / 团队）下不可用的菜单置灰并给出原因；有子菜单的，子项全灰才灰。
  */
 function applyTeamspace(
   items: MenuItem[],
+  isTeamspace: boolean,
   hint: (id: string) => string
 ): MenuItem[] {
   return items.map((item) => {
     if (item.children) {
-      const children = applyTeamspace(item.children, hint);
+      const children = applyTeamspace(item.children, isTeamspace, hint);
       return {
         ...item,
         children,
@@ -140,7 +141,7 @@ function applyTeamspace(
     const scopeId =
       item.scopeId ??
       (typeof item.activeId === "string" ? item.activeId : undefined);
-    const availability = teamspaceAvailability(scopeId);
+    const availability = teamspaceAvailability(scopeId, isTeamspace);
     if (item.type === "divider" || availability === "available") {
       return item;
     }
@@ -155,6 +156,21 @@ function applyTeamspace(
       ),
     };
   });
+}
+
+/* ================= 交给 antd 前去掉内部字段 ================= */
+
+/** activeId / scopeId 只给本文件用，透传给 antd 会落到 DOM 上并报警告 */
+function toAntdItems(items: MenuItem[]): MenuProps["items"] {
+  return items.map((item) => {
+    const rest: Partial<MenuItem> = { ...item };
+    delete rest.activeId;
+    delete rest.scopeId;
+    if (item.children) {
+      rest.children = toAntdItems(item.children) as MenuItem[];
+    }
+    return rest;
+  }) as MenuProps["items"];
 }
 
 /* ================= 组件 ================= */
@@ -376,6 +392,11 @@ const Widget = ({ onSearch }: Props) => {
           activeId: "workspace.team",
         },
         {
+          key: "/workspace/members",
+          label: intl.formatMessage({ id: "labels.teamspace.members" }),
+          activeId: "workspace.members",
+        },
+        {
           key: "/workspace/invite",
           label: intl.formatMessage({
             id: "columns.studio.invite.title",
@@ -392,9 +413,9 @@ const Widget = ({ onSearch }: Props) => {
       ],
     },
   ];
-  const items = isTeamspace
-    ? applyTeamspace(allItems, (id) => intl.formatMessage({ id }))
-    : allItems;
+  const items = applyTeamspace(allItems, isTeamspace, (id) =>
+    intl.formatMessage({ id })
+  );
 
   /** 当前选中 */
   const selectedKey = findSelectedKey(items, routeId);
@@ -423,7 +444,7 @@ const Widget = ({ onSearch }: Props) => {
         mode="inline"
         selectedKeys={selectedKey ? [selectedKey] : []}
         defaultOpenKeys={openKeys}
-        items={items as MenuProps["items"]}
+        items={toAntdItems(items)}
         onClick={handleClick}
         style={{ borderRight: 0 }}
       />

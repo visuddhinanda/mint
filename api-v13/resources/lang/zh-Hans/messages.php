@@ -53,4 +53,12 @@ return [
     'stats_range_too_long' => '时间范围最多 :days 天。',
     'agent_feedback_tags' => '标签和评价不配套。',
 
+    'group_forbidden' => '你在这个团队里的角色不能执行这个操作。',
+    'group_user_not_found' => '没有这个用户。',
+    'group_member_exists' => '这个用户已经是团队成员了。',
+    'group_owner_immutable' => '团队拥有者不能被修改或移除。',
+    'group_not_member' => '你不是这个团队的成员。',
+    'group_has_resources' => '团队名下还有资源，请先转让或删除它们再删除团队。',
+    'group_name_exists' => '你名下已经有同名的团队了。',
+    'group_share_not_found' => '这项资源没有共享给这个团队。',
 ];

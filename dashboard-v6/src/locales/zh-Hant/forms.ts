@@ -102,6 +102,7 @@ const items = {
   "group.fields.name.label": "團隊名",
   "group.files": "團隊文件",
   "group.member": "團隊成員",
+  "forms.message.group.leave": "確定退出這個團隊嗎？",
 };
 
 export default items;

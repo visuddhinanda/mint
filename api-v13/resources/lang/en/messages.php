@@ -53,4 +53,12 @@ return [
     'stats_range_too_long' => 'The date range can be at most :days days.',
     'agent_feedback_tags' => 'These tags do not match the rating.',
 
+    'group_forbidden' => 'Your role in this team does not allow this action.',
+    'group_user_not_found' => 'No such user.',
+    'group_member_exists' => 'This user is already a member of the team.',
+    'group_owner_immutable' => 'The team owner cannot be changed or removed.',
+    'group_not_member' => 'You are not a member of this team.',
+    'group_has_resources' => 'The team still owns resources. Transfer or delete them before deleting the team.',
+    'group_name_exists' => 'You already have a team with this name.',
+    'group_share_not_found' => 'This resource is not shared with this team.',
 ];

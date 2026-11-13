@@ -2982,13 +2982,17 @@ export interface paths {
         };
         /**
          * 列出 group
-         * @description 实现：`GroupController@index`
+         * @deprecated
+         * @description `view=all` 已被 `GET /v3/groups?search=`（只搜公开团队）取代；
+         *     `view=studio`（含 `view2`）已被 `GET /v3/me/groups?owned=true|false` 取代。
+         *     保留仅为 dashboard-v4 兼容，待 v4 下线后删除。
          */
         get: operations["get_api_v2_group"];
         put?: never;
         /**
          * 新建 group
-         * @description 实现：`GroupController@store`
+         * @deprecated
+         * @description 已被 `POST /v3/groups` 取代。保留仅为 dashboard-v4 兼容，待 v4 下线后删除。
          */
         post: operations["post_api_v2_group"];
         delete?: never;
@@ -3006,13 +3010,17 @@ export interface paths {
         };
         /**
          * 列出 group-member
-         * @description 实现：`GroupMemberController@index`
+         * @deprecated
+         * @description `view=user` 已被 `GET /v3/me/groups` 取代，`view=group` 已被 `GET /v3/groups/{group}/members` 取代。
+         *     保留仅为 dashboard-v4 兼容，待 v4 下线后删除。
          */
         get: operations["get_api_v2_group_member"];
         put?: never;
         /**
-         * 新建 group-member
-         * @description 实现：`GroupMemberController@store`
+         * 往团队里加一名普通成员。
+         * @deprecated
+         * @description 已被 `POST /v3/groups/{group}/members` 取代（v3 可指定角色，默认 reader）。
+         *     2026-11-13 起要求调用者是该团队的 owner / manager。保留仅为 dashboard-v4 兼容，待 v4 下线后删除。
          */
         post: operations["post_api_v2_group_member"];
         delete?: never;
@@ -3035,20 +3043,24 @@ export interface paths {
         get: operations["get_api_v2_group_member_group_member_"];
         /**
          * 更新 group-member/{group_member}
-         * @description 实现：`GroupMemberController@update`
+         * @deprecated
+         * @description 空实现。改成员角色请用 `PATCH /v3/groups/{group}/members/{member}`。
          */
         put: operations["put_api_v2_group_member_group_member_"];
         post?: never;
         /**
          * 删除 group-member/{group_member}
-         * @description 实现：`GroupMemberController@destroy`
+         * @deprecated
+         * @description 已被 `DELETE /v3/groups/{group}/members/{member}` 取代（v3 允许本人退出团队）。
+         *     保留仅为 dashboard-v4 兼容，待 v4 下线后删除。
          */
         delete: operations["delete_api_v2_group_member_group_member_"];
         options?: never;
         head?: never;
         /**
          * 更新 group-member/{group_member}
-         * @description 实现：`GroupMemberController@update`
+         * @deprecated
+         * @description 空实现。改成员角色请用 `PATCH /v3/groups/{group}/members/{member}`。
          */
         patch: operations["patch_api_v2_group_member_group_member_"];
         trace?: never;
@@ -3062,7 +3074,8 @@ export interface paths {
         };
         /**
          * 获取我的，和协作channel数量
-         * @description 实现：`GroupController@showMyNumber`
+         * @deprecated
+         * @description 改读 `GET /v3/me/groups?owned=true|false` 的 `meta.total`。保留仅为 dashboard-v4 兼容，待 v4 下线后删除。
          */
         get: operations["get_api_v2_group_my_number"];
         put?: never;
@@ -3082,25 +3095,29 @@ export interface paths {
         };
         /**
          * 获取单个 group/{group}
-         * @description 实现：`GroupController@show`
+         * @deprecated
+         * @description 已被 `GET /v3/groups/{group}` 取代。保留仅为 dashboard-v4 兼容，待 v4 下线后删除。
          */
         get: operations["get_api_v2_group_group_"];
         /**
          * 更新 group/{group}
-         * @description 实现：`GroupController@update`
+         * @deprecated
+         * @description 已被 `PATCH /v3/groups/{group}`（局部更新，owner / manager 可改）取代。保留仅为 dashboard-v4 兼容，待 v4 下线后删除。
          */
         put: operations["put_api_v2_group_group_"];
         post?: never;
         /**
          * 删除 group/{group}
-         * @description 实现：`GroupController@destroy`
+         * @deprecated
+         * @description 已被 `DELETE /v3/groups/{group}` 取代（名下还有资源时 409）。保留仅为 dashboard-v4 兼容，待 v4 下线后删除。
          */
         delete: operations["delete_api_v2_group_group_"];
         options?: never;
         head?: never;
         /**
          * 更新 group/{group}
-         * @description 实现：`GroupController@update`
+         * @deprecated
+         * @description 已被 `PATCH /v3/groups/{group}`（局部更新，owner / manager 可改）取代。保留仅为 dashboard-v4 兼容，待 v4 下线后删除。
          */
         patch: operations["patch_api_v2_group_group_"];
         trace?: never;
@@ -8218,6 +8235,170 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v3/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 搜公开团队
+         * @description 共享资源时挑团队用。只列公开团队（status 30），按名字排序。
+         *
+         *     实现：`V3\GroupController@index`
+         */
+        get: operations["get_api_v3_groups"];
+        put?: never;
+        /**
+         * 建团队
+         * @description 建的人成为 owner。同一个人名下不能重名。
+         *
+         *     实现：`V3\GroupController@store`
+         */
+        post: operations["post_api_v3_groups"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v3/groups/{group}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 团队详情
+         * @description 公开团队谁都能看（可不登录），私有团队只有成员能看。带查看者在团队里的角色。
+         *
+         *     实现：`V3\GroupController@show`
+         */
+        get: operations["get_api_v3_groups_group_"];
+        put?: never;
+        post?: never;
+        /**
+         * 删团队
+         * @description 只有 owner 能删。团队名下还有资源（channel、文章等）时拒绝，`resources` 里给出各类的条数；
+         *     否则连同成员与共享给团队的记录一起硬删，返回 204 空体。
+         *
+         *     实现：`V3\GroupController@destroy`
+         */
+        delete: operations["delete_api_v3_groups_group_"];
+        options?: never;
+        head?: never;
+        /**
+         * 改团队信息
+         * @description 团队的 owner / manager 才能调用，只改传了的字段。
+         *
+         *     实现：`V3\GroupController@update`
+         */
+        patch: operations["patch_api_v3_groups_group_"];
+        trace?: never;
+    };
+    "/v3/groups/{group}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 列出团队成员
+         * @description 只有团队成员看得到。owner、manager 在前，其余按加入时间排序。
+         *
+         *     实现：`V3\GroupMemberController@index`
+         */
+        get: operations["get_api_v3_groups_group_members"];
+        put?: never;
+        /**
+         * 加一名成员
+         * @description 团队的 owner / manager 才能调用。角色默认 reader（只读）。
+         *
+         *     实现：`V3\GroupMemberController@store`
+         */
+        post: operations["post_api_v3_groups_group_members"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v3/groups/{group}/members/{member}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 移除成员 / 退出团队
+         * @description 移除别人要 owner / manager；移除自己就是退出团队。owner 不能被移除、也不能退出。
+         *     硬删，成功返回 204 空体。
+         *
+         *     实现：`V3\GroupMemberController@destroy`
+         */
+        delete: operations["delete_api_v3_groups_group_members_member_"];
+        options?: never;
+        head?: never;
+        /**
+         * 改成员角色
+         * @description 团队的 owner / manager 才能调用；owner 那一行不能改。
+         *
+         *     实现：`V3\GroupMemberController@update`
+         */
+        patch: operations["patch_api_v3_groups_group_members_member_"];
+        trace?: never;
+    };
+    "/v3/groups/{group}/shares": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 列出团队文档
+         * @description 只有团队成员看得到。每条带资源类型、标题与拥有者，以及团队对它的权限（reader / editor）。
+         *
+         *     实现：`V3\GroupShareController@index`
+         */
+        get: operations["get_api_v3_groups_group_shares"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v3/groups/{group}/shares/{share}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 把资源移出团队
+         * @description 团队的 owner / manager，或资源的拥有者才能调用。只删这条共享，资源本身不动。
+         *
+         *     实现：`V3\GroupShareController@destroy`
+         */
+        delete: operations["delete_api_v3_groups_group_shares_share_"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v3/heartbeat": {
         parameters: {
             query?: never;
@@ -8394,6 +8575,28 @@ export interface paths {
          *     实现：`V3\MeAgentThreadArchiveController@destroy`
          */
         delete: operations["delete_api_v3_me_agent_threads_thread_archive"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v3/me/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 列出我加入的团队
+         * @description 每条带我在团队里的角色（owner / manager / editor / reader），按加入时间排序。
+         *
+         *     实现：`V3\MeGroupController@__invoke`
+         */
+        get: operations["get_api_v3_me_groups"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -19009,9 +19212,9 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description 规则：required */
+                    /** @description 要加入的用户 uid */
                     user_id: string;
-                    /** @description 规则：required */
+                    /** @description 团队 uid */
                     group_id: string;
                 };
             };
@@ -36921,6 +37124,634 @@ export interface operations {
             };
         };
     };
+    get_api_v3_groups: {
+        parameters: {
+            query?: {
+                /** @description 每页数量，最大 200 */
+                per_page?: number;
+                /** @description 按团队名模糊匹配 */
+                search?: string;
+                /** @description 页码 */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: {
+                            id?: string;
+                            name?: string;
+                            description?: string | null;
+                            status?: number;
+                            owner?: {
+                                id?: string;
+                                nickName?: string;
+                                userName?: string;
+                                realName?: string;
+                                sn?: number;
+                                avatar?: string;
+                                roles?: string[];
+                            } | null;
+                            /** @description 仅在部分查询口径下返回。 */
+                            role?: string | null;
+                            created_at?: string;
+                            updated_at?: string;
+                        }[];
+                        meta?: components["schemas"]["PaginationMeta"];
+                    };
+                };
+            };
+            401: components["responses"]["ProblemUnauthorized"];
+            422: components["responses"]["ProblemValidation"];
+        };
+    };
+    post_api_v3_groups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description 团队名，最长 64 */
+                    name: string;
+                    /** @description 简介，最长 1024 */
+                    description?: string;
+                    /**
+                     * @description 10 私有、30 公开
+                     * @default 30
+                     */
+                    status?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description 成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: {
+                            id?: string;
+                            name?: string;
+                            description?: string | null;
+                            status?: number;
+                            owner?: {
+                                id?: string;
+                                nickName?: string;
+                                userName?: string;
+                                realName?: string;
+                                sn?: number;
+                                avatar?: string;
+                                roles?: string[];
+                            } | null;
+                            /** @description 仅在部分查询口径下返回。 */
+                            role?: string | null;
+                            created_at?: string;
+                            updated_at?: string;
+                        };
+                    };
+                };
+            };
+            /** @description 建好了 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: {
+                            id?: string;
+                            name?: string;
+                            description?: string | null;
+                            status?: number;
+                            owner?: {
+                                id?: string;
+                                nickName?: string;
+                                userName?: string;
+                                realName?: string;
+                                sn?: number;
+                                avatar?: string;
+                                roles?: string[];
+                            } | null;
+                            /** @description 仅在部分查询口径下返回。 */
+                            role?: string | null;
+                            created_at?: string;
+                            updated_at?: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["ProblemUnauthorized"];
+            422: components["responses"]["ProblemValidation"];
+        };
+    };
+    get_api_v3_groups_group_: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 团队 uid */
+                group: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: {
+                            id?: string;
+                            name?: string;
+                            description?: string | null;
+                            status?: number;
+                            owner?: {
+                                id?: string;
+                                nickName?: string;
+                                userName?: string;
+                                realName?: string;
+                                sn?: number;
+                                avatar?: string;
+                                roles?: string[];
+                            } | null;
+                            /** @description 仅在部分查询口径下返回。 */
+                            role?: string | null;
+                            created_at?: string;
+                            updated_at?: string;
+                        };
+                    };
+                };
+            };
+            /** @description 私有团队，且不是成员 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            422: components["responses"]["ProblemValidation"];
+        };
+    };
+    delete_api_v3_groups_group_: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 团队 uid */
+                group: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 已删除，无响应体 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["ProblemUnauthorized"];
+            /** @description 只有 owner 能删 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description 团队名下还有资源 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            422: components["responses"]["ProblemValidation"];
+        };
+    };
+    patch_api_v3_groups_group_: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 团队 uid */
+                group: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** @description 团队名，最长 64 */
+                    name?: string;
+                    /** @description 简介，最长 1024 */
+                    description?: string;
+                    /** @description 10 私有、30 公开 */
+                    status?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description 成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: {
+                            id?: string;
+                            name?: string;
+                            description?: string | null;
+                            status?: number;
+                            owner?: {
+                                id?: string;
+                                nickName?: string;
+                                userName?: string;
+                                realName?: string;
+                                sn?: number;
+                                avatar?: string;
+                                roles?: string[];
+                            } | null;
+                            /** @description 仅在部分查询口径下返回。 */
+                            role?: string | null;
+                            created_at?: string;
+                            updated_at?: string;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["ProblemUnauthorized"];
+            /** @description 不能修改这个团队 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            422: components["responses"]["ProblemValidation"];
+        };
+    };
+    get_api_v3_groups_group_members: {
+        parameters: {
+            query?: {
+                /** @description 每页数量，最大 200 */
+                per_page?: number;
+                /** @description 页码 */
+                page?: number;
+            };
+            header?: never;
+            path: {
+                /** @description 团队 uid */
+                group: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: {
+                            id?: string;
+                            group_id?: string;
+                            role?: string;
+                            joined_at?: string;
+                            user?: {
+                                id?: string;
+                                nickName?: string;
+                                userName?: string;
+                                realName?: string;
+                                sn?: number;
+                                avatar?: string;
+                                roles?: string[];
+                            } | null;
+                        }[];
+                        meta?: components["schemas"]["PaginationMeta"];
+                    };
+                };
+            };
+            401: components["responses"]["ProblemUnauthorized"];
+            /** @description 不是这个团队的成员 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            422: components["responses"]["ProblemValidation"];
+        };
+    };
+    post_api_v3_groups_group_members: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 团队 uid */
+                group: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description 要加入的用户 uuid */
+                    user_id: string;
+                    /**
+                     * @description 角色，默认 reader
+                     * @enum {string}
+                     */
+                    role?: "manager" | "editor" | "reader";
+                };
+            };
+        };
+        responses: {
+            /** @description 成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: {
+                            id?: string;
+                            group_id?: string;
+                            role?: string;
+                            joined_at?: string;
+                            user?: {
+                                id?: string;
+                                nickName?: string;
+                                userName?: string;
+                                realName?: string;
+                                sn?: number;
+                                avatar?: string;
+                                roles?: string[];
+                            } | null;
+                        };
+                    };
+                };
+            };
+            /** @description 加入成功 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: {
+                            id?: string;
+                            group_id?: string;
+                            role?: string;
+                            joined_at?: string;
+                            user?: {
+                                id?: string;
+                                nickName?: string;
+                                userName?: string;
+                                realName?: string;
+                                sn?: number;
+                                avatar?: string;
+                                roles?: string[];
+                            } | null;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["ProblemUnauthorized"];
+            /** @description 不能管理这个团队的成员 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            422: components["responses"]["ProblemValidation"];
+        };
+    };
+    delete_api_v3_groups_group_members_member_: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 团队 uid */
+                group: string;
+                /** @description 成员记录 id */
+                member: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 已移除，无响应体 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["ProblemUnauthorized"];
+            /** @description 不能移除这名成员 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            422: components["responses"]["ProblemValidation"];
+        };
+    };
+    patch_api_v3_groups_group_members_member_: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 团队 uid */
+                group: string;
+                /** @description 成员记录 id */
+                member: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description 角色
+                     * @enum {string}
+                     */
+                    role?: "manager" | "editor" | "reader";
+                };
+            };
+        };
+        responses: {
+            /** @description 成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: {
+                            id?: string;
+                            group_id?: string;
+                            role?: string;
+                            joined_at?: string;
+                            user?: {
+                                id?: string;
+                                nickName?: string;
+                                userName?: string;
+                                realName?: string;
+                                sn?: number;
+                                avatar?: string;
+                                roles?: string[];
+                            } | null;
+                        };
+                    };
+                };
+            };
+            401: components["responses"]["ProblemUnauthorized"];
+            /** @description 不能管理这个团队的成员，或目标是团队拥有者 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            422: components["responses"]["ProblemValidation"];
+        };
+    };
+    get_api_v3_groups_group_shares: {
+        parameters: {
+            query?: {
+                /** @description 每页数量，最大 200 */
+                per_page?: number;
+                /** @description 页码 */
+                page?: number;
+            };
+            header?: never;
+            path: {
+                /** @description 团队 uid */
+                group: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: {
+                            id?: string;
+                            role?: string;
+                            resource?: {
+                                type?: string;
+                                id?: string;
+                                title?: string | null;
+                                owner_id?: string | null;
+                                owner?: {
+                                    id?: string;
+                                    nickName?: string;
+                                    userName?: string;
+                                    realName?: string;
+                                    sn?: number;
+                                    avatar?: string;
+                                    roles?: string[];
+                                } | null;
+                            };
+                            created_at?: string;
+                        }[];
+                        meta?: components["schemas"]["PaginationMeta"];
+                    };
+                };
+            };
+            401: components["responses"]["ProblemUnauthorized"];
+            /** @description 不是这个团队的成员 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            422: components["responses"]["ProblemValidation"];
+        };
+    };
+    delete_api_v3_groups_group_shares_share_: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 团队 uid */
+                group: string;
+                /** @description 共享记录 id */
+                share: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 已移出，无响应体 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["ProblemUnauthorized"];
+            /** @description 不能移出这项资源 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            422: components["responses"]["ProblemValidation"];
+        };
+    };
     get_api_v3_heartbeat: {
         parameters: {
             query?: never;
@@ -37385,6 +38216,59 @@ export interface operations {
                                 created_at?: string;
                             }[];
                         };
+                    };
+                };
+            };
+            401: components["responses"]["ProblemUnauthorized"];
+            422: components["responses"]["ProblemValidation"];
+        };
+    };
+    get_api_v3_me_groups: {
+        parameters: {
+            query?: {
+                /** @description true 只列我创建的，false 只列我参加的别人的团队；不传列全部 */
+                owned?: boolean;
+                /** @description 每页数量，最大 200 */
+                per_page?: number;
+                /** @description 按团队名模糊匹配 */
+                search?: string;
+                /** @description 页码 */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: {
+                            id?: string;
+                            name?: string;
+                            description?: string | null;
+                            owner_id?: string;
+                            owner?: {
+                                id?: string;
+                                nickName?: string;
+                                userName?: string;
+                                realName?: string;
+                                sn?: number;
+                                avatar?: string;
+                                roles?: string[];
+                            } | null;
+                            status?: number;
+                            role?: string;
+                            member_id?: string;
+                            created_at?: string;
+                            joined_at?: string;
+                        }[];
+                        meta?: components["schemas"]["PaginationMeta"];
                     };
                 };
             };

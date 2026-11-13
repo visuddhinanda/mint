@@ -102,6 +102,7 @@ const items = {
   "group.fields.name.label": "team name",
   "group.files": "files",
   "group.member": "members",
+  "forms.message.group.leave": "Leave this team?",
 };
 
 export default items;

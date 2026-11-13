@@ -15,6 +15,7 @@ docs/Api/AgentTracesApi.md
 docs/Api/CreditPolicyApi.md
 docs/Api/DiscussionsApi.md
 docs/Api/EmailCertificationsApi.md
+docs/Api/GroupsApi.md
 docs/Api/HeartbeatApi.md
 docs/Api/InvitesApi.md
 docs/Api/MeApi.md
@@ -76,6 +77,13 @@ docs/Model/GetApiV3Discussions200ResponseDataInnerSentence.md
 docs/Model/GetApiV3DiscussionsSummary200Response.md
 docs/Model/GetApiV3DiscussionsSummary200ResponseData.md
 docs/Model/GetApiV3DiscussionsSummary200ResponseDataStatusCounts.md
+docs/Model/GetApiV3Groups200Response.md
+docs/Model/GetApiV3Groups200ResponseDataInner.md
+docs/Model/GetApiV3GroupsGroupMembers200Response.md
+docs/Model/GetApiV3GroupsGroupMembers200ResponseDataInner.md
+docs/Model/GetApiV3GroupsGroupShares200Response.md
+docs/Model/GetApiV3GroupsGroupShares200ResponseDataInner.md
+docs/Model/GetApiV3GroupsGroupShares200ResponseDataInnerResource.md
 docs/Model/GetApiV3Heartbeat200Response.md
 docs/Model/GetApiV3Heartbeat200ResponseData.md
 docs/Model/GetApiV3Me200Response.md
@@ -84,6 +92,8 @@ docs/Model/GetApiV3MeAgentThreads200Response.md
 docs/Model/GetApiV3MeAgentThreads200ResponseDataInner.md
 docs/Model/GetApiV3MeAgentThreads200ResponseDataInnerRunsInner.md
 docs/Model/GetApiV3MeAgentThreadsThread200Response.md
+docs/Model/GetApiV3MeGroups200Response.md
+docs/Model/GetApiV3MeGroups200ResponseDataInner.md
 docs/Model/GetApiV3MeReactions200Response.md
 docs/Model/GetApiV3MeReactions200ResponseDataInner.md
 docs/Model/GetApiV3PasswordResetsToken200Response.md
@@ -115,6 +125,8 @@ docs/Model/GetApiV3TipitakaRelatedParagraphsAggregateBookName200Response.md
 docs/Model/GetApiV3TipitakaRelatedParagraphsAggregateBookName200ResponseDataInner.md
 docs/Model/PaginationMeta.md
 docs/Model/PatchApiV3DiscussionsDiscussionRequest.md
+docs/Model/PatchApiV3GroupsGroupMembersMemberRequest.md
+docs/Model/PatchApiV3GroupsGroupRequest.md
 docs/Model/PatchApiV3MeAgentThreadsThreadRequest.md
 docs/Model/PatchApiV3PasswordResetsTokenRequest.md
 docs/Model/PostApiV3AgentCharges200Response.md
@@ -140,6 +152,10 @@ docs/Model/PostApiV3DiscussionsBatchCountRequestTargetsInner.md
 docs/Model/PostApiV3DiscussionsDiscussionRepliesRequest.md
 docs/Model/PostApiV3DiscussionsRequest.md
 docs/Model/PostApiV3EmailCertificationsRequest.md
+docs/Model/PostApiV3Groups200Response.md
+docs/Model/PostApiV3GroupsGroupMembers200Response.md
+docs/Model/PostApiV3GroupsGroupMembersRequest.md
+docs/Model/PostApiV3GroupsRequest.md
 docs/Model/PostApiV3Invites200Response.md
 docs/Model/PostApiV3Invites200ResponseData.md
 docs/Model/PostApiV3InvitesRequest.md
@@ -169,6 +185,7 @@ lib/Api/AgentTracesApi.php
 lib/Api/CreditPolicyApi.php
 lib/Api/DiscussionsApi.php
 lib/Api/EmailCertificationsApi.php
+lib/Api/GroupsApi.php
 lib/Api/HeartbeatApi.php
 lib/Api/InvitesApi.php
 lib/Api/MeApi.php
@@ -234,6 +251,13 @@ lib/Model/GetApiV3Discussions200ResponseDataInnerSentence.php
 lib/Model/GetApiV3DiscussionsSummary200Response.php
 lib/Model/GetApiV3DiscussionsSummary200ResponseData.php
 lib/Model/GetApiV3DiscussionsSummary200ResponseDataStatusCounts.php
+lib/Model/GetApiV3Groups200Response.php
+lib/Model/GetApiV3Groups200ResponseDataInner.php
+lib/Model/GetApiV3GroupsGroupMembers200Response.php
+lib/Model/GetApiV3GroupsGroupMembers200ResponseDataInner.php
+lib/Model/GetApiV3GroupsGroupShares200Response.php
+lib/Model/GetApiV3GroupsGroupShares200ResponseDataInner.php
+lib/Model/GetApiV3GroupsGroupShares200ResponseDataInnerResource.php
 lib/Model/GetApiV3Heartbeat200Response.php
 lib/Model/GetApiV3Heartbeat200ResponseData.php
 lib/Model/GetApiV3Me200Response.php
@@ -242,6 +266,8 @@ lib/Model/GetApiV3MeAgentThreads200Response.php
 lib/Model/GetApiV3MeAgentThreads200ResponseDataInner.php
 lib/Model/GetApiV3MeAgentThreads200ResponseDataInnerRunsInner.php
 lib/Model/GetApiV3MeAgentThreadsThread200Response.php
+lib/Model/GetApiV3MeGroups200Response.php
+lib/Model/GetApiV3MeGroups200ResponseDataInner.php
 lib/Model/GetApiV3MeReactions200Response.php
 lib/Model/GetApiV3MeReactions200ResponseDataInner.php
 lib/Model/GetApiV3PasswordResetsToken200Response.php
@@ -274,6 +300,8 @@ lib/Model/GetApiV3TipitakaRelatedParagraphsAggregateBookName200ResponseDataInner
 lib/Model/ModelInterface.php
 lib/Model/PaginationMeta.php
 lib/Model/PatchApiV3DiscussionsDiscussionRequest.php
+lib/Model/PatchApiV3GroupsGroupMembersMemberRequest.php
+lib/Model/PatchApiV3GroupsGroupRequest.php
 lib/Model/PatchApiV3MeAgentThreadsThreadRequest.php
 lib/Model/PatchApiV3PasswordResetsTokenRequest.php
 lib/Model/PostApiV3AgentCharges200Response.php
@@ -299,6 +327,10 @@ lib/Model/PostApiV3DiscussionsBatchCountRequestTargetsInner.php
 lib/Model/PostApiV3DiscussionsDiscussionRepliesRequest.php
 lib/Model/PostApiV3DiscussionsRequest.php
 lib/Model/PostApiV3EmailCertificationsRequest.php
+lib/Model/PostApiV3Groups200Response.php
+lib/Model/PostApiV3GroupsGroupMembers200Response.php
+lib/Model/PostApiV3GroupsGroupMembersRequest.php
+lib/Model/PostApiV3GroupsRequest.php
 lib/Model/PostApiV3Invites200Response.php
 lib/Model/PostApiV3Invites200ResponseData.php
 lib/Model/PostApiV3InvitesRequest.php
@@ -329,6 +361,7 @@ test/Api/AgentTracesApiTest.php
 test/Api/CreditPolicyApiTest.php
 test/Api/DiscussionsApiTest.php
 test/Api/EmailCertificationsApiTest.php
+test/Api/GroupsApiTest.php
 test/Api/HeartbeatApiTest.php
 test/Api/InvitesApiTest.php
 test/Api/MeApiTest.php
@@ -390,6 +423,13 @@ test/Model/GetApiV3Discussions200ResponseTest.php
 test/Model/GetApiV3DiscussionsSummary200ResponseDataStatusCountsTest.php
 test/Model/GetApiV3DiscussionsSummary200ResponseDataTest.php
 test/Model/GetApiV3DiscussionsSummary200ResponseTest.php
+test/Model/GetApiV3Groups200ResponseDataInnerTest.php
+test/Model/GetApiV3Groups200ResponseTest.php
+test/Model/GetApiV3GroupsGroupMembers200ResponseDataInnerTest.php
+test/Model/GetApiV3GroupsGroupMembers200ResponseTest.php
+test/Model/GetApiV3GroupsGroupShares200ResponseDataInnerResourceTest.php
+test/Model/GetApiV3GroupsGroupShares200ResponseDataInnerTest.php
+test/Model/GetApiV3GroupsGroupShares200ResponseTest.php
 test/Model/GetApiV3Heartbeat200ResponseDataTest.php
 test/Model/GetApiV3Heartbeat200ResponseTest.php
 test/Model/GetApiV3Me200ResponseDataTest.php
@@ -398,6 +438,8 @@ test/Model/GetApiV3MeAgentThreads200ResponseDataInnerRunsInnerTest.php
 test/Model/GetApiV3MeAgentThreads200ResponseDataInnerTest.php
 test/Model/GetApiV3MeAgentThreads200ResponseTest.php
 test/Model/GetApiV3MeAgentThreadsThread200ResponseTest.php
+test/Model/GetApiV3MeGroups200ResponseDataInnerTest.php
+test/Model/GetApiV3MeGroups200ResponseTest.php
 test/Model/GetApiV3MeReactions200ResponseDataInnerTest.php
 test/Model/GetApiV3MeReactions200ResponseTest.php
 test/Model/GetApiV3PasswordResetsToken200ResponseDataTest.php
@@ -429,6 +471,8 @@ test/Model/GetApiV3TipitakaRelatedParagraphsAggregateBookName200ResponseDataInne
 test/Model/GetApiV3TipitakaRelatedParagraphsAggregateBookName200ResponseTest.php
 test/Model/PaginationMetaTest.php
 test/Model/PatchApiV3DiscussionsDiscussionRequestTest.php
+test/Model/PatchApiV3GroupsGroupMembersMemberRequestTest.php
+test/Model/PatchApiV3GroupsGroupRequestTest.php
 test/Model/PatchApiV3MeAgentThreadsThreadRequestTest.php
 test/Model/PatchApiV3PasswordResetsTokenRequestTest.php
 test/Model/PostApiV3AgentCharges200ResponseDataTest.php
@@ -454,6 +498,10 @@ test/Model/PostApiV3DiscussionsBatchCountRequestTest.php
 test/Model/PostApiV3DiscussionsDiscussionRepliesRequestTest.php
 test/Model/PostApiV3DiscussionsRequestTest.php
 test/Model/PostApiV3EmailCertificationsRequestTest.php
+test/Model/PostApiV3Groups200ResponseTest.php
+test/Model/PostApiV3GroupsGroupMembers200ResponseTest.php
+test/Model/PostApiV3GroupsGroupMembersRequestTest.php
+test/Model/PostApiV3GroupsRequestTest.php
 test/Model/PostApiV3Invites200ResponseDataTest.php
 test/Model/PostApiV3Invites200ResponseTest.php
 test/Model/PostApiV3InvitesRequestTest.php
