@@ -21,7 +21,7 @@ const items = {
   "buttons.sign-out": "退出登录",
   "buttons.welcome": "欢迎遨游法的海洋",
   "buttons.click.upload": "点击上传",
-  "buttons.group.exit": "退群",
+  "buttons.group.exit": "退出团队",
   "buttons.group.add.member": "加人",
   "buttons.lesson.add.lesson": "加入",
   "buttons.ok": "确定",

@@ -33,7 +33,7 @@ const items = {
   "columns.studio.palicanon.title": "圣典",
   "columns.studio.recent.title": "最近编辑",
   "columns.studio.channel.title": "版本风格",
-  "columns.studio.group.title": "群组",
+  "columns.studio.group.title": "团队",
   "columns.studio.userdict.title": "用户字典",
   "columns.studio.term.title": "术语",
   "columns.studio.course.title": "课程",

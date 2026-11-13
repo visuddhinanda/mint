@@ -33,7 +33,7 @@ const items = {
   "columns.studio.palicanon.title": "Palicanon",
   "columns.studio.recent.title": "Recent",
   "columns.studio.channel.title": "Channel",
-  "columns.studio.group.title": "Group",
+  "columns.studio.group.title": "Teams",
   "columns.studio.userdict.title": "Dictionary",
   "columns.studio.term.title": "Term",
   "columns.studio.course.title": "Course",
