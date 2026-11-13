@@ -6,6 +6,7 @@ import {
   guest,
   signIn,
   studioSignIn,
+  recallCurrStudio,
 } from "./reducers/current-user";
 import { remove as removeToken } from "./reducers/session";
 import { fetchMe } from "./api/session";
@@ -101,6 +102,7 @@ const init = () => {
             return item.group;
           });
           store.dispatch(studioSignIn(it));
+          store.dispatch(recallCurrStudio());
         }
       }
     );

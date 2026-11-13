@@ -118,6 +118,8 @@ const items = {
   "buttons.get_template": "获取引用模版",
   "buttons.duplicate": "创建副本",
   "buttons.word_count": "字数统计",
+  "buttons.teamspace.switch": "切换到团队空间",
+  "buttons.teamspace.leave": "切回个人空间",
 };
 
 export default items;

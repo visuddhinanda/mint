@@ -147,6 +147,10 @@ const items = {
   "labels.paragraph-count": "Paras",
   "labels.pagination.total": "Total: {total}",
   "labels.channel.select": "Select version",
+  "labels.teamspace": "Teamspaces",
+  "labels.teamspace.current": "Teamspace: {name}",
+  "labels.teamspace.personal-only": "Personal only — not available in a teamspace",
+  "labels.teamspace.unsupported": "This module does not support teamspaces yet",
 };
 
 export default items;
